@@ -16,7 +16,7 @@
 ### 1-1. Item Lifecycle
 
 DB 상태 5개: `cooling`, `ready`, `purchased`, `passed`, `deleted`
-UI 전용 상태 4개: `draft`, `chat-active`, `chat-done`, `deciding` (저장 안 됨, 화면 전환용)
+UI 전용 상태 5개: `draft`, `chat-gathering`, `chat-perspective`, `fact-summary`, `deciding` (저장 안 됨, 화면 전환용)
 
 ```
            ┌─────────┐
@@ -34,18 +34,23 @@ UI 전용 상태 4개: `draft`, `chat-active`, `chat-done`, `deciding` (저장 �
            └────┬────┘
                 │ pickup 카드 탭 → /decide 진입
                 ↓
-           ┌──────────────┐
-           │ chat-active  │  (Phase A: AI chat, turn 1~N)
-           └──────┬───────┘
-                  │ [END] / escape / hard cap
+           ┌──────────────────┐
+           │ chat-gathering   │  (AI 정보 수집 중, [결정할래] 미노출)
+           └──────┬───────────┘
+                  │ AI 응답 phase: "perspective"
+                  ↓
+           ┌──────────────────┐
+           │ chat-perspective │  ([결정할래] 버튼 노출, 대화 계속 가능)
+           └──────┬───────────┘
+                  │ [결정할래] 탭 / hard cap 10턴
                   ↓
            ┌──────────────┐
-           │  chat-done   │  (Phase A → B 전이 대기)
+           │ fact-summary │  (팩트 요약 카드 표시)
            └──────┬───────┘
-                  │ [결정하러 가기] 탭
+                  │ 자동 전이 (요약 표시 후)
                   ↓
            ┌──────────────┐
-           │   deciding   │  (Phase B: [안 삼] / [삼])
+           │   deciding   │  ([안 삼] / [삼])
            └──┬───────┬───┘
               │       │
          [안 삼]   [삼]
@@ -70,9 +75,10 @@ UI 전용 상태 4개: `draft`, `chat-active`, `chat-done`, `deciding` (저장 �
 | `draft` | (소멸) | `/new` 이탈 | 저장 안 됨 |
 | `cooling` | `ready` | 타이머 만료 | 자동, 30s 주기 |
 | `cooling` | `deleted` | 30s 그레이스 내 "취소" | `created_at + 30s > now` |
-| `ready` | `chat-active` | pickup 카드 탭 | `/decide` 진입 |
-| `chat-active` | `chat-done` | AI `[END]` / 사용자 escape / hard cap | — |
-| `chat-done` | `deciding` | [결정하러 가기] 탭 | — |
+| `ready` | `chat-gathering` | pickup 카드 탭 | `/decide` 진입 |
+| `chat-gathering` | `chat-perspective` | AI 응답 `phase: "perspective"` | — |
+| `chat-perspective` | `fact-summary` | [결정할래] 탭 / hard cap 10턴 | — |
+| `fact-summary` | `deciding` | 팩트 요약 표시 완료 | — |
 | `deciding` | `passed` | [안 삼] 탭 | — |
 | `deciding` | `purchased` | [삼] 탭 | — |
 | `passed`/`purchased` | `deciding` | [실행 취소] 토스트 | `decided_at + 5s > now` |
@@ -83,6 +89,8 @@ UI 전용 상태 4개: `draft`, `chat-active`, `chat-done`, `deciding` (저장 �
 - cooling 상태에서 삭제 불가 (commitment device). 단 등록 후 30s 그레이스.
 - 결정 후 5s Undo.
 - ready → deleted 직접 전이 없음 (반드시 AI Chat 경유).
+- **[결정할래] 버튼은 `chat-perspective` 이후에만 노출** — AI가 관점을 제시하기 전에는 결정 불가.
+- **대화와 결정 버튼이 같은 화면에 공존** — 별도 화면 전환 없음.
 
 ### 1-3. Screen State Matrix
 
@@ -91,8 +99,8 @@ UI 전용 상태 4개: `draft`, `chat-active`, `chat-done`, `deciding` (저장 �
 | `/` (Home) | `empty` / `has-cooling-only` / `has-ready-only` / `has-both` |
 | `/new` | `editing` / `sealing` / `submitting` |
 | `/items/[id]/cooling-waiting` | `waiting` |
-| `/items/[id]/decide` Phase A | `chat-idle` / `chat-opener` / `awaiting-user` / `ai-thinking` / `ai-streaming` / `chat-done` / `ai-error` |
-| `/items/[id]/decide` Phase B | `loaded` / `deciding` / `confirmed-with-undo` / `confirmed-final` |
+| `/items/[id]/decide` Chat | `chat-idle` / `chat-opener` / `awaiting-user` / `ai-thinking` / `ai-streaming` / `ai-error` |
+| `/items/[id]/decide` 결정 | `perspective-shown` / `fact-summary` / `deciding` / `confirmed-with-undo` / `confirmed-final` |
 | `/records` | `empty` / `has-items` / `dialog-open` |
 | `/about` | `static` |
 
@@ -201,11 +209,14 @@ max-width 440px. 타이머 만료 시 자동 ready 전이.
 
 **Components:** BlankWaitingScreen, BigTimer
 
-### 2-4. AI Chat + Decide (`/items/[id]/decide`)
+### 2-4. Decide (`/items/[id]/decide`) — 단일 화면, 4단계
 
-두 Phase가 하나의 라우트에서 순차 진행.
+대화와 결정이 **같은 화면**에서 진행. 별도 화면 전환 없음.
 
-**Phase A — Chat**
+> 의사결정 근거: [`../archive/adr-decide-flow.md`](../archive/adr-decide-flow.md)
+> AI-프론트엔드 인터페이스: [`../engineering/ai-frontend-contract.md`](../engineering/ai-frontend-contract.md)
+
+**단계 ①~② — AI 대화 + [결정할래] 버튼**
 
 ```
 ┌──────────────────────────────────┐
@@ -214,42 +225,53 @@ max-width 440px. 타이머 만료 시 자동 ready 전이.
 ├──────────────────────────────────┤
 │                                  │
 │  ┌─ AI ──────────────────┐       │
-│  │ 네 말 들어볼게.       │       │  ← MessageBubble (ai)
-│  │ 이거 왜 사고 싶어?    │       │
+│  │ 배터리 문제랑 새 기능  │       │  ← AI가 등록 사유를 이미
+│  │ 때문이라고 했지. 실제로 │       │    알고 있는 상태에서 시작
+│  │ 써볼 상황이 자주 있어? │       │
 │  └───────────────────────┘       │
 │                                  │
 │       ┌──────────────── User ─┐  │
-│       │ 매일 출근길에 보이는데 │  │  ← MessageBubble (user)
-│       │ 매번 눈이 가더라고    │  │
+│       │ 제스처 볼륨은 잘      │  │
+│       │ 쓰겠지               │  │
 │       └───────────────────────┘  │
 │                                  │
 │  ┌─ AI ──────────────────┐       │
-│  │ TypingIndicator ···   │       │  ← ai-thinking 상태
+│  │ 35만원어치 귀찮음인    │       │  ← phase: perspective
+│  │ 거야.                  │       │    → [결정할래] 버튼 노출
 │  └───────────────────────┘       │
 │                                  │
-│  ChatEscapeButton                │
-│  "결정하러 갈게 →"  (ghost)      │
-│                                  │
 ├──────────────────────────────────┤
-│  [ChatInput ___________] [전송]  │  ← textarea auto-grow
+│  [결정할래]          (sticky)    │  ← perspective 이후 노출
+├──────────────────────────────────┤
+│  [ChatInput ___________] [전송]  │  ← 대화 계속 가능
 └──────────────────────────────────┘
 ```
 
-chat-done 시 ChatInput → ChatDoneCTA ("결정하러 가기")로 교체.
+- `phase: gathering` 동안: [결정할래] 버튼 **미노출**. 채팅만.
+- `phase: perspective` 이후: [결정할래] 버튼 **노출**. 채팅 입력창도 유지 (대화 계속 가능).
+- `phase: closing` 시: AI가 "결정할 준비 됐어?"라고 대화로 마무리 제안. 사용자가 "아직"이면 대화 계속.
+- Hard cap 10턴: AI가 맥락 인지 마무리 + 입력창 비활성화. [결정할래] 버튼만 남음.
+- [결정할래] 버튼은 한 번 나타나면 사라지지 않음.
 
-**Phase B — Decide**
+**단계 ③ — 팩트 요약 카드**
+
+[결정할래] 탭 시 채팅 입력창 사라지고, 팩트 요약 카드가 대화 아래에 표시.
 
 ```
 ┌──────────────────────────────────┐
 │  MiniItemHeader (sticky)         │
-│  아이템명 · ₩가격                │
 ├──────────────────────────────────┤
 │                                  │
-│  DecideHeader                    │
-│  "다시 만났네"                   │  ← 재회 프레이밍
+│  (위: 대화 히스토리 scroll)      │
 │                                  │
 │  ┌────────────────────────────┐  │
-│  │ ChatTranscript (scroll)   │  │  ← 전체 대화
+│  │ FactSummaryCard            │  │
+│  │ • 배터리: 하루 버티지만    │  │
+│  │   충전 귀찮음              │  │
+│  │ • 자동 번역: 쓸지 모름     │  │
+│  │ • 배터리 교체: 7~8만원     │  │
+│  │ • 새 거 사고 싶은 게 진짜  │  │
+│  │   이유라고 인정함          │  │
 │  └────────────────────────────┘  │
 │                                  │
 │  ┌──────────┐  ┌──────────┐      │
@@ -259,9 +281,14 @@ chat-done 시 ChatInput → ChatDoneCTA ("결정하러 가기")로 교체.
 └──────────────────────────────────┘
 ```
 
-결정 후 UndoToast (sonner, 5s).
+- 팩트 요약은 AI의 `summary` 필드에서 가져옴. 판단 없이 사실만.
+- summary가 없으면 (closing 없이 바로 [결정할래] 누른 경우) 팩트 요약 카드 없이 바로 [안 삼]/[삼] 표시.
 
-**Components:** ChatScreen, ChatMessageList, MessageBubble, ChatInput, ChatEscapeButton, ChatDoneCTA, TypingIndicator, MiniItemHeader, DecideHeader, DecideButtonPair, ChatTranscript, UndoToast
+**단계 ④ — 결정 + Undo**
+
+[안 삼]/[삼] 탭 → localStorage 업데이트 → UndoToast (sonner, 5s) → 홈 이동.
+
+**Components:** ChatScreen, ChatMessageList, MessageBubble, ChatInput, TypingIndicator, MiniItemHeader, DecideButton ("결정할래", sticky), FactSummaryCard, DecideButtonPair, UndoToast
 
 ### 2-5. 기록 (`/records`)
 
@@ -329,7 +356,9 @@ chat-done 시 ChatInput → ChatDoneCTA ("결정하러 가기")로 교체.
 | 상황 | 처리 |
 |------|------|
 | 네트워크 에러 | toast + retry 버튼 |
-| AI 응답 실패 | "AI가 응답하지 못했어. 바로 결정하러 갈게" → Phase B |
+| AI 응답 실패 (1~2회) | toast "AI가 응답하지 못했어." + [다시 시도] 버튼 |
+| AI 응답 3회 연속 실패 | "AI 없이 결정할 수도 있어" + [결정할래] 버튼 강제 노출. 팩트 요약은 "요약 불가" |
+| phase 파싱 실패 | Fallback: 3턴 이후 [결정할래] 자동 노출 |
 | 404 | 홈으로 리다이렉트 |
 
 ### 3-3. 반응형 전략
@@ -366,7 +395,7 @@ chat-done 시 ChatInput → ChatDoneCTA ("결정하러 가기")로 교체.
 | `CoolingPreview` | 가격 → 냉각기 라벨 |
 | `SealAnimation` | motion, 3-stage, 1400ms |
 
-### Chat (Phase A)
+### Decide (단일 화면: 대화 + 결정)
 
 | Component | 역할 |
 |-----------|------|
@@ -374,18 +403,11 @@ chat-done 시 ChatInput → ChatDoneCTA ("결정하러 가기")로 교체.
 | `ChatMessageList` | scroll auto-follow |
 | `MessageBubble` | ai/user variant |
 | `ChatInput` | textarea auto-grow + send |
-| `ChatEscapeButton` | "결정하러 갈게 →" ghost |
-| `ChatDoneCTA` | chat-done 시 input 대체 |
 | `TypingIndicator` | 3-dot 펄스 |
 | `MiniItemHeader` | sticky, 이름+가격 |
-
-### Decide (Phase B)
-
-| Component | 역할 |
-|-----------|------|
-| `DecideHeader` | 재회 프레이밍 |
+| `DecideButton` | "결정할래", sticky (perspective 이후 노출) |
+| `FactSummaryCard` | 팩트 요약 bullet (summary 필드 표시) |
 | `DecideButtonPair` | 대칭 [안 삼]/[삼] |
-| `ChatTranscript` | 전체 대화 scroll |
 | `UndoToast` | sonner, 5s |
 
 ### 기록
@@ -421,3 +443,16 @@ v1.2 (2026-04-12, LLM chat pivot)에서 폐기:
 | `/items/[id]/checklist/[step]` | `/items/[id]/decide` 리디렉트 |
 
 근거: `archive/adr-llm-chat-pivot.md` 참조.
+
+v1.3 (2026-04-16, Decide 플로우 재설계)에서 폐기:
+
+| 폐기 대상 | 대체 |
+|-----------|------|
+| Phase A → Phase B 별도 화면 전환 | 단일 화면 (대화 + 결정 공존) |
+| `ChatEscapeButton` ("결정하러 갈게" ghost) | `DecideButton` ("결정할래", phase 기반 노출) |
+| `ChatDoneCTA` (chat-done 시 input 대체) | 제거 (입력창 유지, 버튼 공존) |
+| `DecideHeader` ("다시 만났네") | `FactSummaryCard` (팩트 요약) |
+| `ChatTranscript` (Phase B 전체 대화) | 제거 (같은 화면이라 scroll로 충분) |
+| `chat-done` UI 상태 | `chat-perspective` (phase 기반) |
+
+근거: `archive/adr-decide-flow.md` 참조.

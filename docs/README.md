@@ -54,7 +54,9 @@ docs/
 │   └── screen-spec.md           ← 7개 화면 레이아웃 + 인터랙션
 ├── engineering/                ← "어떻게 만드나"
 │   ├── tech-spec.md            ← 기술 스택, 데이터 모델, 구현 상태
-│   └── ai-prompt-v1.md         ← AI 프롬프트 Layer 1~4
+│   ├── ai-prompt-v1.md         ← AI 프롬프트 Layer 1~4
+│   ├── ai-simulation-log.md    ← AI 대화 시뮬레이션 기록 + 프롬프트 규칙
+│   └── ai-frontend-contract.md ← AI-프론트엔드 인터페이스 계약 (phase 기반)
 └── archive/                    ← 의사결정 기록 (평소 안 읽어도 됨)
 ```
 
@@ -67,6 +69,7 @@ docs/
 - `frame-problem.md` — 설계 원칙 12개 + 과학 근거 11개 (AI 맥락용 딥 레퍼런스)
 - `adr-llm-chat-pivot.md` — 체크리스트를 버리고 AI 대화로 간 배경
 - `adr-no-product-image.md` — 상품 이미지를 넣지 않는 이유 (2026-04-16)
+- `adr-decide-flow.md` — AI 대화 종료 시점 + 결정 버튼 노출 구조 재설계 (2026-04-16)
 
 ---
 

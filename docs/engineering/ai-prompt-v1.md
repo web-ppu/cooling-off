@@ -9,6 +9,13 @@ supersedes: v0.1 (single-shot inline probe)
 
 # AI Chat Prompt — v0.2 Draft
 
+> ## ⚠️ v0.2 종료 규칙은 `adr-decide-flow.md`에 의해 superseded
+>
+> 이 문서의 **대화 종료 규칙** ([END] 토큰, hard cap, soft target, "결정하러 갈게" ghost 버튼)은 2026-04-16 Decide 플로우 재설계로 **전면 폐기**됐다.
+> 새 설계: [`../archive/adr-decide-flow.md`](../archive/adr-decide-flow.md)
+> 인터페이스 계약: [`./ai-frontend-contract.md`](./ai-frontend-contract.md)
+> v0.3 작성 예정.
+
 > **관련 문서:**
 > - 설계 원칙: [`../archive/frame-problem.md`](../archive/frame-problem.md)
 > - 요구사항: [`../pm/prd.md`](../pm/prd.md)
