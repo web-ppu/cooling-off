@@ -66,6 +66,7 @@ docs/
 
 - `frame-problem.md` — 설계 원칙 12개 + 과학 근거 11개 (AI 맥락용 딥 레퍼런스)
 - `adr-llm-chat-pivot.md` — 체크리스트를 버리고 AI 대화로 간 배경
+- `adr-no-product-image.md` — 상품 이미지를 넣지 않는 이유 (2026-04-16)
 
 ---
 
