@@ -70,6 +70,7 @@ docs/
 - `adr-llm-chat-pivot.md` — 체크리스트를 버리고 AI 대화로 간 배경
 - `adr-no-product-image.md` — 상품 이미지를 넣지 않는 이유 (2026-04-16)
 - `adr-decide-flow.md` — AI 대화 종료 시점 + 결정 버튼 노출 구조 재설계 (2026-04-16)
+- `adr-no-product-image.md` — 상품 이미지를 넣지 않는 이유 (2026-04-16)
 
 ---
 
