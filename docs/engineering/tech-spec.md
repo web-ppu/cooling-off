@@ -61,6 +61,12 @@ prototype/
 6. AI 대화 -> mock-chat.ts에서 rule-based 응답 생성 (스트리밍 시뮬레이션)
 7. 대화/결정 -> 대화 기록, 결정 상태, 결정 시각 저장
 
+**알림 구현 원칙**
+- 알림은 웹 기술 스택 안에서 구현한다.
+- 구현 후보: Web Push, Notifications API, PWA/Service Worker, 앱 내 알림.
+- 구체 조합은 개발 설계에서 결정한다.
+- 브라우저/OS 권한 또는 지원 제약으로 앱 밖 알림을 보낼 수 없는 경우에도, 앱 진입 시 결정 가능 상태가 정확히 표시되어야 한다.
+
 **데이터 흐름 (다음: Claude API 연결 후)**
 1. 사용자 입력 -> `app/api/chat/route.ts` server action
 2. Server action -> 현재 사용자 item/history 조회
