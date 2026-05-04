@@ -13,10 +13,9 @@ supersedes: frame-problem.md v1.0 (Release 0.3 구현 전) + 기획-배경.md Ph
 > 제품 배경과 설계 원칙을 정리한 참고 문서입니다.
 >
 > **관련 문서:**
-> - 요구사항: [`./prd.md`](./prd.md)
-> - 스코프: [`./user-story-map.md`](./user-story-map.md)
-> - 화면 스펙: [`../design/design-spec.md`](../design/design-spec.md)
-> - 인터랙션: [`../design/design-spec.md`](../design/design-spec.md)
+> - 요구사항: [`../pm/prd.md`](../pm/prd.md)
+> - 화면 정책: [`../design/screen-spec.md`](../design/screen-spec.md)
+> - AI 프롬프트: [`../engineering/ai-prompt-v1.md`](../engineering/ai-prompt-v1.md)
 >
 > **v1.1 변경**: M11 (Solomon의 역설) + 원칙 7-11 (AI 팩트 반박자) 신규. SP8 (AI Layer 품질 iteration) 신규. SP1~SP7 구현 상태 반영.
 
@@ -358,12 +357,11 @@ supersedes: frame-problem.md v1.0 (Release 0.3 구현 전) + 기획-배경.md Ph
 
 ---
 
-## 9. 다음 단계
+## 9. 현재 기준 문서
 
-1. `docs/jobs-to-be-done.md` — JTBD 재작성본 (함께 작성)
-2. `ux-strategy:opportunity-framework` — SP1~SP7 Impact × Effort 점수화 → MVP 스코프 확정
-3. `prototyping-testing:heuristic-evaluation` — 현재 `prototype/` 5개 화면 평가 (이 문서 기준으로 무엇이 안 맞는지)
-4. `interaction-design:design-interaction` + `ui-design:design-screen` — 새 인터랙션·화면 설계
-5. `frontend-design:frontend-design` — 구현
+이 문서는 배경과 원칙 참고용이다. 현재 제품 스펙은 아래 문서를 우선한다.
 
-PRD와 Story Map은 이 과정을 거치면서 **역방향으로** 재작성.
+1. `docs/pm/prd.md`
+2. `docs/design/screen-spec.md`
+3. `docs/engineering/ai-prompt-v1.md`
+4. `docs/engineering/ai-frontend-contract.md`

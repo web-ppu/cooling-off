@@ -4,9 +4,6 @@ type: evaluation
 status: 📚 HISTORICAL — 프로토타입 평가 완료 (전면 재구축으로 이슈 모두 해결)
 related:
   - frame-problem.md
-  - jobs-to-be-done.md
-  - mvp-scope.md
-  - implementation-status.md
 ---
 
 # Heuristic Evaluation — 현 프로토타입 5개 화면
@@ -17,24 +14,22 @@ related:
 >
 > 이 평가는 **Release 0.3 전면 재구축 결정의 근거**로 작성됐습니다. 평가 당시 프로토타입의 Catastrophe 5건 + Major 10건은 **Release 0.3 재구축(2026-04-12)으로 모두 해결**됐습니다.
 >
-> 현재 구현 상태는 [`implementation-status.md`](./implementation-status.md) 참조.
->
 > **이 문서가 필요한 경우**:
 > - "왜 프로토타입을 전면 재구축했는가?" 질문에 대한 근거
 > - 교수·팀 리뷰에서 "Nielsen Heuristics 기반 평가 수행했다"는 증빙
 > - 재구축 전후 비교 (Before/After)
 >
-> 그 외에는 **읽지 않아도 됨**. 현재 설계 기준은 frame-problem.md + interaction-design.md + screen-design.md.
+> 그 외에는 **읽지 않아도 됨**. 현재 제품 스펙은 `docs/pm/prd.md`와 `docs/design/screen-spec.md`를 우선합니다.
 
 ## 평가 범위
 
 - **평가 대상**: `prototype/` 디렉토리 5개 화면
-- **평가 기준**: Nielsen's 10 Usability Heuristics + `frame-problem.md` 10개 커스텀 원칙 + `mvp-scope.md` 17 opportunities 부합도
+- **평가 기준**: Nielsen's 10 Usability Heuristics + 당시 설계 원칙/스코프 부합도
 - **Severity Scale**: 0 (문제 없음) / 1 (화장품) / 2 (마이너) / 3 (메이저) / **4 (Catastrophe)**
 
 ## 총평 (Executive Summary)
 
-**진단**: 현재 프로토타입은 **구 기획-배경 7문항 버전의 충실한 구현체**이며, 재작성한 설계 원칙(frame-problem / JTBD / mvp-scope)과 근본적으로 호환되지 않는다. 기술 스택·인프라는 견고하지만, 화면 컨텐츠와 상호작용 구조가 원칙을 다수 위반한다.
+**진단**: 당시 프로토타입은 **구 기획-배경 7문항 버전의 충실한 구현체**였고, 이후 재작성 방향과 근본적으로 호환되지 않았다. 기술 스택·인프라는 견고했지만, 화면 컨텐츠와 상호작용 구조가 원칙을 다수 위반했다.
 
 **Catastrophe 5건 요약**:
 1. `/records`의 "이번 달 절약 금액" 상단 대형 표시 — 원칙 7-3 (크라우딩 아웃) 직접 위반
@@ -186,14 +181,11 @@ related:
 
 ## 최종 결론
 
-**Catastrophe 5건 + Major 10건**이라는 지표만 봐도 프로토타입의 **incremental fix**는 합리적이지 않다. 재작성한 3개 설계 문서(frame-problem / JTBD / mvp-scope)를 기준으로 **전면 재구축**이 오히려 빠르고 일관성 있는 경로다.
+**Catastrophe 5건 + Major 10건**이라는 지표만 봐도 당시 프로토타입의 **incremental fix**는 합리적이지 않았다. 당시 재작성 방향을 기준으로 **전면 재구축**이 더 빠르고 일관성 있는 경로였다.
 
 재사용·폐기 결정 문서는 오래된 구현 계획과 함께 정리됐다.
 
-**다음 단계**:
-1. `interaction-design:design-interaction` — 6개 Moment별 인터랙션 플로우 설계
-2. `ui-design:design-screen` — 6개 화면별 레이아웃 설계
-3. `frontend-design:frontend-design` — 전면 재구현
+현재 제품 스펙은 `docs/pm/prd.md`와 `docs/design/screen-spec.md`를 우선한다.
 
 **발표 자료 방어용 요약문**:
 > "초기 프로토타입을 개발 중 재리서치 과정에서 vault 리서치 원문 9편을 재검토한 결과, 기존 기획의 7문항 체크리스트·절약 금액 누적·예산 추적 프레임이 Gawande 체크리스트 원칙·Gneezy 크라우딩 아웃 연구·Lieberman Affect Labeling 연구 등과 충돌한다는 점을 발견했습니다. Nielsen's 10 Heuristics + 과학 근거 기반 10개 커스텀 원칙으로 재평가한 결과 Catastrophe 5건, Major 10건이 확인되어 전면 재구축을 결정했습니다. 기술 스택과 인프라 레이어는 유지하고 화면·컨텐츠·컴포넌트만 재설계했습니다."

@@ -69,7 +69,7 @@ prototype/
 
 **데이터 흐름 (다음: Claude API 연결 후)**
 1. 사용자 입력 -> `app/api/chat/route.ts` server action
-2. Server action -> 현재 사용자 item/history 조회
+2. Server action -> 현재 item과 현재 대화 조회
 3. Server action -> Anthropic SDK (streaming + prompt caching)
 4. 스트리밍 응답 -> 클라이언트에 실시간 전달 + 저장소에 저장
 
