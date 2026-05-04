@@ -50,14 +50,14 @@ UI 전용 상태 5개: `draft`, `chat-gathering`, `chat-perspective`, `fact-summ
               │      │ pickup 카드 탭 → /decide 진입
               │      ↓
               │ ┌──────────────────┐
-              │ │ chat-gathering   │  (AI 정보 수집 중, [결정할래] 미노출)
+              │ │ chat-gathering   │  (AI 정보 수집 중, [결정하기] 미노출)
               │ └──────┬───────────┘
               │        │ AI 응답 phase: "perspective"
               │        ↓
               │ ┌──────────────────┐
-              │ │ chat-perspective │  ([결정할래] 버튼 노출, 대화 계속 가능)
+              │ │ chat-perspective │  ([결정하기] 버튼 노출, 대화 계속 가능)
               │ └──────┬───────────┘
-              │        │ [결정할래] 탭 / hard cap 10턴
+              │        │ [결정하기] 탭 / hard cap 10턴
               │        ↓
               │ ┌──────────────┐
               │ │ fact-summary │  (팩트 요약 카드 표시)
@@ -94,7 +94,7 @@ UI 전용 상태 5개: `draft`, `chat-gathering`, `chat-perspective`, `fact-summ
 | `ready` | `chat-gathering` | pickup 카드 탭 | `/decide` 진입 |
 | `ready` | `deleted` | ready window 만료 | `ready_at + 48h <= now` |
 | `chat-gathering` | `chat-perspective` | AI 응답 `phase: "perspective"` | — |
-| `chat-perspective` | `fact-summary` | [결정할래] 탭 / hard cap 10턴 | — |
+| `chat-perspective` | `fact-summary` | [결정하기] 탭 / hard cap 10턴 | — |
 | `fact-summary` | `deciding` | 팩트 요약 표시 완료 | — |
 | `deciding` | `passed` | [안 삼] 탭 | — |
 | `deciding` | `purchased` | [삼] 탭 | — |
@@ -106,7 +106,7 @@ UI 전용 상태 5개: `draft`, `chat-gathering`, `chat-perspective`, `fact-summ
 - ready 상태는 48시간 동안만 유지. 아무 행동이 없으면 `deleted`로 자동 전이되어 `default = 삭제`를 구현.
 - 결정 후 5s Undo.
 - 결정이 확정된 `passed`/`purchased` 항목은 기록으로 보존되며 삭제 UI를 두지 않음.
-- **[결정할래] 버튼은 `chat-perspective` 이후에만 노출** — AI가 관점을 제시하기 전에는 결정 불가.
+- **[결정하기] 버튼은 `chat-perspective` 이후에만 노출** — AI가 관점을 제시하기 전에는 결정 불가.
 - **대화와 결정 버튼이 같은 화면에 공존** — 별도 화면 전환 없음.
 
 ### 1-3. Screen State Matrix
@@ -127,14 +127,14 @@ MVP는 최소 로그인 방식 1개를 제공한다. 구체 구현 방식은 개
 
 | Route | 비로그인 접근 | 로그인 후 |
 |-------|---------------|-----------|
-| `/` | 샘플 둘러보기 + 로그인 버튼 표시 | 사용자 계정 데이터 기준 홈 표시 |
+| `/` | 로그인 버튼 + About 링크 표시 | 사용자 계정 데이터 기준 홈 표시 |
 | `/new` | 로그인 화면/버튼으로 이동 | 등록 폼 표시 |
 | `/items/[id]/cooling-waiting` | 로그인 화면/버튼으로 이동 | 본인 item이면 대기 화면 표시 |
 | `/items/[id]/decide` | 로그인 화면/버튼으로 이동 | 본인 ready item이면 Decide 표시 |
 | `/records` | 로그인 화면/버튼으로 이동 | 본인 결정 기록 표시 |
 | `/about` | 접근 가능 | 접근 가능 |
 
-- 비로그인 사용자의 샘플 둘러보기 데이터는 실제 사용자 계정 데이터에 저장하지 않는다.
+- 비로그인 사용자는 실제 등록, 냉각, Decide, 기록 열람을 할 수 없다.
 - 로그인 후 모든 item/chat 조회는 현재 로그인 사용자의 데이터로 제한한다.
 - 다른 사용자의 item id 또는 존재하지 않는 id로 접근하면 홈으로 리다이렉트한다.
 
@@ -163,7 +163,7 @@ MVP는 최소 로그인 방식 1개를 제공한다. 구체 구현 방식은 개
 │  │  ⏱ 남은 시간                 │    │
 │  └──────────────────────────────┘    │
 │                                      │
-│  [방금 봉인했어. 30초 안엔 취소 가능] │  ← GraceCancelToast
+│  [방금 봉인했습니다. 30초 안에 취소 가능] │  ← GraceCancelToast
 │                                      │
 │            [+ 봉인하기]  ← FAB       │
 └──────────────────────────────────────┘
@@ -173,7 +173,7 @@ MVP는 최소 로그인 방식 1개를 제공한다. 구체 구현 방식은 개
 
 | State | 표시 |
 |-------|------|
-| `empty` | HomeEmptyState — 일러스트 + "사고 싶은 게 있어?" |
+| `empty` | HomeEmptyState — 일러스트 + "사고 싶은 물건이 있나요?" |
 | `has-cooling-only` | cooling 섹션만 |
 | `has-ready-only` | ready 섹션만 (warm) |
 | `has-both` | ready 섹션 상단, cooling 섹션 하단 |
@@ -198,7 +198,7 @@ MVP는 최소 로그인 방식 1개를 제공한다. 구체 구현 방식은 개
 │  ← 뒤로                      │
 ├──────────────────────────────┤
 │                              │
-│  뭘 사고 싶어?               │  ← h1
+│  사고 싶은 물건 등록          │  ← h1
 │                              │
 │  ┌────────────────────────┐  │
 │  │  아이템 이름            │  │  ← Input
@@ -212,7 +212,7 @@ MVP는 최소 로그인 방식 1개를 제공한다. 구체 구현 방식은 개
 │  ┌────────────────────────┐  │
 │  │  왜 사고 싶어?         │  │  ← Textarea (1~3줄)
 │  │  14일 뒤 돌아왔을 때   │  │
-│  │  네가 읽게 될 말이야    │  │
+│  │  나중에 다시 볼 이유예요 │  │
 │  └────────────────────────┘  │
 │                              │
 │  CoolingPreview              │  ← 가격→냉각기 라벨
@@ -256,7 +256,7 @@ MVP는 최소 로그인 방식 1개를 제공한다. 구체 구현 방식은 개
 │       │  23:59:42   │        │
 │       └─────────────┘        │
 │                              │
-│   "지금은 기다리는 시간이야"  │  ← body, muted
+│   "지금은 기다리는 시간입니다" │  ← body, muted
 │                              │
 └──────────────────────────────┘
 ```
@@ -272,7 +272,7 @@ max-width 440px. 상품명/가격/URL 비노출. 타이머 만료 시 자동 rea
 > 의사결정 근거: [`../archive/adr-decide-flow.md`](../archive/adr-decide-flow.md)
 > AI-프론트엔드 인터페이스: [`../engineering/ai-frontend-contract.md`](../engineering/ai-frontend-contract.md)
 
-**단계 ①~② — AI 대화 + [결정할래] 버튼**
+**단계 ①~② — AI 대화 + [결정하기] 버튼**
 
 ```
 ┌──────────────────────────────────┐
@@ -292,27 +292,27 @@ max-width 440px. 상품명/가격/URL 비노출. 타이머 만료 시 자동 rea
 │                                  │
 │  ┌─ AI ──────────────────┐       │
 │  │ 35만원어치 귀찮음인    │       │  ← phase: perspective
-│  │ 거야.                  │       │    → [결정할래] 버튼 노출
+│  │ 거야.                  │       │    → [결정하기] 버튼 노출
 │  └───────────────────────┘       │
 │                                  │
 ├──────────────────────────────────┤
-│  [결정할래]          (sticky)    │  ← perspective 이후 노출
+│  [결정하기]          (sticky)    │  ← perspective 이후 노출
 ├──────────────────────────────────┤
 │  [ChatInput ___________] [전송]  │  ← 대화 계속 가능
 └──────────────────────────────────┘
 ```
 
 - 첫 AI 메시지는 항상 `"네 말 들어볼게. 왜 이거 지금 사고 싶어?"`로 고정.
-- `phase: gathering` 동안: [결정할래] 버튼 **미노출**. 채팅만.
+- `phase: gathering` 동안: [결정하기] 버튼 **미노출**. 채팅만.
 - 둘째 턴부터는 등록 사유, 과거 기록, 사용자 답변을 바탕으로 구체화 질문 진행.
-- `phase: perspective` 이후: [결정할래] 버튼 **노출**. 채팅 입력창도 유지 (대화 계속 가능).
+- `phase: perspective` 이후: [결정하기] 버튼 **노출**. 채팅 입력창도 유지 (대화 계속 가능).
 - `phase: closing` 시: AI가 "결정할 준비 됐어?"라고 대화로 마무리 제안. 사용자가 "아직"이면 대화 계속.
-- Hard cap 10턴: AI가 맥락 인지 마무리 + 입력창 비활성화. [결정할래] 버튼만 남음.
-- [결정할래] 버튼은 한 번 나타나면 사라지지 않음.
+- Hard cap 10턴: AI가 맥락 인지 마무리 + 입력창 비활성화. [결정하기] 버튼만 남음.
+- [결정하기] 버튼은 한 번 나타나면 사라지지 않음.
 
 **단계 ③ — 팩트 요약 카드**
 
-[결정할래] 탭 시 채팅 입력창 사라지고, 팩트 요약 카드가 대화 아래에 표시.
+[결정하기] 탭 시 채팅 입력창 사라지고, 팩트 요약 카드가 대화 아래에 표시.
 
 ```
 ┌──────────────────────────────────┐
@@ -339,13 +339,13 @@ max-width 440px. 상품명/가격/URL 비노출. 타이머 만료 시 자동 rea
 ```
 
 - 팩트 요약은 AI의 `summary` 필드에서 가져옴. 판단 없이 사실만.
-- summary가 없으면 (closing 없이 바로 [결정할래] 누른 경우) 팩트 요약 카드 없이 바로 [안 삼]/[삼] 표시.
+- summary가 없으면 (closing 없이 바로 [결정하기] 누른 경우) 팩트 요약 카드 없이 바로 [안 삼]/[삼] 표시.
 
 **단계 ④ — 결정 + Undo**
 
 [안 삼]/[삼] 탭 → 결정 상태와 결정 시각 저장 → UndoToast (sonner, 5s) → 홈 이동.
 
-**Components:** ChatScreen, ChatMessageList, MessageBubble, ChatInput, TypingIndicator, MiniItemHeader, DecideButton ("결정할래", sticky), FactSummaryCard, DecideButtonPair, UndoToast
+**Components:** ChatScreen, ChatMessageList, MessageBubble, ChatInput, TypingIndicator, MiniItemHeader, DecideButton ("결정하기", sticky), FactSummaryCard, DecideButtonPair, UndoToast
 
 ### 2-5. 기록 (`/records`)
 
@@ -428,7 +428,8 @@ max-width 440px. 상품명/가격/URL 비노출. 타이머 만료 시 자동 rea
 
 ### 3-2. Copy Tone
 
-- AI 채팅 메시지만 친구체/반말을 사용한다.
+- AI 채팅 메시지만 짧고 직설적인 반말을 사용한다.
+- AI 반말은 친근한 수다체가 아니라, 외부 관찰자가 사실과 질문을 짧게 던지는 말투다.
 - 시스템 UI, 입력 검증, 오류, 로그인, 저장 안내는 짧고 중립적인 존댓말을 사용한다.
 - 버튼 문구는 명령형보다 행동을 설명하는 중립형을 우선한다.
 - 사용자가 막힌 상황에서는 농담, 비꼼, 과한 친근함을 쓰지 않는다.
@@ -437,11 +438,11 @@ max-width 440px. 상품명/가격/URL 비노출. 타이머 만료 시 자동 rea
 
 | 상황 | 처리 |
 |------|------|
-| 네트워크 에러 | toast + retry 버튼 |
-| AI 응답 실패 (1~2회) | toast "AI가 응답하지 못했어." + [다시 시도] 버튼 |
-| AI 응답 3회 연속 실패 | "AI 없이 결정할 수도 있어" + [결정할래] 버튼 강제 노출. 팩트 요약은 "요약 불가" |
-| phase 파싱 실패 | Fallback: 3턴 이후 [결정할래] 자동 노출 |
-| 404 | 홈으로 리다이렉트 |
+| 네트워크 에러 | 토스트 "연결이 불안정합니다." + [다시 시도] 버튼 |
+| AI 응답 실패 (1~2회) | 토스트 "AI 응답을 받지 못했습니다." + [다시 시도] 버튼 |
+| AI 응답 3회 연속 실패 | "AI 없이 결정할 수 있습니다." + [결정하기] 버튼 강제 노출. 팩트 요약은 "요약을 만들 수 없습니다." |
+| phase 파싱 실패 | fallback: 3턴 이후 [결정하기] 자동 노출 |
+| 404 | 홈으로 이동 |
 
 ### 3-4. 반응형 전략
 
@@ -488,7 +489,7 @@ max-width 440px. 상품명/가격/URL 비노출. 타이머 만료 시 자동 rea
 | `ChatInput` | textarea auto-grow + send |
 | `TypingIndicator` | 3-dot 펄스 |
 | `MiniItemHeader` | sticky, 이름+가격 |
-| `DecideButton` | "결정할래", sticky (perspective 이후 노출) |
+| `DecideButton` | "결정하기", sticky (perspective 이후 노출) |
 | `FactSummaryCard` | 팩트 요약 bullet (summary 필드 표시) |
 | `DecideButtonPair` | 대칭 [안 삼]/[삼] |
 | `UndoToast` | sonner, 5s |
@@ -534,9 +535,9 @@ v1.3 (2026-04-16, Decide 플로우 재설계)에서 폐기:
 | 폐기 대상 | 대체 |
 |-----------|------|
 | Phase A → Phase B 별도 화면 전환 | 단일 화면 (대화 + 결정 공존) |
-| `ChatEscapeButton` ("결정하러 갈게" ghost) | `DecideButton` ("결정할래", phase 기반 노출) |
+| `ChatEscapeButton` | `DecideButton` ("결정하기", phase 기반 노출) |
 | `ChatDoneButton` (chat-done 시 input 대체) | 제거 (입력창 유지, 버튼 공존) |
-| `DecideHeader` ("다시 만났네") | `FactSummaryCard` (팩트 요약) |
+| `DecideHeader` | `FactSummaryCard` (팩트 요약) |
 | `ChatTranscript` (Phase B 전체 대화) | 제거 (같은 화면이라 scroll로 충분) |
 | `chat-done` UI 상태 | `chat-perspective` (phase 기반) |
 
