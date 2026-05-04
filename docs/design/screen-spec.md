@@ -22,7 +22,7 @@
 | `ready → deleted` 자동 전이를 추가하고 ready window를 48시간으로 명시 | `default = 삭제`를 상태 머신에 실제로 반영하고, 구매를 능동적 opt-in으로 만들기 위해 |
 | 결정 기록 삭제 경로를 제거 | 과거 기록이 AI 반박의 핵심 자산이라, 결정 이후 이력을 남겨야 제품 논리가 유지되기 때문에 |
 | 기록 화면에 중립 카운트 + 월별 그룹핑을 추가 | PRD의 "결정의 궤적" 정의를 화면 스펙에 반영하기 위해 |
-| About 페이지에 데이터 유실 경고와 쇼핑중독 면책을 추가 | PRD가 요구하는 주의 문구를 누락 없이 명시하기 위해 |
+| About 페이지에 데이터 저장 정책과 쇼핑중독 면책을 추가 | PRD가 요구하는 주의 문구를 누락 없이 명시하기 위해 |
 | AI 시작 메시지를 고정 opener로 수정 | PRD의 "항상 같은 질문으로 시작" 규칙과 Decide 예시를 맞추기 위해 |
 | 등록 직후 30초 취소 UI를 홈 토스트로 명시 | 상태 전이만 있고 UI가 없던 grace cancel을 실제 인터랙션으로 구체화하기 위해 |
 
@@ -30,12 +30,12 @@
 
 ### 1-1. Item Lifecycle
 
-DB 상태 5개: `cooling`, `ready`, `purchased`, `passed`, `deleted`
+저장 상태 5개: `cooling`, `ready`, `purchased`, `passed`, `deleted`
 UI 전용 상태 5개: `draft`, `chat-gathering`, `chat-perspective`, `fact-summary`, `deciding` (저장 안 됨, 화면 전환용)
 
 ```
            ┌─────────┐
-           │  draft  │  (단일 폼 입력 중, localStorage 미저장)
+           │  draft  │  (단일 폼 입력 중, 아직 저장 안 됨)
            └────┬────┘
                 │ [봉인하기] + 이름/가격 valid
                 ↓
@@ -120,6 +120,23 @@ UI 전용 상태 5개: `draft`, `chat-gathering`, `chat-perspective`, `fact-summ
 | `/items/[id]/decide` 결정 | `perspective-shown` / `fact-summary` / `deciding` / `confirmed-with-undo` / `confirmed-final` |
 | `/records` | `empty` / `has-month-groups` / `dialog-open` |
 | `/about` | `static` |
+
+### 1-4. Login Guard
+
+MVP는 최소 로그인 방식 1개를 제공한다. 구체 구현 방식은 개발 문서에서 확정한다.
+
+| Route | 비로그인 접근 | 로그인 후 |
+|-------|---------------|-----------|
+| `/` | 샘플 둘러보기 + 로그인 CTA 표시 | 사용자 계정 데이터 기준 홈 표시 |
+| `/new` | 로그인 화면/CTA로 이동 | 등록 폼 표시 |
+| `/items/[id]/cooling-waiting` | 로그인 화면/CTA로 이동 | 본인 item이면 대기 화면 표시 |
+| `/items/[id]/decide` | 로그인 화면/CTA로 이동 | 본인 ready item이면 Decide 표시 |
+| `/records` | 로그인 화면/CTA로 이동 | 본인 결정 기록 표시 |
+| `/about` | 접근 가능 | 접근 가능 |
+
+- 비로그인 사용자의 샘플 둘러보기 데이터는 실제 사용자 계정 데이터에 저장하지 않는다.
+- 로그인 후 모든 item/chat 조회는 현재 로그인 사용자의 데이터로 제한한다.
+- 다른 사용자의 item id 또는 존재하지 않는 id로 접근하면 홈으로 리다이렉트한다.
 
 ---
 
@@ -312,7 +329,7 @@ max-width 440px. 상품명/가격/URL 비노출. 타이머 만료 시 자동 rea
 
 **단계 ④ — 결정 + Undo**
 
-[안 삼]/[삼] 탭 → localStorage 업데이트 → UndoToast (sonner, 5s) → 홈 이동.
+[안 삼]/[삼] 탭 → 결정 상태와 결정 시각 저장 → UndoToast (sonner, 5s) → 홈 이동.
 
 **Components:** ChatScreen, ChatMessageList, MessageBubble, ChatInput, TypingIndicator, MiniItemHeader, DecideButton ("결정할래", sticky), FactSummaryCard, DecideButtonPair, UndoToast
 
@@ -360,6 +377,7 @@ max-width 440px. 상품명/가격/URL 비노출. 타이머 만료 시 자동 rea
 - 기록은 월별 그룹핑.
 - 상단 카운트는 포기/구매를 합산한 **중립 카운트**만 표시.
 - 기록 삭제 액션 없음. 이 화면의 목적은 "결정의 궤적" 재열람.
+- 기록은 현재 로그인 사용자 데이터만 표시.
 
 **Components:** ChatReviewDialog, StatusPill, DecisionCountHeader, RecordMonthSection
 
@@ -370,8 +388,9 @@ max-width 440px. 상품명/가격/URL 비노출. 타이머 만료 시 자동 rea
 - **왜?** — 충동구매 비용 설명
 - **어떻게?** — "냉각기 후 AI와 대화하며 다시 판단해"
 - **원칙** — 설계 원칙 요약
-- **주의 1** — localStorage 기반 MVP라 브라우저 데이터 삭제 시 기록이 유실될 수 있음
-- **주의 2** — 쇼핑중독 치료 도구가 아니며, 임상적 문제에는 적합하지 않음
+- **주의 1** — 사용자 기록은 로그인 계정 기준으로 저장되고 관리됨
+- **주의 2** — MVP에서는 최소 로그인 방식 1개만 지원하며, 계정 설정/탈퇴/데이터 삭제 플로우는 아직 제공하지 않음
+- **주의 3** — 쇼핑중독 치료 도구가 아니며, 임상적 문제에는 적합하지 않음
 
 ### 2-7. 구버전 호환 (`/items/[id]/checklist/[step]`)
 

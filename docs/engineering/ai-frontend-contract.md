@@ -85,7 +85,7 @@ closing → perspective: 사용자가 "아직"이라고 하면 대화 계속
   ↓
 [안 삼] / [삼] 대칭 버튼 표시
   ↓
-탭 → localStorage status 업데이트 (passed/purchased) + decided_at 기록
+탭 → 결정 상태 업데이트 (passed/purchased) + 결정 시각 기록
   ↓
 5초 undo 토스트 (sonner)
   ↓
