@@ -35,7 +35,7 @@ npm run dev
 
 ### 교수 / 리뷰어
 
-[pm/prd.md](./pm/prd.md) 하나만 읽으면 됨.
+[pm/prd.md](./pm/prd.md) 하나만 읽으면 됩니다.
 
 ---
 
