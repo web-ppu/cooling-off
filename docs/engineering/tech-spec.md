@@ -149,9 +149,8 @@ localStorage는 영구 데이터 저장에 사용하지 않는다. 허용 범위
 | 1 | Auth/DB 구현 방식 확정 | 최소 로그인 방식 1개, 영구 저장소, 사용자별 데이터 분리 |
 | 2 | Claude API 실제 연결 | `app/api/chat/route.ts` server action + Anthropic SDK (streaming, prompt caching) |
 | 3 | 프롬프트 품질 반복 개선 | `ai-prompt-v1.md` 기반, 응답 품질 평가 + 반복 |
-| 4 | 30초 grace period | 등록 직후 실수 취소 유예 |
-| 5 | 접근성 | WCAG 기본 준수 |
-| 6 | 발표 자료 | 데모 시나리오 + 슬라이드 |
+| 4 | 접근성 | WCAG 기본 준수 |
+| 5 | 발표 자료 | 데모 시나리오 + 슬라이드 |
 
 ---
 
