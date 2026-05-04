@@ -8,7 +8,9 @@ supersedes: frame-problem.md v1.0 (Release 0.3 구현 전) + 기획-배경.md Ph
 
 # Frame Problem — 쿨링오프 앱 (v1.1)
 
-> 모든 설계 결정의 **최상위 기준** 문서. 상충 시 이 문서가 우선.
+> 아카이브 문서입니다. 제품 배경과 의사결정 근거로만 참고합니다. 현재 제품 스펙은 `docs/pm/prd.md`와 `docs/design/screen-spec.md`를 우선합니다.
+
+> 제품 배경과 설계 원칙을 정리한 참고 문서입니다.
 >
 > **관련 문서:**
 > - 요구사항: [`./prd.md`](./prd.md)

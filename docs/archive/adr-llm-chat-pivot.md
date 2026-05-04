@@ -20,6 +20,8 @@ supersedes:
 
 # ADR — LLM Chat Pivot + Register 단순화
 
+> 아카이브 문서입니다. 현재 제품 스펙은 `docs/pm/prd.md`와 `docs/design/screen-spec.md`를 우선합니다.
+
 ## 1. 맥락
 
 Release 0.10에서 AI Fact-Check Layer를 scaffold했다: Decision Checklist Step 2 아래 inline `AIProbeBubble`, rule-based mock probes. UX 검증 중 세 가지 근본 문제가 드러났다.

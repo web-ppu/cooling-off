@@ -13,6 +13,8 @@ supersedes:
 
 # ADR — Decide 플로우 재설계 (AI 대화 종료 + 결정 버튼 노출)
 
+> 아카이브 문서입니다. 현재 제품 스펙은 `docs/pm/prd.md`와 `docs/design/screen-spec.md`를 우선합니다.
+
 ## 1. 맥락
 
 기존 스펙(`ai-prompt-v1.md` v0.2)에 AI 대화 종료 경로가 3개 있었다:

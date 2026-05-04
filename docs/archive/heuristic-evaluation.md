@@ -6,11 +6,12 @@ related:
   - frame-problem.md
   - jobs-to-be-done.md
   - mvp-scope.md
-  - prototype-verdict.md
   - implementation-status.md
 ---
 
 # Heuristic Evaluation — 현 프로토타입 5개 화면
+
+> 아카이브 문서입니다. 현재 제품 스펙은 `docs/pm/prd.md`와 `docs/design/screen-spec.md`를 우선합니다.
 
 > ## 📚 Historical Document
 >
@@ -42,7 +43,7 @@ related:
 4. 체크리스트 모든 문항이 Textarea 자유 입력 — Mechanical/Cognitive 마찰 구분 실패
 5. 이모지 감정 선택 (Affect Labeling) 완전 부재 — O4b 누락
 
-**결정**: 전면 재구축. 상세는 `prototype-verdict.md` 참조.
+**결정**: 전면 재구축.
 
 ---
 
@@ -187,7 +188,7 @@ related:
 
 **Catastrophe 5건 + Major 10건**이라는 지표만 봐도 프로토타입의 **incremental fix**는 합리적이지 않다. 재작성한 3개 설계 문서(frame-problem / JTBD / mvp-scope)를 기준으로 **전면 재구축**이 오히려 빠르고 일관성 있는 경로다.
 
-**재사용·폐기 결정**은 `docs/prototype-verdict.md` 참조.
+재사용·폐기 결정 문서는 오래된 구현 계획과 함께 정리됐다.
 
 **다음 단계**:
 1. `interaction-design:design-interaction` — 6개 Moment별 인터랙션 플로우 설계
