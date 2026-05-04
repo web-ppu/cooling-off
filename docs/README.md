@@ -4,17 +4,6 @@
 
 ---
 
-## 로컬 실행
-
-```bash
-cd prototype
-npm install
-npm run dev
-# http://localhost:3000
-```
-
----
-
 ## 역할별 읽기 순서
 
 ### 디자이너
@@ -63,9 +52,3 @@ docs/
 현재도 유효한 결정 근거만 보관한다. 현재 제품 스펙은 `pm/prd.md`와 `design/screen-spec.md`를 우선한다.
 
 - `adr-no-product-image.md` — 상품 이미지를 넣지 않는 이유 (2026-04-16)
-
----
-
-## 배포
-
-https://prototype-sandy-ten.vercel.app
