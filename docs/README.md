@@ -1,6 +1,6 @@
 # 쿨링오프
 
-> 사기 전에 한 번 식히기. 충동구매와 결제 사이에 시간과 대화를 넣어서, 식은 머리로 다시 판단하게 해주는 앱.
+> 사기 전에 한 번 식히기. 충동구매와 결제 사이에 시간과 대화를 넣어서, 식은 머리로 다시 판단하게 해주는 반응형 웹 서비스.
 
 ---
 
@@ -20,19 +20,18 @@ npm run dev
 ### 디자이너
 
 1. [pm/prd.md](./pm/prd.md) — 원칙, 사용 흐름, AI 대화 컨셉
-2. [design/design-system.md](./design/design-system.md) — 색상, 타이포, 간격 (토큰 참조용)
-3. [design/screen-spec.md](./design/screen-spec.md) — 7개 화면 레이아웃 + 인터랙션
+2. [design/screen-spec.md](./design/screen-spec.md) — 7개 화면 레이아웃 + 인터랙션
 
 ### 개발자
 
 1. [engineering/tech-spec.md](./engineering/tech-spec.md) — 개발 참고 메모, 구현자가 확정할 항목
-2. [engineering/ai-prompt-v1.md](./engineering/ai-prompt-v1.md) — AI 프롬프트, 톤, 응답 단계 규칙
+2. [engineering/ai-prompt-v1.md](./engineering/ai-prompt-v1.md) — AI 프롬프트와 톤
 3. [pm/prd.md](./pm/prd.md) — 기능 요구사항 FR-1~FR-10
 
 ### PM / 기획자
 
 1. [pm/prd.md](./pm/prd.md) — 요구사항, 원칙, 메트릭, 릴리스 계획
-2. [pm/기획-배경.md](./pm/기획-배경.md) — 리서치 원문 (통계, 뇌과학, 경쟁 분석)
+2. [pm/기획-배경.md](./pm/기획-배경.md) — 문제 배경과 제품 결정 근거
 
 ### 교수 / 리뷰어
 
@@ -46,27 +45,23 @@ npm run dev
 docs/
 ├── pm/                         ← "뭘 왜 만드나"
 │   ├── prd.md                  ← 요구사항, 원칙, 메트릭, 릴리스 계획
-│   └── 기획-배경.md              ← 리서치 원문 아카이브
+│   └── 기획-배경.md              ← 문제 배경과 제품 결정 근거
 ├── design/                     ← "어떻게 보이고 동작하나"
-│   ├── design-system.md         ← 색상, 타이포, 간격 토큰
 │   └── screen-spec.md           ← 7개 화면 레이아웃 + 인터랙션
 ├── engineering/                ← "어떻게 만드나"
 │   ├── tech-spec.md            ← 개발 참고 메모, 구현자가 확정할 항목
-│   ├── ai-prompt-v1.md         ← AI 프롬프트, 톤, 응답 단계 규칙
+│   ├── ai-prompt-v1.md         ← AI 프롬프트와 톤
 │   └── ai-simulation-log.md    ← AI 대화 시뮬레이션 기록 + 프롬프트 규칙
-└── archive/                    ← 의사결정 맥락 보관 (평소 안 읽어도 됨)
+└── archive/                    ← 현재도 유효한 결정 근거 보관
 ```
 
 ---
 
 ## archive/
 
-의사결정 맥락 보관 문서. 평소에 안 읽어도 됨. "왜 이렇게 결정했지?" 궁금할 때 참조.
+현재도 유효한 결정 근거만 보관한다. 현재 제품 스펙은 `pm/prd.md`와 `design/screen-spec.md`를 우선한다.
 
-- `frame-problem.md` — 설계 원칙과 과학 근거 참고
-- `adr-llm-chat-pivot.md` — 체크리스트를 버리고 AI 대화로 간 배경
 - `adr-no-product-image.md` — 상품 이미지를 넣지 않는 이유 (2026-04-16)
-- `adr-decide-flow.md` — AI 대화 종료 시점 + 결정 버튼 노출 구조 재설계 (2026-04-16)
 
 ---
 
