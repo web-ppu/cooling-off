@@ -562,8 +562,6 @@ interface ItemsContextValue {
   /** 개발용: 냉각기를 즉시 완료시킴 */
   markReady: (id: string) => void;
   decideItem: (id: string, decision: "purchased" | "passed") => void;
-  /** Undo 복구 */
-  revertDecision: (id: string) => void;
   upsertAnswer: (
     itemId: string,
     questionNo: QuestionNo,
@@ -659,16 +657,6 @@ export function ItemsProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
-  const revertDecision = useCallback((id: string) => {
-    setItems((prev) =>
-      prev.map((it) =>
-        it.id === id
-          ? { ...it, status: "ready", decided_at: undefined }
-          : it
-      )
-    );
-  }, []);
-
   const upsertAnswer = useCallback<ItemsContextValue["upsertAnswer"]>(
     (itemId, questionNo, answer) => {
       setAnswers((prev) => {
@@ -717,7 +705,6 @@ export function ItemsProvider({ children }: { children: React.ReactNode }) {
       deleteItem,
       markReady,
       decideItem,
-      revertDecision,
       upsertAnswer,
       getAnswersForItem,
       getItem,
@@ -729,7 +716,6 @@ export function ItemsProvider({ children }: { children: React.ReactNode }) {
       deleteItem,
       markReady,
       decideItem,
-      revertDecision,
       upsertAnswer,
       getAnswersForItem,
       getItem,
@@ -799,7 +785,7 @@ cd /Users/musinsa/cooling-off
 git add prototype/contexts/ prototype/app/layout.tsx
 git commit -m "feat(prototype): ItemsContext + Provider
 
-- CRUD (addItem/deleteItem/markReady/decideItem/revertDecision)
+- CRUD (addItem/deleteItem/markReady/decideItem)
 - 답변 upsert
 - 마운트 시 localStorage hydrate, 변경 시 동기화
 - 30초마다 cooling→ready 자동 전이
@@ -1446,23 +1432,12 @@ import { useItems } from "@/contexts/items-context";
  * 둘 다 동일한 secondary gray 스타일. 어느 쪽도 Primary Blue가 아님.
  */
 export function DecideButtons({ itemId }: { itemId: string }) {
-  const { decideItem, revertDecision } = useItems();
+  const { decideItem } = useItems();
   const router = useRouter();
 
   const handleDecide = (decision: "passed" | "purchased") => {
     decideItem(itemId, decision);
-
-    // 중립 토스트 + 3초 Undo
-    toast("기록됐어요", {
-      duration: 3000,
-      action: {
-        label: "실행 취소",
-        onClick: () => revertDecision(itemId),
-      },
-    });
-
-    // 3초 후 메인으로 (Undo 유효 시간 종료 후)
-    setTimeout(() => router.push("/"), 3000);
+    router.push("/");
   };
 
   return (
@@ -1599,9 +1574,8 @@ npx shadcn@latest add accordion
 - [ ] 상단에 상품명·가격·기다린 시간 렌더링
 - [ ] "기록된 답변 N개" accordion 클릭 → 체크리스트 답변 나열
 - [ ] [포기] / [구매] 버튼이 **동일 크기·색**으로 좌우 대칭 렌더링 (Notion Blue 아님)
-- [ ] [포기] 클릭 → "기록됐어요" 토스트 + [실행 취소] 버튼 3초 표시
-- [ ] 실행 취소 누르지 않으면 3초 후 `/`로 이동, 메인에서 해당 아이템 안 보임 (status='passed')
-- [ ] 다시 test: [구매] 클릭 후 토스트에서 [실행 취소] 클릭 → 아이템이 "결정 대기"로 복귀 (status='ready')
+- [ ] [포기] 클릭 → `/`로 이동, 메인에서 해당 아이템 안 보임 (status='passed')
+- [ ] 다시 test: [구매] 클릭 → `/`로 이동, 메인에서 해당 아이템 안 보임 (status='purchased')
 
 - [ ] **Step 5: 커밋**
 
@@ -1613,8 +1587,7 @@ git commit -m "feat(prototype): 결정 화면 + 좌우 대칭 [포기]/[구매]
 - /items/[id]/decide
 - DecideButtons: 완벽 좌우 대칭 secondary gray (톤 원칙 시각 구현)
 - 기록된 답변 accordion으로 다시 보기
-- 결정 후 'Sonner' 중립 토스트 + 3초 Undo (revertDecision)
-- 3초 후 메인 자동 리다이렉트
+- 결정 후 메인 이동
 - shadcn accordion 추가
 
 Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>"
@@ -1999,7 +1972,7 @@ npm run dev
 - [ ] 메인 → 등록 → 가격 입력 시 냉각기 실시간 표시 → 저장 → 메인에 냉각 중 카드
 - [ ] 카드의 [개발] 냉각 완료 → 결정 대기로 이동
 - [ ] "결정하기 →" → 체크리스트 1/7 → 7/7 → 결정 화면
-- [ ] [포기] → "기록됐어요" 토스트 + 3초 후 메인
+- [ ] [포기] → 메인 이동
 - [ ] 메인 header [기록] → 이번 달 절약 금액에 합산됨
 - [ ] 아이템 클릭 → 답변 모달 표시
 
@@ -2038,7 +2011,7 @@ Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>"
 | §2 US-1 상품 등록 | Task 6 |
 | §2 US-2 위시리스트 조회 + 빈 상태 | Task 5 |
 | §2 US-4 체크리스트 7문항 | Task 7 |
-| §2 US-5 결정 + 3초 Undo | Task 8 |
+| §2 US-5 결정 | Task 8 |
 | §2 US-7 기록 + 답변 다시 보기 | Task 9 |
 | §2 US-8 반응형 | Task 10 |
 | §2 US-10 냉각 중 삭제 | Task 5 (ItemCard 내 Dialog) |
@@ -2051,7 +2024,7 @@ Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>"
 | §5-1 메인 두 섹션 구조 | Task 5 |
 | §5-2 가격 실시간 냉각기 표시 | Task 6 Step 1 |
 | §5-3 step별 독립 라우트 | Task 7 |
-| §5-4 3초 Undo + 리다이렉트 | Task 8 (setTimeout + toast.action) |
+| §5-4 결정 후 이동 | Task 8 |
 | §5-5 히어로 + 보조 카드 + 답변 모달 | Task 9 |
 | §6 데이터 모델 | Task 2 (types), Task 3 (storage), Task 4 (context) |
 | §7 프로젝트 구조 | 전체 |
@@ -2064,7 +2037,7 @@ Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>"
 
 **3. Type consistency**:
 - `Item`, `ChecklistAnswer`, `ItemStatus`, `QuestionNo` — Task 2에서 정의, 이후 일관되게 사용 ✅
-- `addItem`, `deleteItem`, `markReady`, `decideItem`, `revertDecision`, `upsertAnswer`, `getItem`, `getAnswersForItem` — Task 4에서 정의, Task 5~9에서 동일한 시그니처로 호출 ✅
+- `addItem`, `deleteItem`, `markReady`, `decideItem`, `upsertAnswer`, `getItem`, `getAnswersForItem` — Task 4에서 정의, Task 5~9에서 동일한 시그니처로 호출 ✅
 - `calculateCooling`, `coolingUntilFromNow`, `formatKRW`, `formatRemaining`, `formatWaitedDuration` — Task 2에서 정의, 이후 동일한 호출 ✅
 - shadcn 컴포넌트 import 경로 `@/components/ui/*` — Task 1 shadcn init이 tsconfig alias 설정함 ✅
 

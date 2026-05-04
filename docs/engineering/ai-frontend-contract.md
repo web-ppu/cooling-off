@@ -87,8 +87,6 @@ closing → perspective: 사용자가 "아직"이라고 하면 대화 계속
   ↓
 탭 → 결정 상태 업데이트 (passed/purchased) + 결정 시각 기록
   ↓
-5초 undo 토스트 (sonner)
-  ↓
 홈으로 이동
 ```
 

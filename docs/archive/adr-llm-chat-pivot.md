@@ -60,7 +60,7 @@ Inline probe sprinkle(보조) → **Full chat screen**(핵심)으로 격상.
   ├─ Phase A: chat         (1~3분, 4~6턴, hard cap 10)
   └─ Phase B: decide       ([안 삼] / [삼] 대칭)
   ↓
-[홈] + undo toast 5s
+[홈]
 ```
 
 ### 2-4. 등록 화면 단순화 — wizard 폐기, 단일 폼
