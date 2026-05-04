@@ -26,7 +26,7 @@ npm run dev
 
 1. [engineering/tech-spec.md](./engineering/tech-spec.md) — 개발 참고 메모, 구현자가 확정할 항목
 2. [engineering/ai-prompt-v1.md](./engineering/ai-prompt-v1.md) — AI 프롬프트와 톤
-3. [pm/prd.md](./pm/prd.md) — 기능 요구사항 FR-1~FR-10
+3. [pm/prd.md](./pm/prd.md) — 기능 요구사항 FR-1~FR-9
 
 ### PM / 기획자
 
