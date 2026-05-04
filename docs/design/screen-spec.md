@@ -37,7 +37,7 @@ UI 전용 상태 5개: `draft`, `chat-gathering`, `chat-perspective`, `fact-summ
            ┌─────────┐
            │  draft  │  (단일 폼 입력 중, 아직 저장 안 됨)
            └────┬────┘
-                │ [봉인하기] + 이름/가격 valid
+                │ [봉인하기] + 이름/가격 유효
                 ↓
            ┌─────────┐
            │ cooling │  (가격별 5-tier 타이머, 정보 비공개)
@@ -87,7 +87,7 @@ UI 전용 상태 5개: `draft`, `chat-gathering`, `chat-perspective`, `fact-summ
 | From | To | Trigger | Guard |
 |------|-----|---------|-------|
 | — | `draft` | `/new` 진입 | — |
-| `draft` | `cooling` | [봉인하기] 탭 | 이름+가격 valid |
+| `draft` | `cooling` | [봉인하기] 탭 | 이름+가격 유효 |
 | `draft` | (소멸) | `/new` 이탈 | 저장 안 됨 |
 | `cooling` | `ready` | 타이머 만료 | 자동, 30s 주기 |
 | `cooling` | `deleted` | 홈 토스트의 [취소] | `created_at + 30s > now` |
@@ -127,11 +127,11 @@ MVP는 최소 로그인 방식 1개를 제공한다. 구체 구현 방식은 개
 
 | Route | 비로그인 접근 | 로그인 후 |
 |-------|---------------|-----------|
-| `/` | 샘플 둘러보기 + 로그인 CTA 표시 | 사용자 계정 데이터 기준 홈 표시 |
-| `/new` | 로그인 화면/CTA로 이동 | 등록 폼 표시 |
-| `/items/[id]/cooling-waiting` | 로그인 화면/CTA로 이동 | 본인 item이면 대기 화면 표시 |
-| `/items/[id]/decide` | 로그인 화면/CTA로 이동 | 본인 ready item이면 Decide 표시 |
-| `/records` | 로그인 화면/CTA로 이동 | 본인 결정 기록 표시 |
+| `/` | 샘플 둘러보기 + 로그인 버튼 표시 | 사용자 계정 데이터 기준 홈 표시 |
+| `/new` | 로그인 화면/버튼으로 이동 | 등록 폼 표시 |
+| `/items/[id]/cooling-waiting` | 로그인 화면/버튼으로 이동 | 본인 item이면 대기 화면 표시 |
+| `/items/[id]/decide` | 로그인 화면/버튼으로 이동 | 본인 ready item이면 Decide 표시 |
+| `/records` | 로그인 화면/버튼으로 이동 | 본인 결정 기록 표시 |
 | `/about` | 접근 가능 | 접근 가능 |
 
 - 비로그인 사용자의 샘플 둘러보기 데이터는 실제 사용자 계정 데이터에 저장하지 않는다.
@@ -218,14 +218,28 @@ MVP는 최소 로그인 방식 1개를 제공한다. 구체 구현 방식은 개
 │  CoolingPreview              │  ← 가격→냉각기 라벨
 │  "₩50,000 → 냉각기 24시간"  │
 │                              │
-│  [🔒 봉인하기]               │  ← Primary CTA
+│  [🔒 봉인하기]               │  ← 주요 버튼
 │                              │
 └──────────────────────────────┘
 ```
 
-단일 폼. RHF + Zod validation.
+단일 폼. 입력 검증 적용.
 
 [봉인하기] 탭 시 SealAnimation (motion, 3-stage, 1400ms) → cooling 전이 → 홈 이동 + `GraceCancelToast` 30초 노출.
+
+#### 입력 검증
+
+| 필드 | 정책 | 에러 문구 |
+|------|------|-----------|
+| 이름 | 필수, 공백만 입력 불가, 최대 40자 | 이름을 입력해 주세요 |
+| 가격 | 필수, 1원 이상 정수 | 가격을 숫자로 입력해 주세요 |
+| URL | 선택. 입력한 경우 URL 형식 확인 | 링크 형식을 확인해 주세요 |
+| 왜 사고 싶어? | 선택, 최대 200자 | 200자 이내로 입력해 주세요 |
+
+- [봉인하기]는 이름과 가격이 유효할 때만 활성화.
+- URL 형식 오류는 저장을 막지 않고 경고만 표시한다. 등록 30초 원칙을 우선한다.
+- "왜 사고 싶어?"는 선택이지만, 비어 있으면 보조 문구로 작성 유도.
+- 입력 검증 문구는 AI 말투와 분리한다. 사용자가 막힌 상황이므로 반말을 쓰지 않는다.
 
 **Components:** RegisterForm, CoolingPreview, SealAnimation
 
@@ -412,7 +426,14 @@ max-width 440px. 상품명/가격/URL 비노출. 타이머 만료 시 자동 rea
 
 **금지:** 펄스, 반짝임, 글로우 (도파민 유발). TypingIndicator의 3-dot만 예외.
 
-### 3-2. 에러 처리
+### 3-2. Copy Tone
+
+- AI 채팅 메시지만 친구체/반말을 사용한다.
+- 시스템 UI, 입력 검증, 오류, 로그인, 저장 안내는 짧고 중립적인 존댓말을 사용한다.
+- 버튼 문구는 명령형보다 행동을 설명하는 중립형을 우선한다.
+- 사용자가 막힌 상황에서는 농담, 비꼼, 과한 친근함을 쓰지 않는다.
+
+### 3-3. 에러 처리
 
 | 상황 | 처리 |
 |------|------|
@@ -422,12 +443,12 @@ max-width 440px. 상품명/가격/URL 비노출. 타이머 만료 시 자동 rea
 | phase 파싱 실패 | Fallback: 3턴 이후 [결정할래] 자동 노출 |
 | 404 | 홈으로 리다이렉트 |
 
-### 3-3. 반응형 전략
+### 3-4. 반응형 전략
 
 | 화면 | Mobile (<640) | Tablet (640+) | Desktop (1024+) |
 |------|---------------|---------------|-----------------|
 | `/` | 1열 + FAB 하단 | max-w 720, FAB 헤더 | 2열 그리드, max-w 960 |
-| `/new` | 1열 + CTA 하단 | max-w 560 센터 | 동일 |
+| `/new` | 1열 + 주요 버튼 하단 | max-w 560 센터 | 동일 |
 | `cooling-waiting` | 1열 min | max-w 440 센터 | 동일 |
 | `/decide` | 1열 + input 하단 | max-w 600 센터 | 동일 |
 | `/records` | 1열 | max-w 720 센터 | 동일 |
@@ -443,7 +464,7 @@ max-width 440px. 상품명/가격/URL 비노출. 타이머 만료 시 자동 rea
 
 | Component | 역할 |
 |-----------|------|
-| `PickupCard` | warm shadow, 결정 대기 CTA |
+| `PickupCard` | warm shadow, 결정 대기 버튼 |
 | `CoolingCard` | cool 톤, 남은 시간만 표시하는 비공개 카드 |
 | `SectionHeader` | warm/cool dot + 개수 |
 | `HomeEmptyState` | 빈 상태 일러스트 |
@@ -514,7 +535,7 @@ v1.3 (2026-04-16, Decide 플로우 재설계)에서 폐기:
 |-----------|------|
 | Phase A → Phase B 별도 화면 전환 | 단일 화면 (대화 + 결정 공존) |
 | `ChatEscapeButton` ("결정하러 갈게" ghost) | `DecideButton` ("결정할래", phase 기반 노출) |
-| `ChatDoneCTA` (chat-done 시 input 대체) | 제거 (입력창 유지, 버튼 공존) |
+| `ChatDoneButton` (chat-done 시 input 대체) | 제거 (입력창 유지, 버튼 공존) |
 | `DecideHeader` ("다시 만났네") | `FactSummaryCard` (팩트 요약) |
 | `ChatTranscript` (Phase B 전체 대화) | 제거 (같은 화면이라 scroll로 충분) |
 | `chat-done` UI 상태 | `chat-perspective` (phase 기반) |
