@@ -86,7 +86,7 @@ Inter, 1.25 modular ratio. 한글 fallback: Pretendard 또는 시스템 기본.
 | `small` | 14px | 1.5 | 400 | 메타, 캡션 |
 | `micro` | 12px | 1.4 | 500 | 태그, 진행률 |
 
-**Tracking:** display/h1 `-1px`, h2/h3 `-0.25px`, body `0`, small/micro `0.1px`
+**Tracking:** 모든 텍스트 `0`
 
 ---
 
