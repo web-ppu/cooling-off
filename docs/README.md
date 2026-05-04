@@ -35,7 +35,8 @@ npm run dev
 
 ### 교수 / 리뷰어
 
-[pm/prd.md](./pm/prd.md) 하나만 읽으면 됩니다.
+1. [pm/prd.md](./pm/prd.md) — 제품 목표, 핵심 흐름, 기능 범위
+2. [design/screen-spec.md](./design/screen-spec.md) — 화면별 표시 기준과 사용자 행동 확인이 필요할 때 참고
 
 ---
 
@@ -51,7 +52,7 @@ docs/
 ├── engineering/                ← "어떻게 만드나"
 │   ├── tech-spec.md            ← 개발 참고 메모, 구현자가 확정할 항목
 │   ├── ai-prompt-v1.md         ← AI 프롬프트와 톤
-│   └── ai-simulation-log.md    ← AI 채팅 시뮬레이션 기록 + 프롬프트 규칙
+│   └── ai-simulation-log.md    ← AI 채팅 시뮬레이션 기록 + 프롬프트 검증 예시
 └── archive/                    ← 현재도 유효한 결정 근거 보관
 ```
 
