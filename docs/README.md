@@ -20,7 +20,7 @@ npm run dev
 ### 디자이너
 
 1. [pm/prd.md](./pm/prd.md) — 원칙, 사용 흐름, AI 채팅 기준
-2. [design/screen-spec.md](./design/screen-spec.md) — 7개 화면 레이아웃 + 인터랙션
+2. [design/screen-spec.md](./design/screen-spec.md) — 화면별 레이아웃 + 인터랙션
 
 ### 개발자
 
@@ -47,7 +47,7 @@ docs/
 │   ├── prd.md                  ← 요구사항, 원칙, 메트릭, 릴리스 계획
 │   └── 기획-배경.md              ← 문제 배경과 제품 결정 근거
 ├── design/                     ← "어떻게 보이고 동작하나"
-│   └── screen-spec.md           ← 7개 화면 레이아웃 + 인터랙션
+│   └── screen-spec.md           ← 화면별 레이아웃 + 인터랙션
 ├── engineering/                ← "어떻게 만드나"
 │   ├── tech-spec.md            ← 개발 참고 메모, 구현자가 확정할 항목
 │   ├── ai-prompt-v1.md         ← AI 프롬프트와 톤
