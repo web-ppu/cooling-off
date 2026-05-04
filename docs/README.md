@@ -1,6 +1,6 @@
 # 쿨링오프
 
-> 사기 전에 한 번 식히기. 충동구매와 결제 사이에 시간과 대화를 넣어서, 식은 머리로 다시 판단하게 해주는 반응형 웹 서비스.
+> 사기 전에 한 번 식히기. 충동구매와 결제 사이에 시간과 AI 채팅을 넣어서, 식은 머리로 다시 판단하게 해주는 반응형 웹 서비스.
 
 ---
 
@@ -19,7 +19,7 @@ npm run dev
 
 ### 디자이너
 
-1. [pm/prd.md](./pm/prd.md) — 원칙, 사용 흐름, AI 대화 컨셉
+1. [pm/prd.md](./pm/prd.md) — 원칙, 사용 흐름, AI 채팅 기준
 2. [design/screen-spec.md](./design/screen-spec.md) — 7개 화면 레이아웃 + 인터랙션
 
 ### 개발자
@@ -51,7 +51,7 @@ docs/
 ├── engineering/                ← "어떻게 만드나"
 │   ├── tech-spec.md            ← 개발 참고 메모, 구현자가 확정할 항목
 │   ├── ai-prompt-v1.md         ← AI 프롬프트와 톤
-│   └── ai-simulation-log.md    ← AI 대화 시뮬레이션 기록 + 프롬프트 규칙
+│   └── ai-simulation-log.md    ← AI 채팅 시뮬레이션 기록 + 프롬프트 규칙
 └── archive/                    ← 현재도 유효한 결정 근거 보관
 ```
 
