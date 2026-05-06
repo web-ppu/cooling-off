@@ -52,6 +52,19 @@ body { font-family: var(--font-sans); letter-spacing: var(--tracking, -0.01em); 
   --shadow-card: none;
   --shadow-pop: 4px 4px 0 var(--ink);
 }
+
+[data-accent="blue"] {
+  --accent: #78a8ff;
+  --accent-soft: #dde9ff;
+  --line-active: #78a8ff;
+}
+
+[data-accent="lead"] {
+  --accent: #f0f0f0;
+  --accent-soft: #e3e6eb;
+  --line-active: #f0f0f0;
+}
+
 body { font-feature-settings: normal; }
 
 /* ── Type ───────────────────────────────────────────────────────────── */
