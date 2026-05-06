@@ -63,10 +63,7 @@ export default function App() {
   const [records, setRecords] = useState(() => [...HISTORY_SEED]);
   const [splash, setSplash] = useState(null);
   const [accent, setAccent] = useState("yellow");
-  const showDevAccentSwitch = import.meta.env.DEV;
-  const accentSwitch = showDevAccentSwitch
-    ? <AccentSwitch value={accent} onChange={setAccent} />
-    : null;
+  const accentSwitch = <AccentSwitch value={accent} onChange={setAccent} />;
 
   useEffect(() => {
     const i = setInterval(() => setNow((n) => n + 1000), 1000);
@@ -248,7 +245,7 @@ export default function App() {
     <div className="phone-stage" data-accent={accent}>
       <div className="phone">
         <StatusBar />
-        {showDevAccentSwitch && <div className="dev-accent-mobile-bar">{accentSwitch}</div>}
+        <div className="dev-accent-mobile-bar">{accentSwitch}</div>
         {content}
       </div>
     </div>
