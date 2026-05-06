@@ -93,9 +93,27 @@ export function formatTimerBig(ms) {
   return `${pad2(d)} : ${pad2(h)} : ${pad2(m)} : ${pad2(s)}`;
 }
 
+export function timerParts(ms) {
+  if (ms <= 0) {
+    return { d: "00", h: "00", m: "00", s: "00" };
+  }
+  const totalSec = Math.floor(ms / 1000);
+  return {
+    d: pad2(Math.floor(totalSec / 86400)),
+    h: pad2(Math.floor((totalSec % 86400) / 3600)),
+    m: pad2(Math.floor((totalSec % 3600) / 60)),
+    s: pad2(totalSec % 60),
+  };
+}
+
 export function formatReadyAt(ts) {
   const d = new Date(ts);
   return `${pad2(d.getMonth() + 1)}.${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
+
+export function formatReadyAtKorean(ts) {
+  const d = new Date(ts);
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
 export function formatMonth(ts) {

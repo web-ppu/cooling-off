@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  Icon, formatKRW, formatRemainingShort, formatTimerBig,
-  formatReadyAt, formatMonth, formatDateOnly, coolingDaysLabel,
+  Icon, formatKRW, formatRemainingShort, timerParts,
+  formatReadyAt, formatReadyAtKorean, formatMonth, formatDateOnly, coolingDaysLabel,
 } from "../utils.jsx";
 
 // ─── Status Bar (iOS-style) ─────────────────────────────────────────────
@@ -29,13 +29,14 @@ export function StatusBar() {
 }
 
 // ─── Header bar ────────────────────────────────────────────────────────
-export function HeaderBar({ left, title, right, onBack }) {
+export function HeaderBar({ left, title, right, onBack, center }) {
   return (
     <header className="app-header">
       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
         {onBack && <button className="btn-icon" onClick={onBack} aria-label="뒤로"><Icon.ArrowLeft /></button>}
         {left || (title && <span className="brand">{title}</span>)}
       </div>
+      {center && <div className="app-header-center">{center}</div>}
       {right && <div className="actions">{right}</div>}
     </header>
   );
@@ -121,7 +122,10 @@ export function NonAuthHome({ onLogin, onAbout }) {
 export function LoginScreen({ onBack, onLogin }) {
   return (
     <>
-      <HeaderBar onBack={onBack} title="" />
+      <HeaderBar
+        onBack={onBack}
+        center={<span className="app-header-center-title">Login</span>}
+      />
       <div className="screen">
         <div className="screen-pad">
           <div className="m-doc-header" style={{ marginBottom: 20 }}>
@@ -162,63 +166,120 @@ export function LoginScreen({ onBack, onLogin }) {
 export function AboutScreen({ onBack }) {
   return (
     <>
-      <HeaderBar onBack={onBack} title="" right={<span className="doc-tag" style={{ marginRight: 8 }}>ABOUT</span>} />
+      <HeaderBar
+        onBack={onBack}
+        center={<span className="app-header-center-title">About</span>}
+      />
       <div className="screen">
         <div className="screen-pad">
           <div className="m-doc-header">
             <div className="m-doc-tags">
-              <span className="doc-tag">DOC</span>
-              <span className="doc-tag">ABOUT.001</span>
-              <span className="doc-tag accent">v1.0</span>
+              <span className="doc-tag">MANUAL</span>
+              <span className="doc-tag">v1.0</span>
+              <span className="doc-tag accent">2026</span>
             </div>
             <h1 className="m-doc-title">
               식은 머리로<br />
               <span className="doc-title-em">다시 보기.</span>
             </h1>
             <div className="m-doc-meta">
-              <span>SUBJECT / cooling-off</span>
-              <span>EST. 2026</span>
+              <span>FILE / cooling-off.txt</span>
+              <span>PRINT 002</span>
             </div>
           </div>
 
-          <div className="m-doc-section">
-            <div className="m-doc-section-tag">§ 01 · 쿨링오프란?</div>
-            <p>
-              사고 싶은 마음이 바로 결제로 이어지지 않도록 잠시 식히는 반응형 웹 서비스입니다.
-              충동구매와 결제 사이에 시간과 AI 채팅을 두어, 한 번 더 객관적으로 판단할 수 있게 돕습니다.
-            </p>
-          </div>
+          <section className="m-about-sec">
+            <div className="m-about-sec-num">01</div>
+            <div className="m-about-sec-body">
+              <div className="m-about-sec-label">WHAT</div>
+              <h3 className="m-about-sec-title">쿨링오프는 무엇인가요?</h3>
+              <p className="m-about-sec-text">
+                사고 싶은 마음이 바로 결제로 이어지지 않도록 <span className="hl">잠시 식히는</span> 반응형 웹 서비스입니다.
+                충동구매와 결제 사이에 시간과 AI 채팅을 두어, 한 번 더 객관적으로 판단할 수 있게 돕습니다.
+              </p>
+            </div>
+          </section>
 
-          <div className="m-doc-section">
-            <div className="m-doc-section-tag">§ 02 · 사용 방법</div>
-            <ol className="m-doc-list">
-              <li><span className="m-doc-li-num">01</span><span>사고 싶은 물건을 등록합니다.</span></li>
-              <li><span className="m-doc-li-num">02</span><span>가격에 따라 정해진 시간 동안 기다립니다.</span></li>
-              <li><span className="m-doc-li-num">03</span><span>냉각 후 AI 채팅으로 구매 이유를 점검합니다.</span></li>
-              <li><span className="m-doc-li-num">04</span><span>직접 [안 삼] 또는 [삼]을 선택합니다.</span></li>
-            </ol>
-          </div>
+          <section className="m-about-sec">
+            <div className="m-about-sec-num">02</div>
+            <div className="m-about-sec-body">
+              <div className="m-about-sec-label">FLOW</div>
+              <h3 className="m-about-sec-title">어떻게 쓰나요?</h3>
+              <div className="m-about-flow">
+                <div className="m-about-flow-step">
+                  <div className="m-about-flow-mark">A</div>
+                  <div className="m-about-flow-copy">
+                    <div className="m-about-flow-name">등록</div>
+                    <div className="m-about-flow-desc">사고 싶은 물건을 입력</div>
+                  </div>
+                </div>
+                <div className="m-about-flow-arrow">↓</div>
+                <div className="m-about-flow-step">
+                  <div className="m-about-flow-mark">B</div>
+                  <div className="m-about-flow-copy">
+                    <div className="m-about-flow-name">대기</div>
+                    <div className="m-about-flow-desc">가격별 냉각 시간</div>
+                  </div>
+                </div>
+                <div className="m-about-flow-arrow">↓</div>
+                <div className="m-about-flow-step">
+                  <div className="m-about-flow-mark">C</div>
+                  <div className="m-about-flow-copy">
+                    <div className="m-about-flow-name">대화</div>
+                    <div className="m-about-flow-desc">AI와 이유 점검</div>
+                  </div>
+                </div>
+                <div className="m-about-flow-arrow">↓</div>
+                <div className="m-about-flow-step">
+                  <div className="m-about-flow-mark accent">D</div>
+                  <div className="m-about-flow-copy">
+                    <div className="m-about-flow-name">결정</div>
+                    <div className="m-about-flow-desc">[안 삼] / [삼]</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
 
-          <div className="m-doc-section">
-            <div className="m-doc-section-tag">§ 03 · 가격별 냉각기</div>
-            <table className="m-spec-table">
-              <tbody>
-                <tr><td>5만원 이하</td><td className="tnum">1일</td></tr>
-                <tr><td>5만원 ~ 10만원</td><td className="tnum">2일</td></tr>
-                <tr><td>10만원 ~ 30만원</td><td className="tnum">7일</td></tr>
-                <tr><td>30만원 ~ 100만원</td><td className="tnum">14일</td></tr>
-                <tr><td>100만원 초과</td><td className="tnum">30일</td></tr>
-              </tbody>
-            </table>
-          </div>
+          <section className="m-about-sec">
+            <div className="m-about-sec-num">03</div>
+            <div className="m-about-sec-body">
+              <div className="m-about-sec-label">TABLE</div>
+              <h3 className="m-about-sec-title">가격별 냉각 시간</h3>
+              <table className="m-about-table">
+                <thead>
+                  <tr>
+                    <th>BAND</th>
+                    <th>PRICE</th>
+                    <th className="tnum">COOLING</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>01</td><td>5만원 이하</td><td className="tnum">1일</td></tr>
+                  <tr><td>02</td><td>5만원 — 10만원</td><td className="tnum">2일</td></tr>
+                  <tr><td>03</td><td>10만원 — 30만원</td><td className="tnum">7일</td></tr>
+                  <tr><td>04</td><td>30만원 — 100만원</td><td className="tnum">14일</td></tr>
+                  <tr className="m-about-table-row-em"><td>05</td><td>100만원 초과</td><td className="tnum">30일</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
 
-          <div className="m-doc-section">
-            <div className="m-doc-section-tag">§ 04 · 주의사항</div>
-            <ul className="m-doc-bullets">
-              <li>사용자 데이터는 로그인 계정 기준으로 저장됩니다.</li>
-              <li>결정 기록은 로그인 계정 기준으로 보관됩니다.</li>
-              <li>쿨링오프는 쇼핑중독 치료 도구가 아닙니다. 임상적 문제가 있다면 전문가의 도움을 권장합니다.</li>
-            </ul>
+          <section className="m-about-sec">
+            <div className="m-about-sec-num">04</div>
+            <div className="m-about-sec-body">
+              <div className="m-about-sec-label">NOTES</div>
+              <h3 className="m-about-sec-title">주의사항</h3>
+              <ul className="m-about-notes">
+                <li><span className="bullet">※</span> 사용자 데이터는 로그인 계정 기준으로 저장됩니다.</li>
+                <li><span className="bullet">※</span> 결정 기록은 로그인 계정 기준으로 보관됩니다.</li>
+                <li><span className="bullet caution">!</span> 쿨링오프는 쇼핑중독 치료 도구가 아닙니다. 임상적 문제가 있다면 전문가의 도움을 권장합니다.</li>
+              </ul>
+            </div>
+          </section>
+
+          <div className="m-about-footer">
+            <span>— END OF DOCUMENT —</span>
           </div>
         </div>
       </div>
@@ -242,11 +303,18 @@ function ItemCard({ item, ms, onClick, onDelete, kind }) {
           <span className="tnum m-item-price">{formatKRW(item.price)}</span>
           <span
             role="button"
-            className="m-item-trash"
+            tabIndex={0}
+            className="m-item-delete"
             onClick={(e) => { e.stopPropagation(); onDelete(); }}
-            aria-label="삭제"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                e.stopPropagation();
+                onDelete();
+              }
+            }}
           >
-            <Icon.Trash />
+            삭제
           </span>
         </div>
       </div>
@@ -279,18 +347,14 @@ export function HomeScreen({ items, now, onOpenCooling, onOpenChat, onDelete, on
         left={<span className="brand"><span className="ice">❄</span> 쿨링오프</span>}
         right={
           <>
-            <button className="btn-icon" onClick={onHistory} aria-label="기록"><Icon.History /></button>
-            <button className="btn-icon" onClick={onAbout} aria-label="About"><Icon.Help /></button>
+            <button className="btn btn-ghost btn-sm" onClick={onHistory}>기록</button>
+            <button className="btn btn-ghost btn-sm" onClick={onAbout}>About</button>
           </>
         }
       />
       <div className="screen">
         <div className="screen-pad">
           <div className="m-doc-header compact">
-            <div className="m-doc-tags">
-              <span className="doc-tag">HOME</span>
-              <span className="doc-tag accent">{ready.length} READY</span>
-            </div>
             <div className="m-stats-row">
               <div className="m-stat">
                 <div className="m-stat-label">전체</div>
@@ -369,12 +433,13 @@ export function CoolingScreen({ item, now, onBack, onDelete }) {
   const readyAt = item.addedAt + item.days * 86400 * 1000;
   const totalMs = item.days * 86400 * 1000;
   const ms = readyAt - now;
+  const parts = timerParts(ms);
   const progress = Math.max(0, Math.min(1, 1 - ms / totalMs));
   const pctText = (progress * 100).toFixed(1);
   return (
     <>
       <HeaderBar onBack={onBack} title="" right={
-        <button className="btn-icon" onClick={() => { onDelete(item.id); onBack(); }} aria-label="삭제"><Icon.Trash /></button>
+        <button className="btn btn-ghost btn-sm" onClick={() => { onDelete(item.id); onBack(); }}>삭제</button>
       } />
       <div className="screen">
         <div className="screen-pad">
@@ -389,13 +454,18 @@ export function CoolingScreen({ item, now, onBack, onDelete }) {
 
           <div className="m-cooling-timer-card">
             <div className="m-cooling-timer-label">REMAINING</div>
-            <div className="m-cooling-timer tnum">{formatTimerBig(ms)}</div>
+            <div className="m-cooling-timer tnum">
+              <span>{parts.d}<span className="m-cooling-timer-unit">일</span></span>
+              <span>{parts.h}<span className="m-cooling-timer-unit">시간</span></span>
+              <span>{parts.m}<span className="m-cooling-timer-unit">분</span></span>
+              <span>{parts.s}<span className="m-cooling-timer-unit">초</span></span>
+            </div>
             <div className="cooling-progress" style={{ marginTop: 16 }} aria-hidden="true">
               <span style={{ width: `${progress * 100}%` }}></span>
             </div>
             <div className="m-cooling-progress-meta tnum">
               <span>{pctText}% 진행</span>
-              <span>완료 {formatReadyAt(readyAt)}</span>
+              <span>완료 예정 {formatReadyAtKorean(readyAt)}</span>
             </div>
           </div>
 
@@ -428,15 +498,13 @@ export function RegisterScreen({ onBack, onSubmit }) {
 
   return (
     <>
-      <HeaderBar onBack={onBack} title="" />
+      <HeaderBar
+        onBack={onBack}
+        center={<span className="app-header-center-title">Register</span>}
+      />
       <div className="screen">
         <div className="screen-pad">
           <div className="m-doc-header">
-            <div className="m-doc-tags">
-              <span className="doc-tag">FORM</span>
-              <span className="doc-tag">REGISTER</span>
-              <span className="doc-tag accent">NEW</span>
-            </div>
             <h1 className="m-doc-title">
               사고 싶은 물건<br />
               <span className="doc-title-em">등록</span>
@@ -535,6 +603,7 @@ export function ChatScreen({ item, simIndex, onBack, onDelete, onDecide, sim }) 
   const [draft, setDraft] = useState("");
   const [showSummary, setShowSummary] = useState(false);
   const scrollRef = useRef(null);
+  const textareaRef = useRef(null);
 
   useEffect(() => {
     if (simIndex !== undefined) setVisibleCount(simIndex);
@@ -545,6 +614,12 @@ export function ChatScreen({ item, simIndex, onBack, onDelete, onDecide, sim }) 
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [visibleCount, showSummary]);
+
+  useEffect(() => {
+    if (!textareaRef.current) return;
+    textareaRef.current.style.height = "44px";
+    textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+  }, [draft]);
 
   if (!item) return null;
   const turns = sim.turns;
@@ -567,7 +642,7 @@ export function ChatScreen({ item, simIndex, onBack, onDelete, onDecide, sim }) 
   return (
     <>
       <HeaderBar onBack={onBack} title=""
-        right={<button className="btn-icon" onClick={() => { onDelete(item.id); onBack(); }} aria-label="삭제"><Icon.Trash /></button>} />
+        right={<button className="btn btn-ghost btn-sm" onClick={() => { onDelete(item.id); onBack(); }}>삭제</button>} />
 
       <div className="m-chat-meta">
         <div className="m-chat-meta-tags">
@@ -600,12 +675,16 @@ export function ChatScreen({ item, simIndex, onBack, onDelete, onDecide, sim }) 
       <div className="chat-input-bar">
         <div className="chat-input-row">
           <textarea
+            ref={textareaRef}
             className="chat-input"
             placeholder={maxedOut ? "최대 10턴에 도달했어요" : "메시지를 입력하세요"}
             value={draft}
             disabled={maxedOut}
             rows={1}
-            onChange={(e) => setDraft(e.target.value.slice(0, 500))}
+            onChange={(e) => {
+              const next = e.target.value.slice(0, 500);
+              setDraft(next);
+            }}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (draft.trim()) advance(); } }}
           />
           <button className="chat-send" disabled={!draft.trim() || maxedOut} onClick={advance} aria-label="전송">
@@ -621,14 +700,13 @@ export function ChatScreen({ item, simIndex, onBack, onDelete, onDecide, sim }) 
 export function SummaryScreen({ item, sim, onBack, onDecide }) {
   return (
     <>
-      <HeaderBar onBack={onBack} title="" />
+      <HeaderBar
+        onBack={onBack}
+        center={<span className="app-header-center-title">Decision</span>}
+      />
       <div className="screen">
         <div className="screen-pad" style={{ paddingBottom: 32 }}>
           <div className="m-doc-header">
-            <div className="m-doc-tags">
-              <span className="doc-tag">DECISION</span>
-              <span className="doc-tag accent">FINAL STEP</span>
-            </div>
             <h1 className="m-doc-title" style={{ fontSize: 32 }}>
               결정의<br />
               <span className="doc-title-em">시간.</span>
@@ -659,9 +737,6 @@ export function SummaryScreen({ item, sim, onBack, onDecide }) {
             <button className="decision-btn passed" onClick={() => onDecide(item.id, "passed", sim.facts)}>안 삼</button>
             <button className="decision-btn bought" onClick={() => onDecide(item.id, "bought", sim.facts)}>삼</button>
           </div>
-          <p className="hint" style={{ fontSize: 12, textAlign: "center", marginTop: 12 }}>
-            두 버튼은 동일한 비중입니다.
-          </p>
         </div>
       </div>
     </>
@@ -703,33 +778,42 @@ export function HistoryScreen({ records, onBack, onOpenRecord }) {
 
   return (
     <>
-      <HeaderBar onBack={onBack} title=""
-        right={<span className="doc-tag" style={{ marginRight: 8 }}>HISTORY</span>} />
+      <HeaderBar
+        onBack={onBack}
+        center={<span className="app-header-center-title">History</span>}
+      />
       <div className="screen">
         <div className="screen-pad">
-          <div className="m-doc-header">
+          <div className="m-history-header">
             <div className="m-doc-tags">
-              <span className="doc-tag">LEDGER</span>
-              <span className="doc-tag">HISTORY.001</span>
-              <span className="doc-tag accent">{records.length} 건</span>
+              <span className="doc-tag">ARCHIVE</span>
+              <span className="doc-tag">LOG.001</span>
+              <span className="doc-tag accent">{records.length} ENTRIES</span>
             </div>
             <h1 className="m-doc-title">
-              지금까지<br />
-              <span className="doc-title-em">내린 결정.</span>
+              결정 기록<br />
+              <span className="doc-title-em">아카이브.</span>
             </h1>
-            <div className="m-stats-row">
-              <div className="m-stat">
-                <div className="m-stat-label">전체</div>
-                <div className="m-stat-value tnum">{records.length}<span>건</span></div>
+            <div className="m-doc-meta">
+              <span>FILE / decisions.log</span>
+              <span>SORTED BY DATE DESC</span>
+            </div>
+          </div>
+
+          <div className="m-history-stats">
+            <div className="m-history-stat-stamp">
+              <div className="m-history-stat-label">TOTAL</div>
+              <div className="m-history-stat-value tnum">{records.length}</div>
+              <div className="m-history-stat-unit">DECISIONS</div>
+            </div>
+            <div className="m-history-stat-stamp">
+              <div className="m-history-stat-label">PASSED · BOUGHT</div>
+              <div className="m-history-stat-value tnum">
+                <span className="m-history-stat-passed">{passed}</span>
+                <span className="m-history-stat-divider">/</span>
+                <span className="m-history-stat-bought">{bought}</span>
               </div>
-              <div className="m-stat">
-                <div className="m-stat-label">안 삼</div>
-                <div className="m-stat-value tnum">{passed}<span>건</span></div>
-              </div>
-              <div className="m-stat">
-                <div className="m-stat-label">삼</div>
-                <div className="m-stat-value tnum">{bought}<span>건</span></div>
-              </div>
+              <div className="m-history-stat-unit">안 삼 / 삼</div>
             </div>
           </div>
 
@@ -742,18 +826,26 @@ export function HistoryScreen({ records, onBack, onOpenRecord }) {
 
           {months.map((m) => (
             <div key={m} className="m-history-month-block">
-              <div className="m-history-month">{m}</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {grouped[m].map((r) => (
-                  <button key={r.id} className={`m-history-card ${r.decision}`} onClick={() => onOpenRecord(r.id)}>
-                    <div className="m-history-row">
-                      <span className={`doc-tag ${r.decision === "bought" ? "" : "accent"}`}>
-                        {r.decision === "bought" ? "삼" : "안 삼"}
-                      </span>
-                      <span className="tnum m-history-date">{formatDateOnly(r.decidedAt)}</span>
+              <div className="m-history-month-head">
+                <span className="m-history-month-marker">▸</span>
+                <span className="m-history-month-label">{m}</span>
+                <span className="m-history-month-count tnum">{grouped[m].length} 건</span>
+                <span className="m-history-month-rule"></span>
+              </div>
+              <div className="m-history-log-table">
+                {grouped[m].map((r, i) => (
+                  <button key={r.id} className={`m-history-log-row ${r.decision}`} onClick={() => onOpenRecord(r.id)}>
+                    <span className="m-history-log-no tnum">{String(i + 1).padStart(2, "0")}</span>
+                    <div className="m-history-log-main">
+                      <div className="m-history-log-name">{r.name}</div>
+                      <div className="m-history-log-meta">
+                        <span className="m-history-log-price tnum">{formatKRW(r.price)}</span>
+                        <span className="m-history-log-date tnum">{formatDateOnly(r.decidedAt)}</span>
+                      </div>
                     </div>
-                    <div className="m-history-name">{r.name}</div>
-                    <div className="tnum m-history-price">{formatKRW(r.price)}</div>
+                    <span className={`m-history-log-tag ${r.decision}`}>
+                      {r.decision === "bought" ? "삼" : "안 삼"}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -771,16 +863,11 @@ export function RecordDetailScreen({ record, onBack, onDelete }) {
   return (
     <>
       <HeaderBar onBack={onBack} title="" right={
-        <button className="btn-icon" onClick={() => { onDelete(record.id); onBack(); }} aria-label="삭제"><Icon.Trash /></button>
+        <button className="btn btn-ghost btn-sm" onClick={() => { onDelete(record.id); onBack(); }}>삭제</button>
       } />
       <div className="screen">
         <div className="screen-pad">
           <div className="m-doc-header">
-            <div className="m-doc-tags">
-              <span className="doc-tag">RECORD</span>
-              <span className={`doc-tag ${passed ? "accent" : ""}`}>{passed ? "안 삼" : "삼"}</span>
-              <span className="doc-tag tnum">{formatDateOnly(record.decidedAt)}</span>
-            </div>
             <h1 className="m-doc-title" style={{ fontSize: 32 }}>{record.name}</h1>
             <div className="m-doc-meta">
               <span className="tnum">{formatKRW(record.price)}</span>
