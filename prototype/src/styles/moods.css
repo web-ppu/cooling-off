@@ -117,6 +117,7 @@ body { font-feature-settings: normal; }
 .pc-nav-link.active {
   background: var(--accent);
   color: var(--ink);
+  border: 2px solid var(--ink);
   border-radius: 0;
 }
 
@@ -147,9 +148,9 @@ body { font-feature-settings: normal; }
 }
 .bubble.system {
   align-self: center;
-  background: var(--ink) !important;
-  color: var(--accent) !important;
-  border: 2px solid var(--line-active) !important;
+  background: var(--surface-2) !important;
+  color: var(--ink-3) !important;
+  border: 2px solid var(--line-default) !important;
   box-shadow: none;
   text-transform: uppercase;
   letter-spacing: 0.06em;
