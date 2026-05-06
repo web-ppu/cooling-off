@@ -26,6 +26,33 @@ function seedItems() {
   return [...SAMPLE_READY, ...SAMPLE_COOLING];
 }
 
+const ACCENT_OPTIONS = [
+  { key: "yellow", label: "Y" },
+  { key: "blue", label: "B" },
+  { key: "lead", label: "L" },
+];
+
+function AccentSwitch({ value, onChange, className = "" }) {
+  return (
+    <div className={`dev-accent-switch ${className}`.trim()}>
+      <span className="dev-accent-label">Accent</span>
+      <div className="dev-accent-buttons">
+        {ACCENT_OPTIONS.map((option) => (
+          <button
+            key={option.key}
+            type="button"
+            className={`btn btn-ghost btn-sm dev-accent-btn${value === option.key ? " is-active" : ""}`}
+            onClick={() => onChange(option.key)}
+            aria-pressed={value === option.key}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const { isPc } = useViewport();
 
@@ -35,6 +62,11 @@ export default function App() {
   const [items, setItems] = useState(() => seedItems());
   const [records, setRecords] = useState(() => [...HISTORY_SEED]);
   const [splash, setSplash] = useState(null);
+  const [accent, setAccent] = useState("yellow");
+  const showDevAccentSwitch = import.meta.env.DEV;
+  const accentSwitch = showDevAccentSwitch
+    ? <AccentSwitch value={accent} onChange={setAccent} />
+    : null;
 
   useEffect(() => {
     const i = setInterval(() => setNow((n) => n + 1000), 1000);
@@ -137,11 +169,12 @@ export default function App() {
     }
 
     return (
-      <div className="pc-app">
+      <div className="pc-app" data-accent={accent}>
         <PcNav
           route={route} setRoute={setRoute} auth={auth}
           onLogin={() => setRoute({ name: "login" })}
           onLogout={() => setAuth("logged-out")}
+          devControl={accentSwitch}
         />
         {pcContent}
       </div>
@@ -212,9 +245,10 @@ export default function App() {
   }
 
   return (
-    <div className="phone-stage">
+    <div className="phone-stage" data-accent={accent}>
       <div className="phone">
         <StatusBar />
+        {showDevAccentSwitch && <div className="dev-accent-mobile-bar">{accentSwitch}</div>}
         {content}
       </div>
     </div>
