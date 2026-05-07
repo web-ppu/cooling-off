@@ -1,10 +1,10 @@
 /* 쿨링오프 — design tokens & global styles */
 
 :root {
-  --accent: #E07856;
-  --accent-strong: #C9653F;
-  --accent-soft: #FCE8DF;
-  --accent-shadow: rgba(224,120,86,0.12);
+  --accent: #3D5A80;
+  --accent-strong: #25415F;
+  --accent-soft: rgba(61,90,128,0.1);
+  --accent-shadow: rgba(61,90,128,0.18);
 
   --ink: #1A2332;
   --ink-2: #3D5A80;

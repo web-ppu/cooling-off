@@ -11,7 +11,7 @@ import {
 } from "../utils.jsx";
 
 // ─── Top Nav ──────────────────────────────────────────────────────────
-export function PcNav({ route, setRoute, auth, onLogin, onLogout, devControl }) {
+export function PcNav({ route, setRoute, auth, onLogin, onLogout }) {
   const links =
     auth === "logged-in"
       ? [
@@ -71,7 +71,6 @@ export function PcNav({ route, setRoute, auth, onLogin, onLogout, devControl }) 
       </div>
       <div className="pc-nav-spacer"></div>
       <div className="pc-nav-actions">
-        {devControl}
         {auth === "logged-in" ? (
           <button className="btn btn-ghost btn-sm" onClick={onLogout}>
             로그아웃
