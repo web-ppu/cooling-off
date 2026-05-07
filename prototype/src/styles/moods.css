@@ -1,5 +1,5 @@
 /* ─────────────────────────────────────────────────────────────────────────
-   Brutalist — Thick borders + yellow highlight
+   Brutalist — Thick borders + blue highlight
    The only mood. Applied globally.
    ───────────────────────────────────────────────────────────────────────── */
 
@@ -30,8 +30,8 @@ body { font-family: var(--font-sans); letter-spacing: var(--tracking, -0.01em); 
   --ink-2: #1a1a1a;
   --ink-3: #4a4a4a;
   --ink-4: #8a8a8a;
-  --accent: #ffd400;
-  --accent-soft: #fff5b0;
+  --accent: #78a8ff;
+  --accent-soft: #dde9ff;
   --warm: #0a0a0a;
   --warm-soft: #fff5b0;
   --danger: #d83a2c;        /* red — destructive / passed */
@@ -40,7 +40,7 @@ body { font-family: var(--font-sans); letter-spacing: var(--tracking, -0.01em); 
   /* Border system — uniform 2px, color encodes state */
   --border-w: 2px;
   --line-default: #0a0a0a;  /* default / idle */
-  --line-active:  #ffd400;  /* in-progress / selected / awaiting */
+  --line-active:  #78a8ff;  /* in-progress / selected / awaiting */
   --line-muted:   #8a8a8a;  /* disabled / secondary */
   --line-danger:  #d83a2c;  /* destructive */
   --line-success: #1f8a4c;  /* completed positive */
@@ -51,18 +51,6 @@ body { font-family: var(--font-sans); letter-spacing: var(--tracking, -0.01em); 
   --tracking-tight: -0.005em;
   --shadow-card: none;
   --shadow-pop: 4px 4px 0 var(--ink);
-}
-
-[data-accent="blue"] {
-  --accent: #78a8ff;
-  --accent-soft: #dde9ff;
-  --line-active: #78a8ff;
-}
-
-[data-accent="lead"] {
-  --accent: #f0f0f0;
-  --accent-soft: #e3e6eb;
-  --line-active: #f0f0f0;
 }
 
 body { font-feature-settings: normal; }

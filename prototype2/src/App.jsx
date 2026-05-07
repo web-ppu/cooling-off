@@ -2,20 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { loadItems, saveItems, uid } from './store.js';
 import { AppBar, HomePage, RegisterPage, CoolingPage, AboutPage, HelpPage } from './screens-home.jsx';
 import { DecidePage, SummaryPage, RecordsPage, RecordModal } from './screens-decide.jsx';
-import { useTweaks, TweaksPanel, TweakSection, TweakSlider, TweakColor } from './tweaks-panel.jsx';
+import { useTweaks, TweaksPanel, TweakSection, TweakSlider } from './tweaks-panel.jsx';
 
 const TWEAK_DEFAULTS = {
-  accentColor: '#E07856',
+  accentColor: '#3D5A80',
   coolDays: 7,
 };
-
-const ACCENT_OPTIONS = [
-  { label: '슬레이트 오렌지', value: '#E07856' },
-  { label: '네이비 블루', value: '#3D5A80' },
-  { label: '세이지 그린', value: '#5C8A6F' },
-  { label: '모브 핑크', value: '#B06090' },
-  { label: '워밍 앰버', value: '#C08830' },
-];
 
 function useRoute() {
   const parse = () => {
@@ -134,18 +126,6 @@ export default function App() {
       {renderPage()}
 
       <TweaksPanel>
-        <TweakSection label="포인트 컬러" />
-        <TweakColor label="Accent" value={t.accentColor} onChange={v => setTweak('accentColor', v)} />
-        {ACCENT_OPTIONS.map(o => (
-          <div key={o.value} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '3px 0' }}
-               onClick={() => setTweak('accentColor', o.value)}>
-            <span style={{
-              width: 18, height: 18, borderRadius: 5, background: o.value, flex: 'none',
-              border: t.accentColor === o.value ? '2px solid rgba(0,0,0,.4)' : '1.5px solid rgba(0,0,0,.12)',
-            }} />
-            <span style={{ fontSize: 12, color: 'rgba(41,38,27,.75)' }}>{o.label}</span>
-          </div>
-        ))}
         <TweakSection label="냉각 기간" />
         <TweakSlider label="일수" value={t.coolDays} min={1} max={30} step={1} unit="일"
                      onChange={v => setTweak('coolDays', v)} />
