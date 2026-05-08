@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import TanstackProvider from "@/app/provider";
 import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
 import "./globals.css";
@@ -17,7 +18,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={cn("antialiased", "font-sans", inter.variable)}>
-      <body>{children}</body>
+      <body>
+        <TanstackProvider>{children}</TanstackProvider>
+      </body>
     </html>
   );
 }
