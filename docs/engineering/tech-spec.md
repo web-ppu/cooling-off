@@ -72,7 +72,8 @@
 | DB + Auth | Supabase (Postgres + Auth + Row Level Security) |
 | 로그인 | Google OAuth 1개 |
 | 알림 트리거 | Supabase Cron + Edge Function |
-| 이메일 발송 | Resend |
+| 알림 발송 | Web Push API (VAPID) + `web-push` 패키지 |
+| 알림 수신 | 최소 Service Worker (`public/sw.js`) |
 
 ### AI
 
