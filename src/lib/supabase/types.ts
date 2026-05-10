@@ -18,6 +18,14 @@ export interface Item {
   created_at: string
 }
 
+export interface Profile {
+  id: string
+  email: string | null
+  name: string | null
+  avatar_url: string | null
+  created_at: string
+}
+
 export interface ChatMessage {
   id: string
   item_id: string

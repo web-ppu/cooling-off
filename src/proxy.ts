@@ -23,7 +23,12 @@ export async function proxy(request: NextRequest) {
   )
 
   // 세션 갱신 (토큰 만료 시 자동 재발급)
-  await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // 이미 로그인 상태에서 /login 접근 시 홈으로 이동
+  if (user && request.nextUrl.pathname === '/login') {
+    return NextResponse.redirect(new URL('/', request.url))
+  }
 
   return supabaseResponse
 }

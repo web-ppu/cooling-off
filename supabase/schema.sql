@@ -116,3 +116,45 @@ CREATE POLICY "push_subscriptions_insert_own" ON push_subscriptions
 
 CREATE POLICY "push_subscriptions_delete_own" ON push_subscriptions
   FOR DELETE USING (auth.uid() = user_id);
+
+-- ── profiles ─────────────────────────────────────────────────────
+-- auth.users 의 공개 프로필. 회원가입 시 트리거로 자동 생성된다.
+
+CREATE TABLE profiles (
+  id         UUID        PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email      TEXT,
+  name       TEXT,
+  avatar_url TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "profiles_select_own" ON profiles
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "profiles_update_own" ON profiles
+  FOR UPDATE USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
+
+-- 회원가입 시 자동으로 profiles 행 생성
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, name, avatar_url)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    NEW.raw_user_meta_data ->> 'full_name',
+    NEW.raw_user_meta_data ->> 'avatar_url'
+  );
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
