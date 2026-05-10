@@ -49,3 +49,54 @@
 - 요구사항: [`../pm/prd.md`](../pm/prd.md)
 - 화면 정책: [`../design/screen-spec.md`](../design/screen-spec.md)
 - AI 프롬프트: [`./ai-prompt-v1.md`](./ai-prompt-v1.md)
+
+---
+
+## 5. 확정된 기술 스택
+
+### Frontend
+
+| 항목 | 선택 |
+|------|------|
+| 프레임워크 | Next.js 16 (App Router) + React 19 + TypeScript |
+| 스타일 | Tailwind CSS + shadcn/ui |
+| 서버 상태 | TanStack Query |
+| UI 상태 | Zustand |
+| 폼 검증 | React Hook Form + Zod |
+| 날짜/시간 | date-fns |
+
+### Backend / DB / Auth
+
+| 항목 | 선택 |
+|------|------|
+| DB + Auth | Supabase (Postgres + Auth + Row Level Security) |
+| 로그인 | Google OAuth 1개 |
+| 알림 트리거 | Supabase Cron + Edge Function |
+| 알림 발송 | Web Push API (VAPID) + `web-push` 패키지 |
+| 알림 수신 | 최소 Service Worker (`public/sw.js`) |
+
+### AI
+
+| 단계 | 구현 |
+|------|------|
+| MVP | `/api/chat` POST, mock 응답. 응답 스키마: `{ message, providedNewPerspective, isFinalTurn }` |
+| Phase 2 | Anthropic SDK 교체 — 동일 스키마 유지 |
+
+- `providedNewPerspective: true` 일 때 클라이언트가 [결정하기] 버튼 노출
+- [결정하기] 노출 조건과 냉각 기간 단위는 추후 변경 가능성 있음
+
+### 변경 가능 항목 격리
+
+| 파일 | 역할 |
+|------|------|
+| `src/lib/cooling.ts` | 가격 → 냉각 시간 변환 (현재 N×24h) |
+| `src/lib/ai-mock.ts` | mock 응답 생성 |
+| `src/lib/decision-trigger.ts` | [결정하기] 노출 조건 판단 |
+
+### 품질 / 배포
+
+| 항목 | 선택 |
+|------|------|
+| 단위 테스트 | Vitest |
+| E2E 테스트 | Playwright |
+| 배포 | Vercel + Supabase |
