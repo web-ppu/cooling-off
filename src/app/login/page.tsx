@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -21,15 +21,15 @@ declare global {
 
 export default function LoginPage() {
   const router = useRouter()
+  const initRef = useRef(false)
 
   useEffect(() => {
+    if (initRef.current) return
+    initRef.current = true
+
     const supabase = createClient()
 
-    const script = document.createElement('script')
-    script.src = 'https://accounts.google.com/gsi/client'
-    script.async = true
-    script.defer = true
-    script.onload = () => {
+    const initOneTap = () => {
       window.google?.accounts.id.initialize({
         client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
         callback: async ({ credential }: { credential: string }) => {
@@ -40,15 +40,23 @@ export default function LoginPage() {
           if (!error) router.push('/')
         },
         auto_select: true,
+        itp_support: true,
       })
       window.google?.accounts.id.prompt()
     }
-    document.body.appendChild(script)
 
-    return () => {
-      if (document.body.contains(script)) document.body.removeChild(script)
+    if (window.google?.accounts) {
+      initOneTap()
+      return
     }
-  }, [router])
+
+    const script = document.createElement('script')
+    script.src = 'https://accounts.google.com/gsi/client'
+    script.async = true
+    script.defer = true
+    script.onload = initOneTap
+    document.body.appendChild(script)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogin = async () => {
     window.google?.accounts.id.cancel()
