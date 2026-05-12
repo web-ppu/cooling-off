@@ -1,9 +1,54 @@
 'use client'
 
+import { useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: object) => void
+          prompt: () => void
+        }
+      }
+    }
+  }
+}
+
 export default function LoginPage() {
+  const router = useRouter()
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    const script = document.createElement('script')
+    script.src = 'https://accounts.google.com/gsi/client'
+    script.async = true
+    script.defer = true
+    script.onload = () => {
+      window.google?.accounts.id.initialize({
+        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+        callback: async ({ credential }: { credential: string }) => {
+          const { error } = await supabase.auth.signInWithIdToken({
+            provider: 'google',
+            token: credential,
+          })
+          if (!error) router.push('/')
+        },
+        auto_select: true,
+      })
+      window.google?.accounts.id.prompt()
+    }
+    document.body.appendChild(script)
+
+    return () => {
+      if (document.body.contains(script)) document.body.removeChild(script)
+    }
+  }, [router])
+
   const handleLogin = async () => {
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
