@@ -35,7 +35,7 @@ export default function LoginPage() {
 
           <button
             onClick={handleLogin}
-            className="flex w-full items-center justify-center gap-3 rounded-full border border-zinc-200 bg-white px-6 py-3 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-50"
+            className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-full border border-zinc-200 bg-white px-6 py-3 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-50"
           >
             <GoogleIcon />
             Google로 로그인하기
