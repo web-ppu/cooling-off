@@ -2,11 +2,14 @@
 date: 2026-05-12
 type: model-selection
 status: active
-version: 1.0
+version: 1.1
 related:
   - model-comparison.md
   - ai-prompt-v1.md
   - tech-spec.md
+changelog:
+  - "v1.1 (2026-05-12): 선정 모델을 Claude Haiku 4.5 → Gemini 3.1 Flash-Lite로 변경 (가성비·속도 우선 정책)"
+  - "v1.0 (2026-05-12): 최초 선정 (Claude Haiku 4.5)"
 ---
 
 # 사용할 AI 모델 선정
@@ -17,25 +20,25 @@ related:
 
 ## 1. 선정 결과
 
-### ✅ 선택 모델: **Claude Haiku 4.5**
+### ✅ 선택 모델: **Gemini 3.1 Flash-Lite**
 
 | 항목 | 값 |
 |---|---|
-| 벤더 | Anthropic |
-| 모델 ID (API) | `claude-haiku-4-5` |
-| 입력 가격 | $1.00 / 1M tokens |
-| 출력 가격 | $5.00 / 1M tokens |
-| 캐싱 | ✅ 명시적 (cache read 90% 할인) |
-| 컨텍스트 윈도우 | 200K tokens |
-| 추정 운영비 (100 MAU) | ~$2/월 (캐싱 적용) |
-| 추정 운영비 (1000 MAU) | ~$20/월 |
-| SDK | `anthropic` (Python·JavaScript) |
-| 응답 지연 | 80~120 TPS, 500단어 응답 ~2~3초 |
+| 벤더 | Google |
+| 모델 ID (API) | `gemini-3.1-flash-lite` (또는 카탈로그 기준 최신 Flash-Lite 변형) |
+| 입력 가격 | $0.25 / 1M tokens |
+| 출력 가격 | $1.50 / 1M tokens |
+| 캐싱 | ✅ 명시적 캐싱 지원 |
+| 컨텍스트 윈도우 | 1M tokens |
+| 추정 운영비 (100 MAU) | ~$0.5/월 (캐싱 적용) |
+| 추정 운영비 (1000 MAU) | ~$5/월 |
+| SDK | `@google/genai` (Python·JavaScript), 또는 REST API 직접 호출 가능 |
+| 응답 지연 | Flash 대비 TTFT 2.5배 빠름. 챗봇 UX에 가장 적합 |
 
 ### 차순위 (선택 모델이 운용 중 문제 발생 시 마이그레이션 후보)
 
-1. **GPT-4o-mini** — 가장 저렴·안정적. 통합 가장 쉬움.
-2. **Gemini 3.1 Flash-Lite** — 최저가·최고속. 단정 경향 위험.
+1. **Claude Haiku 4.5** — 한국어 톤·반말 자연스러움이 가장 강함. 단가 ~$2/월(100MAU).
+2. **GPT-4o-mini** — 가장 안정적·통합 가장 쉬움. 단가 ~$0.3/월(100MAU).
 
 ---
 
@@ -43,45 +46,45 @@ related:
 
 ### 결정 기준 (우선순위)
 
-1. **한국어 톤·반말 자연스러움** — 쿨링오프의 핵심 UX. AI 채팅만 반말로 외부 관찰자 톤을 유지해야 하는 PRD 원칙 8.
-2. **운영 안정성** — MVP 단계, 실패 케이스 최소화 필요.
-3. **운영비 부담 없음** — 100~1000 MAU 기준 월 운영비가 무시할 수준이어야 함.
-4. **통합 단순성** — 비개발자 환경에서도 운영 가능한 인증·SDK 구조.
+1. **속도** — 챗봇 UX의 핵심. 사용자가 메시지 보내고 빠르게 응답을 받아야 자연스러움.
+2. **운영비 최소화** — MVP에서 1000 MAU까지 확장해도 월 $5 수준 유지.
+3. **통합 단순성** — 비개발자 환경에서도 운영 가능한 인증·SDK 구조.
+4. **한국어 응답 품질** — 한국어 반말 톤이 자연스러우면 OK (완벽함보다 충분히 좋음).
 
-### Claude Haiku 4.5를 선택한 근거 4가지
+### Gemini 3.1 Flash-Lite를 선택한 근거 4가지
 
-1. **한국어 반말·외부 관찰자 톤이 가장 자연스러움**
-   - 라운드 1에서 Claude Opus 4.7이 한국어 반말·짧고 직설적 톤·모순 추적에서 가장 강한 성능.
-   - 챗봇 등급에서도 Claude 라인의 톤 특성은 유지되는 경향 (벤더 공통 모델 패밀리 특성).
-   - Gemini는 빠르지만 단정 표현 위험, GPT는 안정적이지만 한국어 반말 톤이 다소 어색해질 수 있음.
+1. **최저가 + 최저지연 조합**
+   - 입력 $0.25 / 출력 $1.50 — 챗봇 등급 라인업 중 가장 저렴.
+   - Flash 대비 TTFT(첫 토큰까지 시간) 2.5배 빠름 — 채팅 UX에 가장 자연스러움.
+   - 1000 MAU 운영 시에도 월 $5 수준. 비용을 사실상 고려 대상에서 제외할 수 있음.
 
-2. **운영비가 충분히 저렴**
-   - 100 MAU 기준 월 $2, 1000 MAU 기준 월 $20.
-   - GPT-4o-mini와 Gemini Flash-Lite 대비 4~6배 비싸지만 절대 금액이 미미함.
-   - 비용 차이가 의사결정 1순위가 될 만큼 크지 않음.
+2. **컨텍스트 윈도우가 매우 큼**
+   - 1M tokens — 멀티턴 대화가 길어져도 문제없음.
+   - 라운드 1 측정 대화(8턴, 약 1.6K tokens)는 윈도우의 0.2% 수준.
 
-3. **통합이 단순**
-   - API 키 1개로 SDK 호출 가능 (Python·JavaScript 모두 공식 SDK).
-   - Vertex AI 같은 클라우드 인프라 학습곡선 없음 (Gemini 대비 장점).
-   - 공식 문서·예제·커뮤니티 자료 충분.
+3. **통합 단순**
+   - Google AI Studio 경로면 API 키 1개로 시작 가능.
+   - REST API 직접 호출도 단순 (SDK 없이 fetch 한 줄).
+   - 무료 티어가 넉넉해서 개발·테스트 단계에서 결제 없이 진행 가능.
 
-4. **응답 지연 챗봇용 적합**
-   - 80~120 TPS, 500단어 응답이 2~3초 안에 완료.
-   - 사고 모델(Opus 4.7) 대비 5~10배 빠름.
-   - 쿨링오프 채팅 UX에 적합한 즉시성.
+4. **챗봇 UX 강점**
+   - 라운드 1에서 Gemini 라인의 빠른 통과·간결한 요약(Case C)이 가장 깔끔했음.
+   - 챗봇 등급에서도 라인 특성 유지될 가능성 큼.
 
 ### 채택하지 않은 옵션의 이유
 
-- **GPT-4o-mini**: 운영 안정성·가성비 매우 우수. 다만 라운드 1에서 GPT 라인이 요약에 등록 정보를 자동 삽입하는 패턴이 강했고, 한국어 반말 톤이 Claude 대비 약간 어색해질 가능성. **차순위 후보로 보관**.
-- **Gemini 3.1 Flash-Lite**: 가장 저렴·빠르지만 사용자 모호한 답변을 단정으로 바꾸는 경향이 라운드 1에서 관찰됨. v0 규칙(빈도 외삽 금지)과 충돌 위험. **차순위 후보로 보관**.
+- **Claude Haiku 4.5**: 라운드 1에서 한국어 반말·외부 관찰자 톤이 가장 자연스러웠음. 다만 가격이 Flash-Lite의 4배($1/$5 vs $0.25/$1.50). 한국어 톤이 결정적이면 차선책으로 즉시 마이그레이션 가능. **차순위 1번**.
+- **GPT-4o-mini**: 라운드 1에서 GPT 라인이 가장 중립적이고 안정적이었음. 다만 라운드 1에서 요약에 등록 정보를 자동 삽입하는 패턴이 강했고, v1 프롬프트가 챗봇 등급에서도 해당 패턴을 잡아낼지 검증 미실시. **차순위 2번**.
 
-### 위험 인지 및 완화 (Claude Haiku 4.5 선택의 알려진 한계)
+### 위험 인지 및 완화 (Gemini 3.1 Flash-Lite 선택의 알려진 한계)
 
 | 위험 | 완화 방안 |
 |---|---|
-| Haiku 4.5 직접 실측 미실시 (라운드 1은 Opus) | Week 3 출시 전 짧은 실측 라운드로 검증 |
-| 사고 등급 대비 모순 추적·복잡 규칙 준수 약화 가능 | v1 프롬프트에서 6가지 관점·금지 항목 명시 강화 (완료) |
-| 메타 태그 출력 실패 위험 | 서버 사이드 후처리로 [결정하기] 버튼 제어 이관 (구현 시 적용) |
+| 챗봇 등급 직접 실측 미실시 (라운드 1은 사고 등급 Gemini 3.1 Pro) | Week 3 출시 전 Google AI Studio에서 짧은 실측 라운드로 검증 |
+| Gemini 3.1 Pro에서 관찰된 "사용자 모호함을 단정으로 바꾸는 경향"이 Flash-Lite에서 더 강해질 수 있음 | v1 프롬프트 §5 "사용 빈도 현실화" 항목의 "명시하지 않은 빈도를 추정·확장하지 않는다" 조항으로 차단 |
+| 빈도 외삽 위험 ("주 1회" → "월 4번" 단정) | v1 §5 #2 주의 항목 + 서버 사이드 후처리에서 키워드 기반 보강 |
+| 한국어 반말 톤이 Claude 라인보다 미세하게 어색할 가능성 | 출시 전 사용자 베타 검증 + 톤 이슈 발견 시 Haiku 4.5로 즉시 마이그레이션 (1~2시간 작업) |
+| 메타 태그 출력 실패 위험 (라운드 1에서 모든 모델 실패) | 서버 사이드 후처리로 [결정하기] 버튼 제어 이관 (ai-prompt-v1.md §8) |
 
 ---
 
@@ -92,7 +95,7 @@ related:
 ```
 [브라우저]
   ↓ API key 포함된 요청
-[Anthropic API]
+[Google AI API]
 ```
 
 브라우저에 API 키가 노출되면 누구나 개발자 도구로 추출해 도용 가능. 절대 금지.
@@ -103,8 +106,8 @@ related:
 [브라우저(쿨링오프 웹)]
   ↓ 일반 API 호출 (API key 없음)
 [우리 백엔드 서버]
-  ↓ Authorization 헤더에 API key 포함
-[Anthropic API]
+  ↓ API key를 헤더 또는 쿼리에 포함
+[Google AI API]
   ↑ AI 응답
 [우리 백엔드 서버]
   ↑ AI 응답 (가공 후 반환)
@@ -128,31 +131,38 @@ related:
 
 | 환경 | 위치 | 예시 |
 |---|---|---|
-| 로컬 개발 | `.env.local` (gitignore 포함) | `ANTHROPIC_API_KEY=sk-ant-...` |
+| 로컬 개발 | `.env.local` (gitignore 포함) | `GEMINI_API_KEY=AIza...` |
 | Vercel 배포 | Vercel 대시보드 → Environment Variables | 동일 키 이름으로 등록 |
 | GitHub | **절대 커밋 금지** | `.gitignore`에 `.env*` 포함 |
 
-### 백엔드 코드 패턴 (참고용, 비개발자는 개발자에게 전달)
+### 백엔드 코드 패턴 — REST 직접 호출 (참고용)
 
 ```typescript
 // Next.js API Route 예시: app/api/chat/route.ts
-import Anthropic from '@anthropic-ai/sdk';
-
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY, // 서버 사이드 환경변수
-});
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const MODEL = "gemini-3.1-flash-lite";
 
 export async function POST(request: Request) {
-  const { messages, systemPrompt } = await request.json();
+  const { systemPrompt, messages } = await request.json();
 
-  const response = await client.messages.create({
-    model: 'claude-haiku-4-5',
-    max_tokens: 500,
-    system: systemPrompt,
-    messages,
-  });
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        contents: messages.map((m) => ({
+          role: m.role === "assistant" ? "model" : "user",
+          parts: [{ text: m.content }],
+        })),
+      }),
+    }
+  );
 
-  return Response.json({ content: response.content });
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  return Response.json({ content: text });
 }
 ```
 
@@ -178,8 +188,8 @@ export async function POST(request: Request) {
    요청 본문: { messages: [...이전 대화], userMessage: "..." }
 3. 백엔드:
    a. 사용자 인증·요청 제한 확인
-   b. 시스템 프롬프트 + 등록 정보를 messages 앞에 합침
-   c. Anthropic API 호출 (claude-haiku-4-5)
+   b. 시스템 프롬프트 + 등록 정보를 systemInstruction에 합침
+   c. Google AI API 호출 (gemini-3.1-flash-lite)
    d. 응답 받아서 메타 태그 후처리 (서버 사이드)
    e. [결정하기] 버튼 표시 여부 판단
 4. 백엔드 → 브라우저: { aiResponse: "...", showDecideButton: true/false }
@@ -196,9 +206,9 @@ export async function POST(request: Request) {
 
 | 변경 시나리오 | 영향 범위 | 예상 작업량 |
 |---|---|---|
-| Haiku 4.5 → Sonnet 4.6 (Claude 내 상향) | API 호출의 model 파라미터만 변경 | 5분 |
-| Haiku 4.5 → GPT-4o-mini (벤더 변경) | SDK 교체, 메시지 포맷 변환 로직 추가 | 1~2시간 |
-| Haiku 4.5 → Gemini Flash-Lite | SDK 교체, 인증 방식 추가 (Vertex 경로면 더 복잡) | 2~4시간 |
+| Flash-Lite → Flash (Google 내 상향) | API 호출의 model 파라미터만 변경 | 5분 |
+| Flash-Lite → Claude Haiku 4.5 (벤더 변경, 톤 우선) | SDK 교체, 메시지 포맷 변환 로직 추가 | 1~2시간 |
+| Flash-Lite → GPT-4o-mini (벤더 변경, 안정성 우선) | SDK 교체, 메시지 포맷 변환 로직 추가 | 1~2시간 |
 
 → MVP 후 운용 데이터 보고 필요 시 비교적 짧은 시간 안에 마이그레이션 가능.
 
@@ -208,6 +218,6 @@ export async function POST(request: Request) {
 
 | 완료 조건 | 충족 여부 |
 |---|:-:|
-| 사용할 모델과 선택 이유가 정해져 있다 | ✅ Claude Haiku 4.5, 근거 4가지 명시 |
+| 사용할 모델과 선택 이유가 정해져 있다 | ✅ Gemini 3.1 Flash-Lite, 근거 4가지 명시 |
 | 은지가 AI 응답을 받아올 수 있는 방식이 정리되어 있다 | ✅ §3·§4에 백엔드 프록시 패턴·구현 옵션·흐름 정리 |
 | API 키를 브라우저에 노출하지 않는 호출 방식이 정리되어 있다 | ✅ §3에 BFF 패턴 + 4가지 구현 옵션 + 코드 예시 |

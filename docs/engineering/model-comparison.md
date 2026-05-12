@@ -2,7 +2,7 @@
 date: 2026-05-12
 type: model-comparison
 status: active
-version: 0.2
+version: 0.3
 focus: chatbot-tier
 related:
   - test-cases/system-prompt-v0.md
@@ -10,6 +10,9 @@ related:
   - comparison-results/round-1.md
   - ai-prompt-v1.md
   - model-selection.md
+changelog:
+  - "v0.3 (2026-05-12): §6 의사결정 가이드 갱신 — MVP 선정을 Gemini 3.1 Flash-Lite로 확정"
+  - "v0.2 (2026-05-12): 챗봇 등급 중심으로 재작성"
 ---
 
 # AI 후보 모델 비교 — v0.2 (챗봇 등급 중심)
@@ -158,12 +161,19 @@ related:
 
 ## 6. 의사결정 가이드
 
+### MVP 선정 (2026-05-12 확정)
+
+→ **선정 모델: Gemini 3.1 Flash-Lite** ([model-selection.md](model-selection.md) 참고)
+→ 결정 기준: **속도·운영비 최우선** + 한국어 톤은 충분히 좋음 수준.
+→ 한국어 톤 이슈 발견 시 **Claude Haiku 4.5로 즉시 마이그레이션** (1~2시간 작업).
+
+### 우선순위별 추천 (팀이 다른 우선순위를 둘 경우 참고)
+
 | 우선순위 | 추천 모델 | 이유 |
 |---|---|---|
-| **한국어 톤·반말 자연스러움이 최우선** | **Claude Haiku 4.5** | 라운드 1에서 Claude 라인이 한국어 톤·반말 가장 자연스러웠음. 챗봇 등급에서도 라인 특성 유지 |
-| **운영 안정성·통합 용이성** | **GPT-4o-mini** | 라운드 1에서 GPT 라인 중립성·구조 안정성 최강. 가장 저렴한 통합 비용·풍부한 자료 |
-| **속도·간결함·비용 최우선** | **Gemini 3.1 Flash-Lite** | 최저가·최고속. Case C 같은 빠른 통과 시나리오에 강함 |
-| **균형형 (MVP 출시용)** | **Claude Haiku 4.5** | 톤과 안정성의 균형. 운용비 부담 없음. 챗봇 UX에 가장 자연스러움 |
+| **속도·간결함·비용 최우선 (MVP 기본)** ✅ | **Gemini 3.1 Flash-Lite** | 최저가·최고속. Case C 같은 빠른 통과 시나리오에 강함. 100MAU 월 $0.5 |
+| **한국어 톤·반말 자연스러움이 최우선** | Claude Haiku 4.5 | 라운드 1에서 Claude 라인이 한국어 톤·반말 가장 자연스러웠음 |
+| **운영 안정성·통합 용이성** | GPT-4o-mini | 라운드 1에서 GPT 라인 중립성·구조 안정성 최강. 자료 가장 풍부 |
 
 → **본 비교는 추정 기반.** 운용 전 짧은 실측 라운드 권장. 단, 챗봇 등급 3종 모두 운용 비용이 매우 저렴하고 API 연동이 표준이라 실패 시 다른 모델로 마이그레이션 부담도 작음.
 
