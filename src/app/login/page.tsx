@@ -12,6 +12,7 @@ declare global {
         id: {
           initialize: (config: object) => void
           prompt: () => void
+          cancel: () => void
         }
       }
     }
@@ -50,6 +51,7 @@ export default function LoginPage() {
   }, [router])
 
   const handleLogin = async () => {
+    window.google?.accounts.id.cancel()
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
       provider: 'google',
