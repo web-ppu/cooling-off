@@ -32,35 +32,36 @@ colors:
 
 typography:
   display-xl:
-    fontFamily: "Noto Serif KR, Pretendard, serif"
+    fontFamily: "Pretendard, Inter, sans-serif"
     fontSize: 56px
-    fontWeight: 500
+    fontWeight: 600
     lineHeight: 1.2
     letterSpacing: -1px
   display-lg:
-    fontFamily: "Noto Serif KR, Pretendard, serif"
+    fontFamily: "Pretendard, Inter, sans-serif"
     fontSize: 40px
-    fontWeight: 500
+    fontWeight: 600
     lineHeight: 1.25
     letterSpacing: -0.6px
   display-md:
-    fontFamily: "Noto Serif KR, Pretendard, serif"
+    fontFamily: "Pretendard, Inter, sans-serif"
     fontSize: 32px
-    fontWeight: 500
+    fontWeight: 600
     lineHeight: 1.3
     letterSpacing: -0.4px
   display-sm:
-    fontFamily: "Noto Serif KR, Pretendard, serif"
+    fontFamily: "Pretendard, Inter, sans-serif"
     fontSize: 24px
-    fontWeight: 500
+    fontWeight: 600
     lineHeight: 1.35
     letterSpacing: -0.2px
   timer-xl:
-    fontFamily: "JetBrains Mono, Pretendard, ui-monospace, monospace"
+    fontFamily: "Pretendard, Inter, sans-serif"
     fontSize: 64px
-    fontWeight: 400
+    fontWeight: 500
     lineHeight: 1
     letterSpacing: -1px
+    fontVariantNumeric: tabular-nums
   title-lg:
     fontFamily: "Pretendard, Inter, sans-serif"
     fontSize: 20px
@@ -104,11 +105,12 @@ typography:
     lineHeight: 1.4
     letterSpacing: 1.2px
   numeric:
-    fontFamily: "JetBrains Mono, Pretendard, ui-monospace, monospace"
+    fontFamily: "Pretendard, Inter, sans-serif"
     fontSize: 14px
     fontWeight: 500
     lineHeight: 1.5
     letterSpacing: 0
+    fontVariantNumeric: tabular-nums
   button:
     fontFamily: "Pretendard, Inter, sans-serif"
     fontSize: 15px
@@ -210,13 +212,13 @@ components:
     textColor: "{colors.on-dark}"
     typography: "{typography.title-md}"
     rounded: "{rounded.lg}"
-    padding: 20px
+    padding: 24px
   cooling-card:
     backgroundColor: "{colors.surface-card}"
     textColor: "{colors.ink}"
     typography: "{typography.title-md}"
     rounded: "{rounded.lg}"
-    padding: 20px
+    padding: 24px
   cooling-timer-card:
     backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
@@ -234,13 +236,13 @@ components:
     textColor: "{colors.ink}"
     typography: "{typography.body-md}"
     rounded: "{rounded.lg}"
-    padding: 20px
+    padding: 24px
   record-card:
     backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
     typography: "{typography.title-sm}"
     rounded: "{rounded.lg}"
-    padding: 20px
+    padding: 24px
   about-section-card:
     backgroundColor: "{colors.surface-soft}"
     textColor: "{colors.ink}"
@@ -325,8 +327,8 @@ components:
     typography: "{typography.body-md}"
     padding: 48px 24px
   toast-error:
-    backgroundColor: "{colors.surface-dark}"
-    textColor: "{colors.on-dark}"
+    backgroundColor: "{colors.surface-card}"
+    textColor: "{colors.error}"
     typography: "{typography.body-sm}"
     rounded: "{rounded.md}"
     padding: 12px 16px
@@ -355,11 +357,11 @@ components:
 
 - 차가운 오프-화이트 캔버스(`{colors.canvas}` — #f4f6f8)에 깊은 잉크(`{colors.ink}` — #161c26). 쇼핑몰의 순백/원색 대비를 의도적으로 피한다.
 - 절제된 청록 단일 액션 컬러(`{colors.primary}` — #2f6f86). 등록, 결정하기, 로그인에만 쓴다. [안 삼]/[삼]에는 절대 쓰지 않는다.
-- Noto Serif KR 디스플레이 + Pretendard 본문. 시리프 헤드라인이 "고려된 판단"의 톤을 만든다. 광고체 산세리프 두꺼운 폰트는 쓰지 않는다.
-- 큰 모노스페이스 타이머(`{typography.timer-xl}`) — 냉각 중 화면의 유일한 시각적 주인공. 깜빡임, 펄스, 글로우 없이 그냥 숫자가 줄어든다.
-- 결정 대기 카드(`{component.decision-ready-card}`)만 깊은 네이비. 시스템 전체에서 다크 표면이 의미하는 단 하나의 신호: **지금 결정할 시간**.
+- 단일 폰트 패밀리: **Pretendard** 하나로 디스플레이/본문/숫자를 모두 처리한다. 디스플레이는 weight 600 + 음수 트래킹으로 "고려된 판단"의 톤을 만들고, 광고체 두꺼운 weight(800/900)는 쓰지 않는다.
+- 큰 타이머(`{typography.timer-xl}`) — 냉각 중 화면의 유일한 시각적 주인공. Pretendard에 `font-variant-numeric: tabular-nums`로 자릿폭을 고정해 매 초 흔들리지 않는다. 깜빡임, 펄스, 글로우 없이 그냥 숫자가 줄어든다.
+- 결정 대기 카드(`{components.decision-ready-card}`)만 깊은 네이비. 시스템 전체에서 다크 표면이 의미하는 단 하나의 신호: **지금 결정할 시간**.
 - 채팅 말풍선은 AI 좌측(쿨 그레이) / 사용자 우측(네이비) — 외부 관찰자(AI)와 자기 자신(사용자)의 시각적 분리.
-- 보더 라디우스는 위계형: `{rounded.md}`(10px) 버튼·인풋, `{rounded.lg}`(14px) 카드, `{rounded.xl}`(20px) 타이머 카드, `{rounded.pill}` 배지.
+- 보더 라디우스는 위계형: `{rounded.md}`(10px) 버튼·인풋·토스트, `{rounded.lg}`(14px) 카드, `{rounded.xl}`(20px) 타이머 카드, `{rounded.pill}` 배지.
 - 섹션 리듬 `{spacing.section}`(64px) — 모바일 우선 흐름. 카드 내부 패딩은 `{spacing.lg}`(24px)로 본문이 숨 쉴 공간을 둔다.
 - 도파민 자극(펄스, 반짝임, 글로우, 색대비 강조)을 명시적으로 금지한다.
 
@@ -406,43 +408,46 @@ components:
 
 ### Font Family
 
-시스템은 **Noto Serif KR** 를 디스플레이 시리프로, **Pretendard**(Inter 폴백)를 본문 산세리프로, **JetBrains Mono** 를 타이머와 숫자에 쓴다. 한국어 가독성이 1순위이므로 두 폰트 모두 한국어 자소가 단단한 패밀리를 골랐다. 폴백 체인은 디스플레이는 `Noto Serif KR, Source Han Serif KR, "Nanum Myeongjo", serif`, 본문은 `Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", Inter, sans-serif`.
+시스템은 **Pretendard 단일 패밀리**로 디스플레이, 본문, 숫자를 모두 처리한다. 한국어 자소가 단단한 패밀리 하나로 통일하면 폰트 로드 비용이 줄고, 디스플레이/본문 사이 톤의 연속성이 자연스러워진다. 폴백 체인은 `Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", Inter, sans-serif`.
 
-디스플레이/본문 분리는 신중함의 톤을 만들기 위한 것이다:
+같은 패밀리 안에서 다음 규칙으로 위계를 만든다:
 
-- Noto Serif KR (weight 500, 음수 트래킹) → 화면 제목, 빈 상태 헤드라인, About 헤딩
-- Pretendard (weight 400-600) → 본문, 네비, 버튼, 캡션, 라벨
-- JetBrains Mono → 냉각 타이머, 가격 숫자, 글자 수 카운터(`123/500`)
+- Pretendard weight 600 + 음수 트래킹 → 화면 제목, 빈 상태 헤드라인, About 헤딩 (디스플레이 사이즈)
+- Pretendard weight 600 → 섹션 제목, 카드 안 물건 이름, 버튼 라벨
+- Pretendard weight 400-500 → 본문, 네비, 캡션, 라벨
+- Pretendard + `font-variant-numeric: tabular-nums` → 냉각 타이머, 가격 숫자, 글자 수 카운터(`123/500`)
 
-쇼핑몰의 굵은 광고체 산세리프(800/900 헤드라인)는 명시적으로 배제한다. 광고체는 흥분을 만들고, 시리프 500은 "한 번 더 생각하는 사람"의 톤을 만든다.
+쇼핑몰의 굵은 광고체(weight 800/900 헤드라인)는 명시적으로 배제한다. 광고체는 흥분을 만들고, weight 600에서 멈추는 디스플레이가 "한 번 더 생각하는 사람"의 톤을 만든다.
 
 ### Hierarchy
 
+모든 토큰의 폰트 패밀리는 Pretendard 단일이다. 위계는 크기와 weight로만 만든다.
+
 | Token | Size | Weight | Line Height | Letter Spacing | Use |
 |---|---|---|---|---|---|
-| `{typography.display-xl}` | 56px | 500 | 1.2 | -1px | 비로그인 홈의 메인 카피 — Noto Serif KR |
-| `{typography.display-lg}` | 40px | 500 | 1.25 | -0.6px | About 페이지 상단 헤딩 — Noto Serif KR |
-| `{typography.display-md}` | 32px | 500 | 1.3 | -0.4px | 화면 제목 (등록, 기록 등) — Noto Serif KR |
-| `{typography.display-sm}` | 24px | 500 | 1.35 | -0.2px | 빈 상태 헤드라인 ("사고 싶은 물건이 있나요?") |
-| `{typography.timer-xl}` | 64px | 400 | 1.0 | -1px | 냉각 중 화면의 타이머 — JetBrains Mono, tabular nums |
-| `{typography.title-lg}` | 20px | 600 | 1.4 | 0 | 섹션 제목 "결정 대기 (N)", "냉각 중 (N)" — Pretendard |
+| `{typography.display-xl}` | 56px | 600 | 1.2 | -1px | 비로그인 홈의 메인 카피 |
+| `{typography.display-lg}` | 40px | 600 | 1.25 | -0.6px | About 페이지 상단 헤딩 |
+| `{typography.display-md}` | 32px | 600 | 1.3 | -0.4px | 화면 제목 (등록, 기록 등) |
+| `{typography.display-sm}` | 24px | 600 | 1.35 | -0.2px | 빈 상태 헤드라인 ("사고 싶은 물건이 있나요?") |
+| `{typography.timer-xl}` | 64px | 500 | 1.0 | -1px | 냉각 중 화면의 타이머 — tabular nums |
+| `{typography.title-lg}` | 20px | 600 | 1.4 | 0 | 섹션 제목 "결정 대기 (N)", "냉각 중 (N)" |
 | `{typography.title-md}` | 18px | 600 | 1.45 | 0 | 카드 안의 물건 이름 |
 | `{typography.title-sm}` | 16px | 600 | 1.45 | 0 | 기록 카드 제목, 팩트 요약 헤더 |
-| `{typography.body-md}` | 16px | 400 | 1.65 | 0 | 기본 본문, 채팅 메시지 — Pretendard |
+| `{typography.body-md}` | 16px | 400 | 1.65 | 0 | 기본 본문, 채팅 메시지 |
 | `{typography.body-sm}` | 14px | 400 | 1.6 | 0 | 메타 정보, 푸터 |
 | `{typography.caption}` | 13px | 500 | 1.4 | 0 | 배지, 결정 가능 시점 |
 | `{typography.caption-uppercase}` | 12px | 500 | 1.4 | 1.2px | 섹션 카운터, "OPTIONAL" 표시 |
-| `{typography.numeric}` | 14px | 500 | 1.5 | 0 | 가격, 글자 수 카운터 (tabular nums) |
+| `{typography.numeric}` | 14px | 500 | 1.5 | 0 | 가격, 글자 수 카운터 — tabular nums |
 | `{typography.button}` | 15px | 600 | 1.0 | 0 | 모든 버튼 라벨 |
 | `{typography.nav-link}` | 14px | 500 | 1.4 | 0 | 상단 메뉴 항목 |
 
 ### Principles
 
-디스플레이는 weight 500을 쓰고 800/900으로 굵히지 않는다. 음수 트래킹(-0.2 ~ -1px)은 시리프가 한국어에서 답답해 보이지 않게 만드는 필수 장치다. 시리프를 산세리프로 바꾸는 순간 쿨링오프는 "또 하나의 핀테크/생산성 앱" 처럼 보인다 — 시리프가 신중함의 캐릭터다.
+디스플레이는 weight 600에서 멈추고 800/900으로 굵히지 않는다. 음수 트래킹(-0.2 ~ -1px)은 큰 사이즈에서 한국어 자간이 벌어져 보이지 않게 잡아주는 필수 장치다. Pretendard 600은 한국어에서 충분히 명확하면서도 광고체로 읽히지 않는 경계선이다.
 
-본문은 400, 라벨/버튼/제목은 500-600. 700 이상은 쓰지 않는다. 굵은 본문은 시각적으로 "강조"이지만, 강조는 사용자에게 어느 한쪽 결정을 유도하는 신호로 읽힐 수 있다 — 결정 중립성을 위해 굵기 사용을 절제한다.
+본문은 400, 라벨/캡션은 500, 버튼/제목/디스플레이는 600. 700 이상은 쓰지 않는다. 굵은 본문은 시각적으로 "강조"이지만, 강조는 사용자에게 어느 한쪽 결정을 유도하는 신호로 읽힐 수 있다 — 결정 중립성을 위해 굵기 사용을 절제한다.
 
-타이머에는 반드시 모노스페이스 + `font-variant-numeric: tabular-nums`를 적용한다. 매 초 숫자가 바뀔 때 폭이 흔들리면 그 자체가 도파민 자극이 된다.
+타이머와 모든 숫자(가격, 카운터)에는 `font-variant-numeric: tabular-nums`를 반드시 적용한다. Pretendard는 비례 폰트이지만 tabular-nums가 적용되면 자릿폭이 고정된다. 매 초 숫자가 바뀔 때 폭이 흔들리면 그 자체가 도파민 자극이 된다.
 
 ### 한국어 처리
 
@@ -452,7 +457,7 @@ components:
 
 ### 폰트 대체
 
-Noto Serif KR이 로드 안 될 때 **Nanum Myeongjo** 가 폴백. Pretendard가 로드 안 될 때 **Apple SD Gothic Neo**(macOS/iOS) → **Malgun Gothic**(Windows) → **Inter** 체인. JetBrains Mono가 로드 안 될 때 시스템 모노스페이스로 폴백하되 반드시 tabular-nums를 유지해야 한다.
+Pretendard가 로드 안 될 때 **Apple SD Gothic Neo**(macOS/iOS) → **Malgun Gothic**(Windows) → **Inter**(라틴 폴백) → 시스템 sans-serif 체인. 모든 폴백 단계에서 `font-variant-numeric: tabular-nums`는 유지되어야 한다 — 숫자 자릿폭 고정이 깨지는 순간 타이머의 시각 안정성이 무너진다.
 
 ## Layout
 
@@ -461,7 +466,7 @@ Noto Serif KR이 로드 안 될 때 **Nanum Myeongjo** 가 폴백. Pretendard가
 - **기본 단위:** 4px.
 - **토큰:** `{spacing.xxs}` 4px · `{spacing.xs}` 8px · `{spacing.sm}` 12px · `{spacing.md}` 16px · `{spacing.lg}` 24px · `{spacing.xl}` 32px · `{spacing.xxl}` 48px · `{spacing.section}` 64px.
 - **섹션 패딩:** `{spacing.section}`(64px) — 모바일 단일 컬럼 흐름의 호흡 단위.
-- **카드 내부 패딩:** 카드별 `{spacing.lg}`(20-24px). 냉각 타이머 카드는 `{spacing.xl}` 이상으로 더 너그럽게 — 타이머가 시각의 중심이라서 주변이 비어야 한다.
+- **카드 내부 패딩:** 모든 카드 `{spacing.lg}`(24px). 냉각 타이머 카드는 `{spacing.xl}` 이상으로 더 너그럽게 — 타이머가 시각의 중심이라서 주변이 비어야 한다.
 - **화면 좌우 마진:** 모바일 16px, 태블릿 이상 24-32px.
 
 ### Grid & Container
@@ -473,7 +478,7 @@ Noto Serif KR이 로드 안 될 때 **Nanum Myeongjo** 가 폴백. Pretendard가
 
 ### Whitespace Philosophy
 
-차가운 캔버스 + 시리프 디스플레이 + 너그러운 카드 내부 여백은 쇼핑몰의 빽빽한 정보 밀도와 반대의 호흡을 만든다. 쿨링오프는 사용자가 빠르게 스크롤하는 화면이 아니라, 잠시 멈추고 하나씩 처리하는 화면이다. 섹션 사이 64px, 카드 내부 20-24px가 그 멈춤을 만든다.
+차가운 캔버스 + 절제된 weight의 디스플레이 + 너그러운 카드 내부 여백은 쇼핑몰의 빽빽한 정보 밀도와 반대의 호흡을 만든다. 쿨링오프는 사용자가 빠르게 스크롤하는 화면이 아니라, 잠시 멈추고 하나씩 처리하는 화면이다. 섹션 사이 64px, 카드 내부 24px가 그 멈춤을 만든다.
 
 ## Elevation & Depth
 
@@ -501,8 +506,8 @@ Noto Serif KR이 로드 안 될 때 **Nanum Myeongjo** 가 폴백. Pretendard가
 | Token | Value | Use |
 |---|---|---|
 | `{rounded.xs}` | 4px | 거의 사용 안 함 |
-| `{rounded.sm}` | 6px | 인라인 카운터 칩, 토스트 |
-| `{rounded.md}` | 10px | 버튼, 인풋, 채팅 입력창 |
+| `{rounded.sm}` | 6px | 인라인 카운터 칩 |
+| `{rounded.md}` | 10px | 버튼, 인풋, 채팅 입력창, 토스트 |
 | `{rounded.lg}` | 14px | 모든 카드 (결정 대기, 냉각 중, 기록, 팩트 요약, About 섹션) |
 | `{rounded.xl}` | 20px | 냉각 타이머 카드 — 가장 부드러운 둥글기, "쉼"의 시각 신호 |
 | `{rounded.pill}` | 9999px | 섹션 카운터, 결과 배지, 상태 점 |
@@ -516,7 +521,7 @@ Noto Serif KR이 로드 안 될 때 **Nanum Myeongjo** 가 폴백. Pretendard가
 - **상태 점**: 8px 원. 결정 대기 = 청록(`{colors.primary}`), 냉각 중 = 회색(`{colors.muted-soft}`). 형광색 빨강/파랑은 쓰지 않는다.
 - **타이머 숫자**: 시각의 주인공. 별도 아이콘 없이 숫자만으로 충분하다.
 - **AI/사용자 식별**: 채팅 말풍선의 좌/우 위치 + 색상(쿨 그레이 vs 네이비)으로 구분. 아바타 이미지는 쓰지 않는다.
-- **결과 라벨**: 기록 카드의 "안 삼" / "삼"은 같은 배지 스타일(`{component.badge-result-pass}` / `{component.badge-result-buy}`) — 색을 다르게 주지 않는다. 시각적 대칭이 결정 중립성의 핵심이다.
+- **결과 라벨**: 기록 카드의 "안 삼" / "삼"은 같은 배지 스타일(`{components.badge-result-pass}` / `{components.badge-result-buy}`) — 색을 다르게 주지 않는다. 시각적 대칭이 결정 중립성의 핵심이다.
 
 쇼핑몰의 상품 카드, 별점, 가격 강조, 할인 표시 같은 시각 요소는 시스템에 존재하지 않는다.
 
@@ -528,7 +533,7 @@ Noto Serif KR이 로드 안 될 때 **Nanum Myeongjo** 가 폴백. Pretendard가
 
 ### Buttons
 
-**`button-primary`** — 시스템의 단일 액션 버튼. 배경 `{colors.primary}`(#2f6f86), 텍스트 `{colors.on-primary}`(흰색), 타입 `{typography.button}`(Pretendard 15px / 600), 패딩 14px × 20px, 높이 48px, 라운드 `{rounded.md}`(10px). 누름 상태는 `button-primary-active`. **[냉각 시작], [결정하기], [로그인하기], [+ 사고 싶은 물건 등록]에만 쓴다.**
+**`button-primary`** — 시스템의 단일 액션 버튼. 배경 `{colors.primary}`(#2f6f86), 텍스트 `{colors.on-primary}`(흰색), 타입 `{typography.button}`(15px / 600), 패딩 14px × 20px, 높이 48px, 라운드 `{rounded.md}`(10px). 누름 상태는 `button-primary-active`. **[냉각 시작], [결정하기], [로그인하기], [+ 사고 싶은 물건 등록]에만 쓴다.**
 
 **`button-primary-disabled`** — 등록 폼 유효성 미달 시 [냉각 시작]의 회색 상태. `{colors.primary-disabled}`(#dde3eb) 배경 + `{colors.muted-soft}` 텍스트.
 
@@ -544,11 +549,11 @@ Noto Serif KR이 로드 안 될 때 **Nanum Myeongjo** 가 폴백. Pretendard가
 
 ### 홈 카드
 
-**`decision-ready-card`** — **결정 대기** 항목 카드. 배경 `{colors.surface-dark}`(#161c26), 텍스트 `{colors.on-dark}`, 라운드 `{rounded.lg}`(14px), 패딩 20px. 안에는 물건 이름(`{typography.title-md}`, on-dark 색), 가격(`{typography.numeric}`, on-dark-soft 색), 그리고 우측에 작은 `{colors.primary}` 상태 점과 "결정할 시간입니다" 문구. 카드 전체가 탭 영역 — 누르면 AI 채팅 화면으로. 시스템 전체에서 이 카드와 사용자 채팅 말풍선만 다크 표면이다.
+**`decision-ready-card`** — **결정 대기** 항목 카드. 배경 `{colors.surface-dark}`(#161c26), 텍스트 `{colors.on-dark}`, 라운드 `{rounded.lg}`(14px), 패딩 `{spacing.lg}`(24px). 안에는 물건 이름(`{typography.title-md}`, on-dark 색), 가격(`{typography.numeric}`, on-dark-soft 색), 그리고 우측에 작은 `{colors.primary}` 상태 점과 "결정할 시간입니다" 문구. 카드 전체가 탭 영역 — 누르면 AI 채팅 화면으로. 시스템 전체에서 이 카드와 사용자 채팅 말풍선만 다크 표면이다.
 
-**`cooling-card`** — **냉각 중** 항목 카드. 배경 `{colors.surface-card}`(#e8ecf1), 텍스트 `{colors.ink}`, 라운드 `{rounded.lg}`, 패딩 20px. 안에는 물건 이름(`{typography.title-md}`), 작은 회색 상태 점, "⏱ 남은 시간"과 "5월 6일 14:00부터 결정 가능"(`{typography.body-sm}`, muted 색). **가격, URL, 사고 싶은 이유는 절대 표시하지 않는다** (PRD FR-3 원칙). 카드 전체가 탭 영역 — 누르면 냉각 중 화면으로.
+**`cooling-card`** — **냉각 중** 항목 카드. 배경 `{colors.surface-card}`(#e8ecf1), 텍스트 `{colors.ink}`, 라운드 `{rounded.lg}`, 패딩 `{spacing.lg}`(24px). 안에는 물건 이름(`{typography.title-md}`), 작은 회색 상태 점, "⏱ 남은 시간"과 "5월 6일 14:00부터 결정 가능"(`{typography.body-sm}`, muted 색). **가격, URL, 사고 싶은 이유는 절대 표시하지 않는다** (PRD FR-3 원칙). 카드 전체가 탭 영역 — 누르면 냉각 중 화면으로.
 
-**`section-header`** — 홈의 "결정 대기 (N)", "냉각 중 (N)" 섹션 제목. `{typography.title-lg}` + 우측에 `{component.section-counter-pill}`. 결정 대기 섹션이 항상 위, 냉각 중 섹션이 아래.
+**`section-header`** — 홈의 "결정 대기 (N)", "냉각 중 (N)" 섹션 제목. `{typography.title-lg}` + 우측에 `{components.section-counter-pill}`. 결정 대기 섹션이 항상 위, 냉각 중 섹션이 아래.
 
 ### 등록 폼
 
@@ -562,25 +567,25 @@ Noto Serif KR이 로드 안 될 때 **Nanum Myeongjo** 가 폴백. Pretendard가
 
 ### 냉각 중 화면
 
-**`cooling-timer-card`** — 냉각 중 화면의 시각 중심. 캔버스 위에 거대한 라운드 `{rounded.xl}`(20px) 카드, 패딩 40px × 24px. 안에 물건 이름(`{typography.title-md}`)을 상단에 두고 중앙에 `{typography.timer-xl}`(JetBrains Mono 64px) 타이머 표시. 타이머 아래 "5월 6일 14:00부터 결정 가능"(`{typography.body-sm}`, muted 색)과 "지금은 기다리는 시간입니다"(`{typography.body-md}`, body 색). 깜빡임/펄스 없음.
+**`cooling-timer-card`** — 냉각 중 화면의 시각 중심. 캔버스 위에 거대한 라운드 `{rounded.xl}`(20px) 카드, 패딩 40px × 24px. 안에 물건 이름(`{typography.title-md}`)을 상단에 두고 중앙에 `{typography.timer-xl}`(Pretendard 64px / tabular nums) 타이머 표시. 타이머 아래 "5월 6일 14:00부터 결정 가능"(`{typography.body-sm}`, muted 색)과 "지금은 기다리는 시간입니다"(`{typography.body-md}`, body 색). 깜빡임/펄스 없음.
 
 ### AI 채팅
 
-**`chat-bubble-ai`** — 좌측 정렬, `{colors.surface-card}` 배경, `{colors.ink}` 텍스트, 라운드 `{rounded.lg}`, 패딩 14px × 16px. 본문 `{typography.body-md}`. 한 메시지의 최대 폭은 캔버스 폭의 80%까지. 메시지 위 작은 라벨 "AI" 또는 글리프(선택).
+**`chat-bubble-ai`** — 좌측 정렬, `{colors.surface-card}` 배경, `{colors.ink}` 텍스트, 라운드 `{rounded.lg}`, 패딩 14px × 16px. 본문 `{typography.body-md}`. 한 메시지의 최대 폭은 본문 폭의 80%까지. 메시지 위 작은 라벨 "AI" 또는 글리프(선택).
 
 **`chat-bubble-user`** — 우측 정렬, `{colors.surface-dark}` 배경, `{colors.on-dark}` 텍스트, 라운드 `{rounded.lg}`. AI와 사용자의 위치 + 색 대비가 외부 관찰자(AI)와 자기 자신(사용자)을 시각적으로 분리한다.
 
-**`chat-input`** — 화면 하단 고정 영역의 한 줄 인풋 + [전송] 버튼. 인풋은 `{component.text-input}` 스펙. 좌측에는 글자 수 카운터 `123/500`(`{typography.numeric}`, muted 색). 500자 초과 시 [전송] 비활성. AI 응답 대기 중에는 인풋 자체가 비활성 + AI 말풍선 영역에 회색 점 3개 페이드 인디케이터.
+**`chat-input`** — 화면 하단 고정 영역의 한 줄 인풋 + [전송] 버튼. 인풋은 `{components.text-input}` 스펙. 좌측에는 글자 수 카운터 `123/500`(`{typography.numeric}`, muted 색). 500자 초과 시 [전송] 비활성. AI 응답 대기 중에는 인풋 자체가 비활성 + AI 말풍선 영역에 회색 점 3개 페이드 인디케이터.
 
-**`fact-summary-card`** — [결정하기] 누름 후 채팅 영역 하단에 등장. `{colors.surface-soft}` 배경, hairline 보더, 라운드 `{rounded.lg}`, 패딩 20px. 상단에 작은 라벨 "팩트 요약"(`{typography.caption-uppercase}`, muted 색). 그 아래 불릿 리스트(`{typography.body-md}`). **판단/조언/결론은 들어가지 않음** — 사실만. 좌측 가는 선은 `{colors.accent-sand}` 정도의 차분한 강조 (선택).
+**`fact-summary-card`** — [결정하기] 누름 후 채팅 영역 하단에 등장. `{colors.surface-soft}` 배경, hairline 보더, 라운드 `{rounded.lg}`, 패딩 `{spacing.lg}`(24px). 상단에 작은 라벨 "팩트 요약"(`{typography.caption-uppercase}`, muted 색). 그 아래 불릿 리스트(`{typography.body-md}`). **판단/조언/결론은 들어가지 않음** — 사실만. 좌측 가는 선은 `{colors.accent-sand}` 정도의 차분한 강조 (선택).
 
-**결정 버튼 페어** — `{component.button-decision-pass}`와 `{component.button-decision-buy}`가 가로 1:1로 배치. 둘 사이 8px 갭. 시스템 전체에서 가장 엄격한 시각 대칭 규칙이 적용된 자리.
+**결정 버튼 페어** — `{components.button-decision-pass}`와 `{components.button-decision-buy}`가 가로 1:1로 배치. 둘 사이 8px 갭. 시스템 전체에서 가장 엄격한 시각 대칭 규칙이 적용된 자리.
 
 ### 기록 화면
 
-**`record-card`** — 월별 그룹 안의 결정 카드. 배경 `{colors.canvas}`, hairline 1px 보더, 라운드 `{rounded.lg}`, 패딩 20px. 안에 물건 이름(`{typography.title-sm}`), 가격(`{typography.numeric}`, muted 색), 결과 배지(`{component.badge-result-pass}` 또는 `{component.badge-result-buy}` — **같은 스타일**), 결정 날짜(`{typography.body-sm}`, muted 색). 카드 전체가 탭 영역 — 누르면 대화 다시 보기.
+**`record-card`** — 월별 그룹 안의 결정 카드. 배경 `{colors.canvas}`, hairline 1px 보더, 라운드 `{rounded.lg}`, 패딩 `{spacing.lg}`(24px). 안에 물건 이름(`{typography.title-sm}`), 가격(`{typography.numeric}`, muted 색), 결과 배지(`{components.badge-result-pass}` 또는 `{components.badge-result-buy}` — **같은 스타일**), 결정 날짜(`{typography.body-sm}`, muted 색). 카드 전체가 탭 영역 — 누르면 대화 다시 보기.
 
-**월 헤더** — `{typography.title-md}` 또는 `{typography.display-sm}` 의 시리프. "2026년 4월" 같은 단순한 라벨. 아래 카드들과 24px 간격.
+**월 헤더** — `{typography.title-md}` 또는 `{typography.display-sm}`. "2026년 4월" 같은 단순한 라벨. 아래 카드들과 24px 간격.
 
 **결정 개수 표시** — 기록 화면 상단의 "지금까지 내린 결정 12개"(`{typography.title-lg}`). [안 삼]과 [삼]을 합산한 단일 숫자 — 비율을 보여주지 않는 것이 원칙(외재 보상 금지).
 
@@ -604,9 +609,9 @@ Noto Serif KR이 로드 안 될 때 **Nanum Myeongjo** 가 폴백. Pretendard가
 
 ### 빈 상태 / 에러
 
-**`empty-state`** — 등록한 항목이 없을 때의 홈 빈 상태. 화면 중앙에 `{typography.display-sm}` 시리프로 "사고 싶은 물건이 있나요?"와 그 아래 `{typography.body-md}` muted 색의 보조 안내. 일러스트는 없다.
+**`empty-state`** — 등록한 항목이 없을 때의 홈 빈 상태. 화면 중앙에 `{typography.display-sm}`로 "사고 싶은 물건이 있나요?"와 그 아래 `{typography.body-md}` muted 색의 보조 안내. 일러스트는 없다.
 
-**`toast-error`** — 화면 하단의 임시 에러 메시지. `{colors.surface-dark}` 배경, `{colors.on-dark}` 텍스트, 라운드 `{rounded.md}`, 패딩 12px × 16px, 약한 그림자. 약 3초 후 자동 페이드 아웃.
+**`toast-error`** — 화면 하단의 임시 에러 메시지. `{colors.surface-card}` 배경, `{colors.error}` 텍스트, 라운드 `{rounded.md}`, 패딩 12px × 16px, 약한 그림자. 약 3초 후 자동 페이드 아웃. 다크 표면은 결정 대기 카드와 사용자 채팅 말풍선 단 두 자리에만 쓰므로, 토스트는 캔버스보다 한 단계만 진한 카드 톤으로 처리하고 에러 의미는 텍스트 색으로 전달한다.
 
 ### 푸터 (옵션)
 
@@ -617,20 +622,20 @@ Noto Serif KR이 로드 안 될 때 **Nanum Myeongjo** 가 폴백. Pretendard가
 ### Do
 
 - 모든 화면을 차가운 캔버스(`{colors.canvas}`) 위에 둔다. 순백, 따뜻한 베이지, 형광 컬러는 쿨링오프의 톤을 깨뜨린다.
-- 디스플레이는 Noto Serif KR 500. 본문은 Pretendard. 시리프-산세리프 분리가 신중함의 톤을 만든다.
+- 디스플레이와 본문 모두 Pretendard 단일 패밀리를 쓴다. 위계는 크기·weight·트래킹으로만 만든다.
 - `{colors.primary}`(청록)을 결정 외 행동([냉각 시작], [결정하기], [로그인], [+ 등록])에만 쓴다. 다른 자리에 청록을 칠하지 않는다.
 - [안 삼]과 [삼] 버튼은 폰트, 사이즈, 색, 보더, 라운드를 동일하게 유지한다. 시각 대칭이 결정 중립성의 핵심이다.
-- `{component.decision-ready-card}`만 네이비. 이 카드의 다크 표면이 "지금 결정할 시간"이라는 단일 신호다.
+- `{components.decision-ready-card}`만 네이비. 이 카드의 다크 표면이 "지금 결정할 시간"이라는 단일 신호다.
 - 냉각 중 카드에는 항목 이름, 남은 시간, 결정 가능 시점만 표시한다. 가격, URL, 사고 싶은 이유, 이미지는 표시하지 않는다.
 - 한국어 줄바꿈은 `word-break: keep-all`을 적용해서 어절 단위로 자른다.
-- 숫자(타이머, 가격, 카운터)는 tabular nums + 모노스페이스로 폭을 고정한다.
-- 섹션 사이 64px, 카드 내부 20-24px의 여유를 둔다.
+- 숫자(타이머, 가격, 카운터)는 `font-variant-numeric: tabular-nums`로 자릿폭을 고정한다.
+- 섹션 사이 64px, 카드 내부 24px의 여유를 둔다.
 
 ### Don't
 
 - 따뜻한 베이지/크림 캔버스를 쓰지 않는다. 쿨톤이 브랜드 메타포다.
 - 형광 빨강/파랑/주황으로 결정 대기/냉각 중을 구분하지 않는다. 명도 차이(다크 vs 라이트)와 작은 상태 점으로 충분하다.
-- 굵은 광고체 산세리프(weight 800/900) 헤드라인을 쓰지 않는다. 쇼핑몰 톤이 된다.
+- Pretendard라도 weight 700 이상의 굵은 디스플레이를 쓰지 않는다. 광고체 톤이 된다.
 - [안 삼]에 초록색, [삼]에 빨강/주황 같은 색 신호를 주지 않는다. 어느 쪽도 정답이 아니다.
 - 절약 금액, 안 삼 비율, 스트릭, 배지 같은 게이미피케이션 요소를 시각화하지 않는다.
 - 펄스, 반짝임, 글로우, 무지개 그래디언트, 컨페티 같은 도파민 자극을 쓰지 않는다.
@@ -654,11 +659,11 @@ Noto Serif KR이 로드 안 될 때 **Nanum Myeongjo** 가 폴백. Pretendard가
 
 ### Touch Targets
 
-- `{component.button-primary}` 최소 48 × 48px (모바일 안전 폭).
-- `{component.button-decision-pass}` + `{component.button-decision-buy}` 각 52px 높이 — 결정 버튼이 가장 큰 터치 영역.
-- `{component.button-icon-circular}` 36 × 36 — 자주 누르지 않는 메타 버튼 한정.
-- `{component.text-input}` / `{component.chat-input}` 48px 높이.
-- 카드 전체가 탭 영역(`{component.cooling-card}`, `{component.decision-ready-card}`, `{component.record-card}`) — 실 탭 영역 >> 44px.
+- `{components.button-primary}` 최소 48 × 48px (모바일 안전 폭).
+- `{components.button-decision-pass}` + `{components.button-decision-buy}` 각 52px 높이 — 결정 버튼이 가장 큰 터치 영역.
+- `{components.button-icon-circular}` 36 × 36 — 자주 누르지 않는 메타 버튼 한정.
+- `{components.text-input}` / `{components.chat-input}` 48px 높이.
+- 카드 전체가 탭 영역(`{components.cooling-card}`, `{components.decision-ready-card}`, `{components.record-card}`) — 실 탭 영역 >> 44px.
 
 ### Collapsing Strategy
 
@@ -676,18 +681,18 @@ Noto Serif KR이 로드 안 될 때 **Nanum Myeongjo** 가 폴백. Pretendard가
 
 ## Iteration Guide
 
-1. 한 번에 한 컴포넌트만 다룬다. YAML 키로 참조한다 (`{component.decision-ready-card}`, `{component.cooling-timer-card}`).
+1. 한 번에 한 컴포넌트만 다룬다. YAML 키로 참조한다 (`{components.decision-ready-card}`, `{components.cooling-timer-card}`).
 2. 기존 컴포넌트의 변형(`-active`, `-disabled`, `-focused`)은 `components:`에 별도 엔트리로 둔다.
 3. `{token.refs}`를 어디서나 쓴다 — 헥스 값을 인라인으로 박지 않는다.
 4. 호버 상태는 정의하지 않는다. 기본 상태와 누름(active) 상태만.
-5. 디스플레이는 Noto Serif KR 500 + 음수 트래킹. 본문은 Pretendard. 이 분리는 깰 수 없다.
+5. 폰트는 Pretendard 단일 패밀리. 위계는 크기와 weight(400/500/600)로만 만든다. weight 700 이상은 도입하지 않는다.
 6. 차가운 캔버스 + 청록 + 깊은 네이비가 3원색. 네 번째 표면 톤을 도입하지 않는다 (따뜻한 베이지 카드 없음, 보라/초록 카드 없음).
 7. [안 삼]과 [삼]은 항상 시각적으로 동일하다. 결정 중립성이 변형의 첫 번째 검토 기준이다.
-8. 강조가 필요할 때 색을 더하기 전에 시리프 크기를 먼저 키운다.
+8. 강조가 필요할 때 색을 더하기 전에 디스플레이 크기를 먼저 키운다.
 
 ## Known Gaps
 
-- Pretendard와 Noto Serif KR은 오픈소스 웹폰트로 제공되지만, 한국어 글리프 풀세트는 파일 크기가 크다. 실제 구현 시 서브셋(서비스에서 실제로 쓰는 자소)으로 잘라 로드 성능을 확보해야 한다.
+- Pretendard 단일 패밀리로 통일했지만 한국어 글리프 풀세트는 여전히 파일 크기가 크다. 실제 구현 시 weight별 서브셋(예: 400/500/600만 로드)과 자소 서브셋으로 잘라 로드 성능을 확보해야 한다.
 - 다크모드는 현재 시스템 범위 밖이다. `{colors.surface-dark}`는 결정 대기 카드와 사용자 채팅 말풍선의 의미 신호이므로, 전체 다크 모드를 도입하면 그 신호가 사라진다. 향후 도입 시 결정 대기/사용자 말풍선의 대체 신호를 같이 설계해야 한다.
 - 알림(Web Push) UI 자체는 OS 영역이라 이 디자인 시스템 토큰으로 통제할 수 없다. 알림 문구 톤만 PRD/screen-spec 기준을 따른다.
 - AI 응답 대기 인디케이터, 채팅 메시지 등장 모션, 타이머 업데이트 같은 미세 모션의 정확한 타이밍 값은 이 문서 범위 밖이다. 단, "도파민 자극 금지" 원칙은 유지한다.
