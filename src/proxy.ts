@@ -30,6 +30,15 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
+  // 비로그인 상태에서 보호된 라우트 접근 시 로그인으로 이동
+  const protectedPaths = ['/register', '/history', '/cooling', '/chat', '/items']
+  const isProtected = protectedPaths.some((p) =>
+    request.nextUrl.pathname.startsWith(p)
+  )
+  if (!user && isProtected) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
   return supabaseResponse
 }
 
