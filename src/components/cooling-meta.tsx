@@ -25,7 +25,7 @@ export default function CoolingMeta({ coolingEndsAt, createdAt }: Props) {
   const totalMs =
     new Date(coolingEndsAt).getTime() - new Date(createdAt).getTime()
   const progress =
-    totalMs > 0 ? Math.max(0, Math.min(1, 1 - ms / totalMs)) : 1
+    ms !== null && totalMs > 0 ? Math.max(0, Math.min(1, 1 - ms / totalMs)) : 0
 
   return (
     <>
