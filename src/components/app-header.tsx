@@ -18,7 +18,7 @@ export default async function AppHeader({ user: userProp }: Props) {
 
   if (user) {
     return (
-      <header className="sticky top-0 z-30 border-b border-zinc-100 bg-white/90 backdrop-blur-sm">
+      <header className="sticky top-0 z-30 border-b-2 border-[var(--line-default)] bg-white/90 backdrop-blur-sm">
         {/* 모바일 */}
         <div className="flex items-center justify-between px-4 py-3 md:hidden">
           <Link

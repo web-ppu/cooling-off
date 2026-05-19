@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import AppHeader from '@/components/app-header'
-import CoolingTimer from '@/components/cooling-timer'
+import CoolingMeta from '@/components/cooling-meta'
 import Link from 'next/link'
-import { formatKRW, formatCoolingEndsAt } from '@/lib/format'
+import { formatKRW } from '@/lib/format'
 import type { Item } from '@/lib/supabase/types'
 
 export const dynamic = 'force-dynamic'
@@ -36,57 +36,114 @@ export default async function Home() {
     <main className="flex min-h-screen flex-col">
       <AppHeader user={user} />
 
-      <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-28 pt-6 md:px-8">
+      <div className="mx-auto w-full max-w-[1120px] flex-1 px-4 pb-24 pt-7 md:px-8">
+        {/* 에디토리얼 헤더 */}
+        <div className="doc-header">
+          <div className="doc-header-row">
+            <span className="doc-tag">DASHBOARD</span>
+            <span className="doc-tag">HOME.001</span>
+            {readyItems.length > 0 && (
+              <span className="doc-tag doc-tag-accent">
+                {readyItems.length} READY
+              </span>
+            )}
+          </div>
+          <div className="flex flex-wrap items-end justify-between gap-5">
+            <h1 className="doc-title">
+              식히는 중
+              <br />
+              <span className="doc-title-em">{items.length}건.</span>
+            </h1>
+            {/* PC 전용 등록 버튼 */}
+            <Link
+              href="/register"
+              className="hidden items-center gap-2 border-2 border-[var(--line-default)] bg-[var(--ink)] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[var(--ink-2)] md:inline-flex"
+            >
+              + 사고 싶은 물건 등록
+            </Link>
+          </div>
+          <div className="doc-meta-row">
+            <span>FILE / cooling.live</span>
+            <span>/</span>
+            <span>READY {readyItems.length}</span>
+            <span>/</span>
+            <span>COOLING {coolingItems.length}</span>
+          </div>
+        </div>
+
+        {/* 빈 상태 */}
         {items.length === 0 ? (
-          <div className="flex items-center justify-center py-32">
-            <p className="text-sm text-zinc-400">사고 싶은 물건이 있나요?</p>
+          <div className="doc-empty">
+            <p className="mb-3 text-sm" style={{ color: 'var(--ink-3)' }}>
+              등록된 물건이 없습니다.
+            </p>
+            <h3
+              className="mb-6 text-lg font-bold"
+              style={{ letterSpacing: '-0.01em' }}
+            >
+              사고 싶은 물건이 있나요?
+            </h3>
+            <Link
+              href="/register"
+              className="inline-flex border-2 border-[var(--line-default)] bg-[var(--ink)] px-6 py-3 text-sm font-semibold text-white"
+            >
+              지금 등록하기
+            </Link>
           </div>
         ) : (
-          <div className="flex flex-col gap-8">
-            {readyItems.length > 0 && (
-              <section>
-                <div className="mb-3 flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-red-400" />
-                  <span className="text-sm font-medium text-zinc-700">
-                    결정 대기
-                  </span>
-                  <span className="text-sm text-zinc-400">
-                    {readyItems.length}
-                  </span>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+            {/* 결정 대기 섹션 */}
+            <section>
+              <div className="section-row-head">
+                <span className="section-row-marker">▸</span>
+                <span className="section-row-label">READY · 결정 대기</span>
+                <span className="section-row-count">{readyItems.length}건</span>
+                <span className="section-row-rule" />
+              </div>
+              {readyItems.length === 0 ? (
+                <div className="section-empty">
+                  <span className="doc-tag">NONE</span>
+                  <span>지금 결정할 항목이 없습니다.</span>
                 </div>
-                <div className="flex flex-col gap-2">
+              ) : (
+                <div className="flex flex-col gap-3">
                   {readyItems.map((item) => (
                     <ReadyCard key={item.id} item={item} />
                   ))}
                 </div>
-              </section>
-            )}
+              )}
+            </section>
 
-            {coolingItems.length > 0 && (
-              <section>
-                <div className="mb-3 flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-blue-400" />
-                  <span className="text-sm font-medium text-zinc-700">
-                    냉각 중
-                  </span>
-                  <span className="text-sm text-zinc-400">
-                    {coolingItems.length}
-                  </span>
+            {/* 냉각 중 섹션 */}
+            <section>
+              <div className="section-row-head">
+                <span className="section-row-marker">▸</span>
+                <span className="section-row-label">COOLING · 냉각 중</span>
+                <span className="section-row-count">
+                  {coolingItems.length}건
+                </span>
+                <span className="section-row-rule" />
+              </div>
+              {coolingItems.length === 0 ? (
+                <div className="section-empty">
+                  <span className="doc-tag">NONE</span>
+                  <span>현재 식히고 있는 항목이 없습니다.</span>
                 </div>
-                <div className="flex flex-col gap-2">
+              ) : (
+                <div className="flex flex-col gap-3">
                   {coolingItems.map((item) => (
                     <CoolingCard key={item.id} item={item} />
                   ))}
                 </div>
-              </section>
-            )}
+              )}
+            </section>
           </div>
         )}
       </div>
 
-      {/* 하단 고정 등록 버튼 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent px-4 pb-6 pt-4">
-        <div className="mx-auto max-w-2xl md:px-0">
+      {/* 모바일 하단 고정 등록 버튼 */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent px-4 pb-6 pt-4 md:hidden">
+        <div className="mx-auto max-w-2xl">
           <Link
             href="/register"
             className="flex w-full cursor-pointer items-center justify-center rounded-full bg-zinc-900 py-4 text-sm font-medium text-white transition-colors hover:bg-zinc-700"
@@ -105,17 +162,21 @@ function ReadyCard({
   item: Pick<Item, 'id' | 'name' | 'price'>
 }) {
   return (
-    <Link
-      href={`/chat/${item.id}`}
-      className="flex cursor-pointer items-center justify-between rounded-2xl border border-zinc-200 bg-white px-4 py-4 transition-colors hover:border-zinc-400"
-    >
-      <div className="flex flex-col gap-0.5">
-        <span className="font-medium text-zinc-900">{item.name}</span>
-        <span className="text-xs text-zinc-400">{formatKRW(item.price)}</span>
+    <Link href={`/chat/${item.id}`} className="pc-item-card">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <div className="pc-item-card-name">{item.name}</div>
+          <span className="ready-chip">결정</span>
+        </div>
+        <div className="pc-item-card-meta">클릭하여 시작 →</div>
       </div>
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-zinc-500">결정할 시간입니다</span>
-        <span className="text-zinc-300">→</span>
+      <div className="flex shrink-0 items-center">
+        <span
+          className="tabular-nums"
+          style={{ fontSize: 13, color: 'var(--ink-3)' }}
+        >
+          {formatKRW(item.price)}
+        </span>
       </div>
     </Link>
   )
@@ -124,20 +185,17 @@ function ReadyCard({
 function CoolingCard({
   item,
 }: {
-  item: Pick<Item, 'id' | 'name' | 'cooling_ends_at'>
+  item: Pick<Item, 'id' | 'name' | 'cooling_ends_at' | 'created_at'>
 }) {
   return (
-    <Link
-      href={`/cooling/${item.id}`}
-      className="flex cursor-pointer items-center justify-between rounded-2xl border border-zinc-100 bg-zinc-50 px-4 py-4"
-    >
-      <div className="flex flex-col gap-0.5">
-        <span className="font-medium text-zinc-700">{item.name}</span>
-        <span className="text-xs text-zinc-400">
-          {formatCoolingEndsAt(item.cooling_ends_at)}
-        </span>
+    <Link href={`/cooling/${item.id}`} className="pc-item-card">
+      <div className="min-w-0 flex-1">
+        <div className="pc-item-card-name">{item.name}</div>
+        <CoolingMeta
+          coolingEndsAt={item.cooling_ends_at}
+          createdAt={item.created_at}
+        />
       </div>
-      <CoolingTimer coolingEndsAt={item.cooling_ends_at} />
     </Link>
   )
 }
