@@ -12,13 +12,13 @@ export default async function HistoryPage() {
 
   if (!user) redirect('/login')
 
-  const { data } = await supabase
+  const { count } = await supabase
     .from('items')
-    .select('id')
+    .select('*', { count: 'exact', head: true })
     .is('deleted_at', null)
     .eq('status', 'decided')
 
-  const count = data?.length ?? 0
+  const total = count ?? 0
 
   return (
     <main className="flex min-h-screen flex-col">
@@ -34,10 +34,10 @@ export default async function HistoryPage() {
 
       <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16 pt-6 md:px-8">
         <p className="mb-8 text-sm text-zinc-400">
-          지금까지 내린 결정 {count}개
+          지금까지 내린 결정 {total}개
         </p>
 
-        {count === 0 ? (
+        {total === 0 ? (
           <div className="flex items-center justify-center py-24">
             <p className="text-sm text-zinc-400">아직 기록이 없어요.</p>
           </div>

@@ -23,7 +23,16 @@ export async function proxy(request: NextRequest) {
   )
 
   // 세션 갱신 (토큰 만료 시 자동 재발급)
-  const { data: { user } } = await supabase.auth.getUser()
+  // 네트워크 오류 시 잘못된 리다이렉트를 방지하기 위해 try-catch 처리
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch {
+    // 인증 서버 연결 실패 시 리다이렉트 없이 요청을 그대로 통과시킴
+    // 각 페이지에서 자체적으로 인증을 재확인함
+    return supabaseResponse
+  }
 
   // 이미 로그인 상태에서 /login 접근 시 홈으로 이동
   if (user && request.nextUrl.pathname === '/login') {
