@@ -1,13 +1,15 @@
 ---
-date: 2026-05-12
+date: 2026-05-19
 type: model-selection
 status: active
-version: 1.1
+version: 1.2
 related:
   - model-comparison.md
   - ai-prompt-v1.md
   - tech-spec.md
+  - ../archive/adr-vercel-ai-sdk.md
 changelog:
+  - "v1.2 (2026-05-19): AI 통합 라이브러리를 Vercel AI SDK로 명시 (코드 리뷰 반영, PR #100 ADR 채택). 벤더 SDK 직접 호출 예시·마이그레이션 작업량 갱신."
   - "v1.1 (2026-05-12): 선정 모델을 Claude Haiku 4.5 → Gemini 3.1 Flash-Lite로 변경 (가성비·속도 우선 정책)"
   - "v1.0 (2026-05-12): 최초 선정 (Claude Haiku 4.5)"
 ---
@@ -32,7 +34,7 @@ changelog:
 | 컨텍스트 윈도우 | 1M tokens |
 | 추정 운영비 (100 MAU) | ~$0.5/월 (캐싱 적용) |
 | 추정 운영비 (1000 MAU) | ~$5/월 |
-| SDK | `@google/genai` (Python·JavaScript), 또는 REST API 직접 호출 가능 |
+| 통합 라이브러리 | **Vercel AI SDK** (`ai` + `@ai-sdk/google`). 벤더 SDK 직접 호출 X — [ADR](../archive/adr-vercel-ai-sdk.md) 참고 |
 | 응답 지연 | Flash 대비 TTFT 2.5배 빠름. 챗봇 UX에 가장 적합 |
 
 ### 차순위 (선택 모델이 운용 중 문제 발생 시 마이그레이션 후보)
@@ -62,9 +64,9 @@ changelog:
    - 1M tokens — 멀티턴 대화가 길어져도 문제없음.
    - 라운드 1 측정 대화(8턴, 약 1.6K tokens)는 윈도우의 0.2% 수준.
 
-3. **통합 단순**
+3. **통합 단순 + 벤더 락인 회피**
    - Google AI Studio 경로면 API 키 1개로 시작 가능.
-   - REST API 직접 호출도 단순 (SDK 없이 fetch 한 줄).
+   - **Vercel AI SDK** 추상화로 한 줄 호출 (provider만 import 바꾸면 OpenAI·Anthropic·Gemini 모두 동일 코드). 자세한 결정 근거는 [`../archive/adr-vercel-ai-sdk.md`](../archive/adr-vercel-ai-sdk.md) 참고.
    - 무료 티어가 넉넉해서 개발·테스트 단계에서 결제 없이 진행 가능.
 
 4. **챗봇 UX 강점**
@@ -135,38 +137,32 @@ changelog:
 | Vercel 배포 | Vercel 대시보드 → Environment Variables | 동일 키 이름으로 등록 |
 | GitHub | **절대 커밋 금지** | `.gitignore`에 `.env*` 포함 |
 
-### 백엔드 코드 패턴 — REST 직접 호출 (참고용)
+### 백엔드 코드 패턴 — Vercel AI SDK (채택)
 
 ```typescript
 // Next.js API Route 예시: app/api/chat/route.ts
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const MODEL = "gemini-3.1-flash-lite";
+import { generateText } from "ai";
+import { google } from "@ai-sdk/google";
+// 벤더 변경 시 위 두 줄만 교체:
+// import { openai } from "@ai-sdk/openai";
+// import { anthropic } from "@ai-sdk/anthropic";
+
+const MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite";
 
 export async function POST(request: Request) {
   const { systemPrompt, messages } = await request.json();
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents: messages.map((m) => ({
-          role: m.role === "assistant" ? "model" : "user",
-          parts: [{ text: m.content }],
-        })),
-      }),
-    }
-  );
+  const { text } = await generateText({
+    model: google(MODEL),
+    system: systemPrompt,
+    messages, // [{ role: "user" | "assistant", content: "..." }]
+  });
 
-  const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
   return Response.json({ content: text });
 }
 ```
 
-→ 프론트엔드는 `/api/chat`에 fetch만 하면 됨. API 키는 절대 프론트에 안 보임.
+→ 프론트엔드는 `/api/chat`에 fetch만 하면 됨. API 키(`GOOGLE_GENERATIVE_AI_API_KEY`)는 절대 프론트에 안 보임. provider 함수와 환경변수만 바꾸면 OpenAI·Anthropic 등으로 즉시 전환 가능 — [`ADR`](../archive/adr-vercel-ai-sdk.md) §결정 사항 참고.
 
 ### 추가 보안 권장 사항
 
@@ -189,7 +185,7 @@ export async function POST(request: Request) {
 3. 백엔드:
    a. 사용자 인증·요청 제한 확인
    b. 시스템 프롬프트 + 등록 정보를 systemInstruction에 합침
-   c. Google AI API 호출 (gemini-3.1-flash-lite)
+   c. Vercel AI SDK (`generateText`)로 Gemini 호출
    d. 응답 받아서 메타 태그 후처리 (서버 사이드)
    e. [결정하기] 버튼 표시 여부 판단
 4. 백엔드 → 브라우저: { aiResponse: "...", showDecideButton: true/false }
@@ -202,15 +198,15 @@ export async function POST(request: Request) {
 
 ## 5. 변경 가능성 (마이그레이션 대비)
 
-선택 모델을 운영 중 다른 모델로 바꿀 필요가 생기면:
+선택 모델을 운영 중 다른 모델로 바꿀 필요가 생기면 — Vercel AI SDK 채택 덕에 작업량이 매우 작다:
 
 | 변경 시나리오 | 영향 범위 | 예상 작업량 |
 |---|---|---|
-| Flash-Lite → Flash (Google 내 상향) | API 호출의 model 파라미터만 변경 | 5분 |
-| Flash-Lite → Claude Haiku 4.5 (벤더 변경, 톤 우선) | SDK 교체, 메시지 포맷 변환 로직 추가 | 1~2시간 |
-| Flash-Lite → GPT-4o-mini (벤더 변경, 안정성 우선) | SDK 교체, 메시지 포맷 변환 로직 추가 | 1~2시간 |
+| Flash-Lite → Flash (Google 내 상향) | `GEMINI_MODEL` 환경변수만 변경 | 1분 |
+| Flash-Lite → Claude Haiku 4.5 (벤더 변경, 톤 우선) | provider import 1줄 (`@ai-sdk/google` → `@ai-sdk/anthropic`) + API 키 환경변수 추가 | 10분 |
+| Flash-Lite → GPT-4o-mini (벤더 변경, 안정성 우선) | provider import 1줄 (`@ai-sdk/google` → `@ai-sdk/openai`) + API 키 환경변수 추가 | 10분 |
 
-→ MVP 후 운용 데이터 보고 필요 시 비교적 짧은 시간 안에 마이그레이션 가능.
+→ MVP 후 운용 데이터 보고 즉시 마이그레이션 가능. 메시지 포맷 변환·재인증 로직은 Vercel AI SDK가 추상화하므로 추가 작업 불필요.
 
 ---
 
