@@ -16,7 +16,9 @@ export default function CoolingMeta({ coolingEndsAt, createdAt }: Props) {
   useEffect(() => {
     if (ms <= 0) return
     const id = setInterval(() => {
-      setMs(Math.max(0, new Date(coolingEndsAt).getTime() - Date.now()))
+      const remaining = Math.max(0, new Date(coolingEndsAt).getTime() - Date.now())
+      setMs(remaining)
+      if (remaining <= 0) clearInterval(id)
     }, 60000)
     return () => clearInterval(id)
   }, [coolingEndsAt]) // eslint-disable-line react-hooks/exhaustive-deps
