@@ -11,7 +11,12 @@ declare global {
       accounts: {
         id: {
           initialize: (config: object) => void
-          prompt: () => void
+          prompt: (callback?: (notification: {
+            isNotDisplayed: () => boolean
+            isSkippedMoment: () => boolean
+            getNotDisplayedReason?: () => string
+            getSkippedReason?: () => string
+          }) => void) => void
           cancel: () => void
         }
       }
@@ -30,8 +35,11 @@ export default function LoginPage() {
     const supabase = createClient()
 
     const initOneTap = () => {
+      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+      if (!clientId) return
+
       window.google?.accounts.id.initialize({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+        client_id: clientId,
         callback: async ({ credential }: { credential: string }) => {
           const { error } = await supabase.auth.signInWithIdToken({
             provider: 'google',
@@ -40,22 +48,29 @@ export default function LoginPage() {
           if (!error) router.push('/')
         },
         auto_select: true,
-        itp_support: true,
       })
-      window.google?.accounts.id.prompt()
+      window.google?.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // One Tap이 차단되거나 숨겨진 경우 — 버튼 로그인으로 자연스럽게 대체됨
+          console.debug('[One Tap]', notification.getNotDisplayedReason?.() ?? notification.getSkippedReason?.())
+        }
+      })
     }
 
     if (window.google?.accounts) {
       initOneTap()
-      return
+    } else {
+      const script = document.createElement('script')
+      script.src = 'https://accounts.google.com/gsi/client'
+      script.async = true
+      script.defer = true
+      script.onload = initOneTap
+      document.body.appendChild(script)
     }
 
-    const script = document.createElement('script')
-    script.src = 'https://accounts.google.com/gsi/client'
-    script.async = true
-    script.defer = true
-    script.onload = initOneTap
-    document.body.appendChild(script)
+    return () => {
+      window.google?.accounts.id.cancel()
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogin = async () => {
