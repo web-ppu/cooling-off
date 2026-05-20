@@ -35,12 +35,18 @@ type Props = {
  * - 매 요청마다 `messages` 전체를 API에 전달 → 이전 맥락 자동 반영.
  * - 1턴 = 사용자 메시지 1회 + AI 응답 1회.
  * - 사용자 메시지 수가 MAX_TURNS(10)에 도달하면 입력 차단.
- * - `messages` 상태는 추후 [결정하기] 버튼 클릭 시 팩트 요약(서버 `<<DECIDE>>`
+ * - `messages` 상태는 [결정하기] 버튼 클릭 시 팩트 요약(서버 `<<DECIDE>>`
  *   트리거)에 그대로 활용된다. 별도 가공 없이 messages 전체를 전달하면 됨.
  *
+ * [결정하기] 버튼 표시 신호 (issue #50)
+ * - 서버 API가 매 응답마다 `showDecideButton` 불리언을 반환.
+ * - 한 번 true가 되면 sticky로 유지(false로 돌아가지 않음). screen-spec §2-5.
+ * - 버튼이 표시된 뒤에도 사용자는 대화를 계속 이어갈 수 있다.
+ * - 클릭 시 결정 모드로 진입.
+ *
  * 본 화면 범위 외 (별도 task):
- * - [결정하기] 버튼 클릭 처리
- * - 팩트 요약 카드
+ * - 팩트 요약 카드 렌더링 (클릭 후 placeholder만 표시)
+ * - [안 삼]/[삼] 선택 + 결정 기록 저장
  * - 등록 정보 입력 flow
  */
 export default function ChatScreen({ registration }: Props) {
@@ -50,6 +56,14 @@ export default function ChatScreen({ registration }: Props) {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // issue #50: [결정하기] 표시 신호. AI 응답에서 받아 sticky로 유지.
+  const [showDecideButton, setShowDecideButton] = useState(false);
+
+  // [결정하기] 클릭 후 결정 모드 진입 여부.
+  // 팩트 요약 카드·[안 삼]/[삼] 선택은 별도 task. 이번엔 placeholder만.
+  const [isDecided, setIsDecided] = useState(false);
+
   const scrollAnchorRef = useRef<HTMLDivElement | null>(null);
 
   // 1턴 = 사용자 메시지 1회 + AI 응답 1회.
@@ -104,8 +118,12 @@ export default function ChatScreen({ registration }: Props) {
         ...prev,
         { role: "assistant", content: data.content },
       ]);
-      // showDecideButton 값은 본 화면 범위 외이지만 서버에서 정상 반환됨.
-      // 추후 [결정하기] 버튼 구현 시 여기서 상태로 받아 사용한다.
+
+      // issue #50: 표시 신호 sticky 적용.
+      // 한 번 true가 되면 다음 응답에서 false로 돌아와도 버튼은 유지된다.
+      if (data.showDecideButton) {
+        setShowDecideButton(true);
+      }
     } catch (error) {
       const message =
         error instanceof Error
@@ -122,6 +140,11 @@ export default function ChatScreen({ registration }: Props) {
       event.preventDefault();
       void handleSend();
     }
+  }
+
+  function handleDecide() {
+    // 결정 모드 진입. 팩트 요약·[안 삼]/[삼] 선택은 별도 task에서 추가.
+    setIsDecided(true);
   }
 
   return (
@@ -163,9 +186,18 @@ export default function ChatScreen({ registration }: Props) {
         <div ref={scrollAnchorRef} />
       </section>
 
-      {/* 하단 — 입력 영역 (10턴 도달 시 안내로 교체) */}
+      {/* 하단 — [결정하기] 버튼 + (입력 영역 / 10턴 안내 / 결정 모드 placeholder) */}
       <footer className="shrink-0 border-t border-zinc-100 px-6 py-4">
-        {isAtTurnLimit ? (
+        {/* issue #50: AI 신호에 따라 [결정하기] 버튼 표시.
+            screen-spec §2-5: 관점 제시 이후 입력창 위에 표시.
+            버튼 표시 후에도 사용자 대화 가능 (입력창 유지). */}
+        {showDecideButton && !isDecided && (
+          <DecideButton onClick={handleDecide} disabled={isLoading} />
+        )}
+
+        {isDecided ? (
+          <DecisionPlaceholder />
+        ) : isAtTurnLimit ? (
           <TurnLimitNotice />
         ) : (
           <>
@@ -235,10 +267,55 @@ function LoadingBubble() {
 }
 
 /**
+ * [결정하기] 버튼 (issue #50).
+ *
+ * screen-spec §2-5: 입력창 위에 표시. AI 응답에 따라 sticky로 유지.
+ * 버튼 표시 후에도 사용자는 대화를 계속할 수 있다 (입력창 유지).
+ *
+ * 팀 home page의 "로그인하고 시작하기" 버튼 톤 (rounded-full bg-zinc-900) 일치.
+ */
+function DecideButton({
+  onClick,
+  disabled,
+}: {
+  onClick: () => void;
+  disabled: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="mb-3 w-full rounded-full bg-zinc-900 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-300"
+    >
+      결정하기
+    </button>
+  );
+}
+
+/**
+ * [결정하기] 클릭 후 결정 모드 진입 placeholder.
+ *
+ * screen-spec §2-5: "[결정하기]를 누르면 채팅 입력창이 사라지고, 대화 아래에
+ * 팩트 요약 카드가 표시됩니다." → 팩트 요약 카드·[안 삼]/[삼] 선택은 별도 task.
+ * 본 PR에서는 입력창만 사라지고 placeholder 안내만 표시한다.
+ */
+function DecisionPlaceholder() {
+  return (
+    <div
+      role="status"
+      className="rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 text-center text-sm text-zinc-600"
+    >
+      결정 모드로 들어갔어. 팩트 요약과 [안 삼]/[삼] 선택은 다음 단계에서 추가될 예정.
+    </div>
+  );
+}
+
+/**
  * 10턴 도달 시 입력 영역 자리에 표시.
  *
  * screen-spec §2-5: "추가 입력을 비활성화한다. 이때 [결정하기] 버튼만 남긴다."
- * [결정하기] 버튼은 별도 task — 현재는 안내만 표시한다.
+ * → [결정하기] 버튼은 위에 sticky로 표시 중. 본 안내는 추가 안내 역할.
  */
 function TurnLimitNotice() {
   return (
