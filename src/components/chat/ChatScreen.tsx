@@ -42,11 +42,17 @@ type Props = {
  * - 서버 API가 매 응답마다 `showDecideButton` 불리언을 반환.
  * - 한 번 true가 되면 sticky로 유지(false로 돌아가지 않음). screen-spec §2-5.
  * - 버튼이 표시된 뒤에도 사용자는 대화를 계속 이어갈 수 있다.
- * - 클릭 시 결정 모드로 진입.
+ *
+ * 결정 직전 요약 (issue #51)
+ * - [결정하기] 클릭 시 `<<DECIDE>>`를 메시지에 붙여 API 호출.
+ * - 서버는 시스템 프롬프트의 팩트 요약 모드로 전환되어 사용자가 직접
+ *   말하거나 인정한 사실만 불릿 목록으로 반환.
+ * - 요약 카드 + [안 삼]/[삼] 버튼 표시 (screen-spec §2-5).
+ * - 사실이 1개도 없으면("요약할 사실 없음.") 카드 없이 바로 버튼만 표시.
  *
  * 본 화면 범위 외 (별도 task):
- * - 팩트 요약 카드 렌더링 (클릭 후 placeholder만 표시)
- * - [안 삼]/[삼] 선택 + 결정 기록 저장
+ * - 결정 기록 DB 저장
+ * - 결정 후 화면 이동 (기록 화면 등)
  * - 등록 정보 입력 flow
  */
 export default function ChatScreen({ registration }: Props) {
@@ -61,8 +67,16 @@ export default function ChatScreen({ registration }: Props) {
   const [showDecideButton, setShowDecideButton] = useState(false);
 
   // [결정하기] 클릭 후 결정 모드 진입 여부.
-  // 팩트 요약 카드·[안 삼]/[삼] 선택은 별도 task. 이번엔 placeholder만.
   const [isDecided, setIsDecided] = useState(false);
+
+  // issue #51: 팩트 요약 텍스트. API의 <<DECIDE>> 응답 본문.
+  // null이면 아직 로딩 중 또는 미호출, 빈 문자열이면 "요약할 사실 없음."으로 간주.
+  const [factSummary, setFactSummary] = useState<string | null>(null);
+
+  // 최종 결정 ([안 삼] / [삼]) 후 상태. 결정 기록 저장은 별도 task.
+  const [finalDecision, setFinalDecision] = useState<"안 삼" | "삼" | null>(
+    null
+  );
 
   const scrollAnchorRef = useRef<HTMLDivElement | null>(null);
 
@@ -142,9 +156,53 @@ export default function ChatScreen({ registration }: Props) {
     }
   }
 
-  function handleDecide() {
-    // 결정 모드 진입. 팩트 요약·[안 삼]/[삼] 선택은 별도 task에서 추가.
+  async function handleDecide() {
+    // 결정 모드 진입 + 팩트 요약 호출 (issue #51).
     setIsDecided(true);
+    setErrorMessage(null);
+    setIsLoading(true);
+    setFactSummary(null);
+
+    try {
+      // <<DECIDE>>는 시스템 프롬프트의 트리거 토큰.
+      // 시각적 메시지로 추가하지 않고 API payload에만 포함한다.
+      const messagesForDecide: ChatMessage[] = [
+        ...messages,
+        { role: "user", content: "<<DECIDE>>" },
+      ];
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          registration,
+          messages: messagesForDecide,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`서버 오류 (${response.status})`);
+      }
+
+      const data: { content: string; showDecideButton: boolean } =
+        await response.json();
+      setFactSummary(data.content);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "알 수 없는 오류가 발생했습니다.";
+      setErrorMessage(`팩트 요약을 불러오지 못했습니다: ${message}`);
+      // 실패 시 결정 모드 해제 — 사용자가 [결정하기]를 다시 누를 수 있게.
+      setIsDecided(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function handleFinalDecision(decision: "안 삼" | "삼") {
+    // 결정 기록 DB 저장·기록 화면 이동은 별도 task.
+    setFinalDecision(decision);
   }
 
   return (
@@ -186,17 +244,29 @@ export default function ChatScreen({ registration }: Props) {
         <div ref={scrollAnchorRef} />
       </section>
 
-      {/* 하단 — [결정하기] 버튼 + (입력 영역 / 10턴 안내 / 결정 모드 placeholder) */}
+      {/* 하단 — 상황별 분기:
+          - 결정 모드 (isDecided=true): 팩트 요약 카드 + [안 삼]/[삼] 또는 최종 결정 placeholder
+          - 10턴 도달: TurnLimitNotice + [결정하기] 버튼
+          - 관점 제시 후: 입력창 + [결정하기] 버튼
+          - 초기: 입력창만 */}
       <footer className="shrink-0 border-t border-zinc-100 px-6 py-4">
-        {/* issue #50: AI 신호에 따라 [결정하기] 버튼 표시.
-            screen-spec §2-5: 관점 제시 이후 입력창 위에 표시.
-            버튼 표시 후에도 사용자 대화 가능 (입력창 유지). */}
+        {/* issue #50: 결정 모드 진입 전에만 [결정하기] 버튼 표시.
+            screen-spec §2-5: 관점 제시 이후 입력창 위에 표시. */}
         {showDecideButton && !isDecided && (
-          <DecideButton onClick={handleDecide} disabled={isLoading} />
+          <DecideButton onClick={() => void handleDecide()} disabled={isLoading} />
         )}
 
         {isDecided ? (
-          <DecisionPlaceholder />
+          finalDecision ? (
+            <FinalDecisionPlaceholder decision={finalDecision} />
+          ) : isLoading ? (
+            <SummaryLoading />
+          ) : (
+            <FactSummarySection
+              summary={factSummary}
+              onDecision={handleFinalDecision}
+            />
+          )
         ) : isAtTurnLimit ? (
           <TurnLimitNotice />
         ) : (
@@ -294,19 +364,95 @@ function DecideButton({
 }
 
 /**
- * [결정하기] 클릭 후 결정 모드 진입 placeholder.
+ * 팩트 요약 로딩 인디케이터 (issue #51).
  *
- * screen-spec §2-5: "[결정하기]를 누르면 채팅 입력창이 사라지고, 대화 아래에
- * 팩트 요약 카드가 표시됩니다." → 팩트 요약 카드·[안 삼]/[삼] 선택은 별도 task.
- * 본 PR에서는 입력창만 사라지고 placeholder 안내만 표시한다.
+ * [결정하기] 클릭 직후 API 호출 중 표시.
  */
-function DecisionPlaceholder() {
+function SummaryLoading() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex items-center justify-center gap-2 rounded-md border border-zinc-200 bg-zinc-50 px-4 py-6 text-sm text-zinc-500"
+    >
+      <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.3s]" />
+      <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.15s]" />
+      <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-400" />
+      <span className="ml-2">팩트 요약 만드는 중…</span>
+    </div>
+  );
+}
+
+/**
+ * 팩트 요약 카드 + [안 삼]/[삼] 버튼 (issue #51).
+ *
+ * screen-spec §2-5:
+ * - 요약은 대화에서 나온 사실만 포함
+ * - 요약 아래 [안 삼]/[삼] 버튼 (대칭 — PRD 원칙 3 결정 중립성)
+ * - 사실이 1개도 없으면 카드 없이 바로 버튼만 표시
+ */
+function FactSummarySection({
+  summary,
+  onDecision,
+}: {
+  summary: string | null;
+  onDecision: (decision: "안 삼" | "삼") => void;
+}) {
+  const trimmed = summary?.trim() ?? "";
+  // screen-spec: 사실이 없으면 카드 미표시.
+  // 서버 시스템 프롬프트는 사실 없을 때 정확히 "요약할 사실 없음."을 반환.
+  const hasSummary = trimmed.length > 0 && trimmed !== "요약할 사실 없음.";
+
+  return (
+    <div className="space-y-3">
+      {hasSummary && (
+        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            대화에서 정리된 사실
+          </div>
+          <div className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-800">
+            {trimmed}
+          </div>
+        </div>
+      )}
+
+      {/* [안 삼] / [삼] 버튼 — 대칭 시각 비중 (PRD 원칙 3 결정 중립성) */}
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => onDecision("안 삼")}
+          className="rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-50"
+        >
+          안 삼
+        </button>
+        <button
+          type="button"
+          onClick={() => onDecision("삼")}
+          className="rounded-full bg-zinc-900 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-zinc-700"
+        >
+          삼
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * [안 삼] / [삼] 선택 후 placeholder.
+ *
+ * 결정 기록 DB 저장·기록 화면 이동은 별도 task. 본 PR에서는 안내만 표시.
+ */
+function FinalDecisionPlaceholder({
+  decision,
+}: {
+  decision: "안 삼" | "삼";
+}) {
   return (
     <div
       role="status"
       className="rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 text-center text-sm text-zinc-600"
     >
-      결정 모드로 들어갔어. 팩트 요약과 [안 삼]/[삼] 선택은 다음 단계에서 추가될 예정.
+      <span className="font-medium text-zinc-900">[{decision}]</span> 으로 결정했어. 결정 기록 저장은 다음 단계에서 추가될 예정.
     </div>
   );
 }
