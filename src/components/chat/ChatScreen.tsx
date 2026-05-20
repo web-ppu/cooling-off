@@ -6,6 +6,7 @@ import {
   type ChatMessage,
   type Registration,
 } from "@/lib/chat/systemPrompt";
+import { saveDecision, type DecisionLabel } from "@/app/chat/actions";
 
 const MAX_MESSAGE_LENGTH = 500;
 
@@ -17,6 +18,17 @@ const MAX_TURNS = 10;
 
 type Props = {
   registration: Registration;
+  /**
+   * 결정 결과를 저장할 items 행의 ID.
+   *
+   * 있으면 [안 삼]/[삼] 클릭 시 saveDecision Server Action으로 Supabase에
+   * 저장하고 홈으로 리다이렉트한다. 없으면 stub 모드 (DB 저장 스킵, 화면
+   * placeholder만 표시) — 현재 `/chat` 라우트 Case A 하드코딩 상황 대응용.
+   *
+   * 추후 `/chat/[itemId]` 동적 라우트가 생기면 페이지에서 itemId를 받아
+   * 그대로 전달하면 된다. issue #52 통합 지점.
+   */
+  itemId?: string;
 };
 
 /**
@@ -55,7 +67,7 @@ type Props = {
  * - 결정 후 화면 이동 (기록 화면 등)
  * - 등록 정보 입력 flow
  */
-export default function ChatScreen({ registration }: Props) {
+export default function ChatScreen({ registration, itemId }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: "assistant", content: FIRST_AI_MESSAGE },
   ]);
@@ -200,9 +212,36 @@ export default function ChatScreen({ registration }: Props) {
     }
   }
 
-  function handleFinalDecision(decision: "안 삼" | "삼") {
-    // 결정 기록 DB 저장·기록 화면 이동은 별도 task.
+  async function handleFinalDecision(decision: "안 삼" | "삼") {
+    // UI 즉시 반영 (사용자가 클릭 직후 처리 진행 중임을 알 수 있게)
     setFinalDecision(decision);
+
+    if (!itemId) {
+      // stub 모드: itemId가 없으면 DB 저장 스킵.
+      // 현재 /chat 라우트의 Case A 하드코딩 상황. 추후 /chat/[itemId] 도입 시 자동 통합.
+      return;
+    }
+
+    // issue #52: 결정 결과 + 대화 기록 + 요약을 Supabase에 저장.
+    // Server Action이 성공 시 redirect('/')로 홈 이동 (현재 컴포넌트는 더 이상 렌더되지 않음).
+    const dbDecision: DecisionLabel = decision === "삼" ? "bought" : "passed";
+    try {
+      await saveDecision({
+        itemId,
+        decision: dbDecision,
+        factSummary,
+        // <<DECIDE>>·요약 응답은 messages 상태에 없으므로 그대로 전달하면 됨.
+        messages: messages.map((m) => ({ role: m.role, content: m.content })),
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "알 수 없는 오류가 발생했습니다.";
+      setErrorMessage(`결정 저장 실패: ${message}`);
+      // 저장 실패 시 다시 선택할 수 있도록 finalDecision 해제
+      setFinalDecision(null);
+    }
   }
 
   return (
@@ -396,7 +435,8 @@ function FactSummarySection({
   onDecision,
 }: {
   summary: string | null;
-  onDecision: (decision: "안 삼" | "삼") => void;
+  /** async 가능 — DB 저장은 Server Action이라 Promise를 반환할 수 있다. */
+  onDecision: (decision: "안 삼" | "삼") => void | Promise<void>;
 }) {
   const trimmed = summary?.trim() ?? "";
   // screen-spec: 사실이 없으면 카드 미표시.
@@ -420,14 +460,14 @@ function FactSummarySection({
       <div className="grid grid-cols-2 gap-2">
         <button
           type="button"
-          onClick={() => onDecision("안 삼")}
+          onClick={() => void onDecision("안 삼")}
           className="rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-50"
         >
           안 삼
         </button>
         <button
           type="button"
-          onClick={() => onDecision("삼")}
+          onClick={() => void onDecision("삼")}
           className="rounded-full bg-zinc-900 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-zinc-700"
         >
           삼
