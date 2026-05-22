@@ -7,7 +7,7 @@ import {
 } from "@/lib/chat/systemPrompt";
 import { getMockResponse } from "@/lib/chat/mockResponses";
 
-const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash-lite";
+const DEFAULT_GEMINI_MODEL = "gemini-3.1-flash-lite";
 
 /**
  * POST /api/chat
