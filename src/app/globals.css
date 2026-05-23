@@ -26,6 +26,7 @@ body {
 
 @layer components {
 
+/* ── doc-tag ────────────────────────────────────────────────── */
 .doc-tag {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -193,6 +194,7 @@ body {
   margin-bottom: 20px;
   flex-wrap: wrap;
 }
+<<<<<<< HEAD
 .doc-tag {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -207,6 +209,8 @@ body {
   display: inline-block;
 }
 .doc-tag-accent { background: var(--accent); }
+=======
+>>>>>>> ae7911d (feat: implement history feature with monthly grouping and detail view)
 .doc-title {
   font-size: 48px;
   font-weight: 800;
