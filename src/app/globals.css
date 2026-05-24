@@ -21,6 +21,7 @@ body {
   --line-active: #78a8ff;
   --accent: #78a8ff;
   --accent-soft: #dde9ff;
+  --danger: #d93025;
 }
 
 /* ── custom components ──────────────────────────────────────── */
@@ -216,5 +217,157 @@ body {
   border: 2px dashed var(--line-default);
   background: var(--surface);
 }
+
+/* ── register form ──────────────────────────────────────────── */
+.pc-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 32px;
+  align-items: start;
+}
+@media (max-width: 768px) {
+  .pc-form-grid { grid-template-columns: 1fr; }
+}
+
+.doc-form {
+  background: var(--surface);
+  border: 2px solid var(--line-default);
+}
+.doc-row {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  border-bottom: 2px solid var(--line-default);
+}
+.doc-row:last-of-type { border-bottom: none; }
+.doc-row-num {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 2px solid var(--line-default);
+  background: var(--surface-2);
+}
+.doc-row-num.accent { background: var(--accent); }
+.doc-row-body { padding: 18px 24px 22px; }
+.doc-row-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.doc-row-label .opt {
+  text-transform: none;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+.doc-form-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  gap: 16px;
+  border-top: 2px solid var(--line-default);
+}
+
+.field-input,
+.field-textarea {
+  appearance: none;
+  background: var(--surface);
+  border: 2px solid var(--line-default);
+  border-radius: 0;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 15px;
+  padding: 10px 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.field-input:focus,
+.field-textarea:focus { border-color: var(--line-active); }
+.field-input:disabled,
+.field-textarea:disabled { opacity: 0.4; cursor: not-allowed; }
+.field-textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+.field-error {
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+.field-help {
+  color: var(--ink-3);
+  font-size: 13px;
+  margin-top: 6px;
+  letter-spacing: -0.01em;
+}
+
+/* ── cooling info sidebar ───────────────────────────────────── */
+.pc-cooling-info {
+  background: var(--surface);
+  border: 2px solid var(--line-default);
+  position: sticky;
+  top: 80px;
+}
+.cooling-info-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--line-default);
+}
+.cooling-info-big {
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-align: center;
+  padding: 22px 16px 6px;
+  font-variant-numeric: tabular-nums;
+}
+.cooling-info-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  text-align: center;
+  padding: 0 16px 16px;
+  text-transform: uppercase;
+}
+.cooling-info-table {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  border-top: 2px solid var(--line-default);
+}
+.cooling-info-table-head {
+  display: grid;
+  grid-template-columns: 36px 1fr 44px;
+  padding: 8px 14px;
+  color: var(--ink-4);
+  letter-spacing: 0.08em;
+  font-size: 10px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--surface-2);
+}
+.cooling-info-row {
+  display: grid;
+  grid-template-columns: 36px 1fr 44px;
+  padding: 7px 14px;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--surface-2);
+  transition: background 0.1s;
+}
+.cooling-info-row:last-child { border-bottom: none; }
+.cooling-info-row.active {
+  background: color-mix(in oklab, var(--accent) 20%, var(--surface));
+  color: var(--ink);
+  font-weight: 700;
+}
+.cooling-info-band { color: var(--ink-4); }
+.cooling-info-row.active .cooling-info-band { color: var(--ink); }
 
 } /* end @layer components */

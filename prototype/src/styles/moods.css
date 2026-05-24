@@ -1,0 +1,182 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Brutalist — Thick borders + blue highlight
+   The only mood. Applied globally.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Cross-mood helpers (kept so styles.css's `var(--font-sans)` etc resolve) */
+body { font-family: var(--font-sans); letter-spacing: var(--tracking, -0.01em); }
+.pc-page-title, .pc-nav-brand, .app-header .brand {
+  font-family: var(--font-display, var(--font-sans));
+  letter-spacing: var(--tracking-tight, -0.025em);
+}
+.btn { border-radius: var(--radius-sm); border-width: var(--border-w, 1px); }
+.pc-item-card, .item-card {
+  border-radius: var(--radius-sm);
+  border-width: var(--border-w, 1px);
+}
+
+/* ── Tokens ─────────────────────────────────────────────────────────── */
+:root {
+  --font-sans: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+  --font-display: var(--font-sans);
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f0f0f0;
+  --surface-3: #e0e0e0;
+  --line: #0a0a0a;
+  --line-strong: #0a0a0a;
+  --ink: #0a0a0a;
+  --ink-2: #1a1a1a;
+  --ink-3: #4a4a4a;
+  --ink-4: #8a8a8a;
+  --accent: #78a8ff;
+  --accent-soft: #dde9ff;
+  --warm: #0a0a0a;
+  --warm-soft: #fff5b0;
+  --danger: #d83a2c;        /* red — destructive / passed */
+  --success: #1f8a4c;       /* green — bought / completed */
+
+  /* Border system — uniform 2px, color encodes state */
+  --border-w: 2px;
+  --line-default: #0a0a0a;  /* default / idle */
+  --line-active:  #78a8ff;  /* in-progress / selected / awaiting */
+  --line-muted:   #8a8a8a;  /* disabled / secondary */
+  --line-danger:  #d83a2c;  /* destructive */
+  --line-success: #1f8a4c;  /* completed positive */
+
+  --radius: 0;
+  --radius-sm: 0;
+  --tracking: 0;
+  --tracking-tight: -0.005em;
+  --shadow-card: none;
+  --shadow-pop: 4px 4px 0 var(--ink);
+}
+
+body { font-feature-settings: normal; }
+
+/* ── Type ───────────────────────────────────────────────────────────── */
+.pc-page-title,
+.pc-nav-brand,
+.app-header .brand {
+  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  font-weight: 700;
+}
+.label,
+.section-head .title {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Shell ──────────────────────────────────────────────────────────── */
+.pc-nav,
+.app-header { border-bottom: 2px solid var(--ink); }
+
+/* ── Cards ──────────────────────────────────────────────────────────── */
+.pc-item-card,
+.item-card {
+  border: 2px solid var(--line-default);
+  border-radius: 0;
+  background: var(--surface);
+}
+.pc-item-card.ready,
+.item-card.ready {
+  border-color: var(--line-active);
+  background: var(--surface);
+}
+.pc-item-card:hover,
+.item-card:hover {
+  background: var(--accent);
+  border-color: var(--line-default);
+}
+.pc-item-card.ready:hover,
+.item-card.ready:hover {
+  background: var(--accent);
+  border-color: var(--line-default);
+}
+.pc-item-card .name,
+.item-card .name {
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────── */
+.btn {
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.btn-primary:hover { background: var(--ink); color: var(--accent); }
+.pc-nav-link.active {
+  background: var(--accent);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 0;
+}
+
+/* ── Chat ───────────────────────────────────────────────────────────── */
+.chat-stream {
+  gap: 14px;
+  padding: 18px 16px 12px;
+}
+.bubble {
+  border: 2px solid var(--ink) !important;
+  border-radius: 0 !important;
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 82%;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.bubble.ai {
+  background: var(--surface) !important;
+  color: var(--ink) !important;
+  align-self: flex-start;
+}
+.bubble.user {
+  background: var(--accent) !important;
+  color: var(--ink) !important;
+  align-self: flex-end;
+}
+.bubble.system {
+  align-self: center;
+  background: var(--surface-2) !important;
+  color: var(--ink-3) !important;
+  border: 2px solid var(--line-default) !important;
+  box-shadow: none;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10.5px;
+  padding: 5px 10px;
+  max-width: none;
+}
+.chat-input-bar {
+  border-top: 2px solid var(--ink);
+  background: var(--surface);
+}
+.chat-input {
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.chat-input:focus { box-shadow: 3px 3px 0 var(--ink); }
+.chat-send {
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  background: var(--accent);
+  color: var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.chat-send:hover { background: var(--ink); color: var(--accent); }
