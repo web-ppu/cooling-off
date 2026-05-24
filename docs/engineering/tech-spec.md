@@ -16,6 +16,7 @@
 - 냉각기가 끝난 항목은 결정 대기 상태로 표시합니다.
 - 냉각기 만료 시 알림을 제공합니다. 알림은 웹 기술 스택 안에서 구현합니다.
 - 현재 MVP의 AI 채팅은 mock 기반이며, 이후 실제 AI API 연결을 검토합니다.
+- AI API 통합은 Vercel AI SDK 단독으로 합니다. 벤더 SDK 직접 호출은 지양합니다. 결정 근거: [`../archive/adr-vercel-ai-sdk.md`](../archive/adr-vercel-ai-sdk.md).
 
 ---
 
@@ -49,6 +50,7 @@
 - 요구사항: [`../pm/prd.md`](../pm/prd.md)
 - 화면 정책: [`../design/screen-spec.md`](../design/screen-spec.md)
 - AI 프롬프트: [`./ai-prompt-v1.md`](./ai-prompt-v1.md)
+- AI 통합 라이브러리 결정: [`../archive/adr-vercel-ai-sdk.md`](../archive/adr-vercel-ai-sdk.md)
 
 ---
 
@@ -80,7 +82,7 @@
 | 단계 | 구현 |
 |------|------|
 | MVP | `/api/chat` POST, mock 응답. 응답 스키마: `{ message, providedNewPerspective, isFinalTurn }` |
-| Phase 2 | Anthropic SDK 교체 — 동일 스키마 유지 |
+| Phase 2 | Vercel AI SDK로 실제 모델 연결 (`ai` + `@ai-sdk/google` + `@ai-sdk/react`). 동일 스키마 유지. 모델·API 키는 환경변수로 분리. 결정 근거: [`../archive/adr-vercel-ai-sdk.md`](../archive/adr-vercel-ai-sdk.md) |
 
 - `providedNewPerspective: true` 일 때 클라이언트가 [결정하기] 버튼 노출
 - [결정하기] 노출 조건과 냉각 기간 단위는 추후 변경 가능성 있음
