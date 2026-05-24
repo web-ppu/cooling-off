@@ -9,14 +9,13 @@ interface Props {
 }
 
 export default function CoolingMeta({ coolingEndsAt, createdAt }: Props) {
-  const [ms, setMs] = useState(() =>
-    Math.max(0, new Date(coolingEndsAt).getTime() - Date.now())
-  )
+  const [ms, setMs] = useState<number | null>(null)
 
   useEffect(() => {
-    if (ms <= 0) return
+    const calc = () => Math.max(0, new Date(coolingEndsAt).getTime() - Date.now())
+    setMs(calc())
     const id = setInterval(() => {
-      const remaining = Math.max(0, new Date(coolingEndsAt).getTime() - Date.now())
+      const remaining = calc()
       setMs(remaining)
       if (remaining <= 0) clearInterval(id)
     }, 60000)
@@ -26,12 +25,12 @@ export default function CoolingMeta({ coolingEndsAt, createdAt }: Props) {
   const totalMs =
     new Date(coolingEndsAt).getTime() - new Date(createdAt).getTime()
   const progress =
-    totalMs > 0 ? Math.max(0, Math.min(1, 1 - ms / totalMs)) : 1
+    ms !== null && totalMs > 0 ? Math.max(0, Math.min(1, 1 - ms / totalMs)) : 0
 
   return (
     <>
       <div className="pc-item-card-meta">
-        {formatRemainingShort(ms)} · {formatReadyAt(coolingEndsAt)}
+        {ms !== null ? `${formatRemainingShort(ms)} · ${formatReadyAt(coolingEndsAt)}` : formatReadyAt(coolingEndsAt)}
       </div>
       <div className="cooling-progress" aria-hidden="true">
         <span style={{ width: `${progress * 100}%` }} />

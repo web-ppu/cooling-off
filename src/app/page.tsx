@@ -3,6 +3,7 @@ import AppHeader from '@/components/app-header'
 import CoolingMeta from '@/components/cooling-meta'
 import Link from 'next/link'
 import { formatKRW } from '@/lib/format'
+import { transitionExpiredItems } from '@/lib/items'
 import type { Item } from '@/lib/supabase/types'
 
 export const dynamic = 'force-dynamic'
@@ -16,6 +17,9 @@ export default async function Home() {
   if (!user) {
     return <NonAuthHome />
   }
+
+  // 만료된 냉각 항목을 결정 대기로 전환 (앱 재진입 시 상태 동기화)
+  await transitionExpiredItems(supabase)
 
   const { data } = await supabase
     .from('items')
