@@ -20,12 +20,12 @@ export default function CoolingMeta({ coolingEndsAt, createdAt }: Props) {
       if (remaining <= 0) clearInterval(id)
     }, 60000)
     return () => clearInterval(id)
-  }, [coolingEndsAt])
+  }, [coolingEndsAt]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalMs =
     new Date(coolingEndsAt).getTime() - new Date(createdAt).getTime()
   const progress =
-    ms !== null && totalMs > 0 ? Math.max(0, Math.min(1, 1 - ms / totalMs)) : 0
+    totalMs > 0 ? Math.max(0, Math.min(1, 1 - ms / totalMs)) : 1
 
   return (
     <>

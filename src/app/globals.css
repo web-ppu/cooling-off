@@ -193,6 +193,19 @@ body {
   margin-bottom: 20px;
   flex-wrap: wrap;
 }
+.doc-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 2px solid var(--line-default);
+  background: var(--surface);
+  color: var(--ink);
+  white-space: nowrap;
+  display: inline-block;
+}
 .doc-tag-accent { background: var(--accent); }
 .doc-title {
   font-size: 48px;
@@ -363,6 +376,7 @@ body {
   grid-template-columns: 56px 1fr;
   border-bottom: 2px solid var(--line-default);
 }
+.doc-row:last-of-type { border-bottom: none; }
 .doc-row-num {
   font-family: var(--font-mono);
   font-size: 22px;
