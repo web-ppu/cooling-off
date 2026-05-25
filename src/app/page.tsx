@@ -166,7 +166,7 @@ function ReadyCard({
   item: Pick<Item, 'id' | 'name' | 'price'>
 }) {
   return (
-    <Link href={`/chat/${item.id}`} className="pc-item-card">
+    <Link href={`/chat/${item.id}`} className="pc-item-card ready">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <div className="pc-item-card-name">{item.name}</div>
