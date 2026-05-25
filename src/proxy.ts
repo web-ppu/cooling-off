@@ -40,7 +40,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // 비로그인 상태에서 보호된 라우트 접근 시 로그인으로 이동
-  const protectedPaths = ['/register', '/history', '/cooling', '/chat', '/items']
+  const protectedPaths = ['/register', '/history', '/cooling', '/chat', '/items', '/admin']
   const isProtected = protectedPaths.some((p) =>
     request.nextUrl.pathname.startsWith(p)
   )
