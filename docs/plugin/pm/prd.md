@@ -5,11 +5,14 @@
 >
 > | 관련 문서 | 경로 |
 > |----------|------|
-> | 설계 개요 (design doc) | `../README.md` |
-> | 본 서비스 PRD | `../../pm/prd.md` |
-> | 기획 배경 | `../../pm/기획-배경.md` |
-> | 화면 정책 | `../../design/screen-spec.md` |
-> | 개발 참고 메모 | `../../engineering/tech-spec.md` |
+> | 설계 개요 (design doc) | [`../README.md`](../README.md) |
+> | 확장 기술 명세 | [`../engineering/tech-spec.md`](../engineering/tech-spec.md) |
+> | 확장 빌드 일정 | [`../engineering/build-plan.md`](../engineering/build-plan.md) |
+> | 개입 정책 ADR | [`../engineering/adr/intervention-policy.md`](../engineering/adr/intervention-policy.md) |
+> | 본 서비스 PRD | [`../../pm/prd.md`](../../pm/prd.md) |
+> | 본 서비스 기획 배경 | [`../../pm/기획-배경.md`](../../pm/기획-배경.md) |
+> | 본 서비스 화면 정책 | [`../../design/screen-spec.md`](../../design/screen-spec.md) |
+> | 본 서비스 기술 메모 | [`../../engineering/tech-spec.md`](../../engineering/tech-spec.md) |
 
 Status: DRAFT
 Branch: docs/add-plugin-feature-docs
@@ -27,7 +30,7 @@ Generated: 2026-05-20 (`/pm-execution:create-prd` 기반 + `../README.md` 동기
 
 | 이름 | 역할 | 비고 |
 |------|------|------|
-| (작성자) | PM / 캡스톤 책임자 | prd.md와 동일 |
+| (작성자) | PM / 캡스톤 책임자 | `../../pm/prd.md`와 동일 |
 | (작성자) | Frontend / Extension 개발 | content script + popup + SW 전부 담당 |
 | 지도교수 | 평가·심사 | 시연 + 결정 근거 문서화로 평가 |
 
@@ -210,7 +213,7 @@ popup 설정 메뉴와 모달 내 옵션으로 제공:
 
 - Week 0 — 유사 확장 조사로 경쟁 제품의 트리거·제외·빈도·제어 정책 5건 이상 정리 (Q6, `TODO-10`).
 - Week 5 — 사용자 테스트 1~2회에서 "노이즈로 느꼈는가 / 어디서 끄고 싶었는가"를 인터뷰. 결과는 ADR 추가 또는 정책 수정으로 반영.
-- 본 정책 결정의 근거는 별도 ADR (`docs/plugin/adr/intervention-policy.md`)로 분리해 발표 자료에 포함.
+- 본 정책 결정의 근거는 별도 ADR ([`../engineering/adr/intervention-policy.md`](../engineering/adr/intervention-policy.md))로 분리해 발표 자료에 포함.
 
 #### V1에서 제외한 정책 항목 (Phase 2 후보)
 
@@ -221,7 +224,7 @@ popup 설정 메뉴와 모달 내 옵션으로 제공:
 
 ### 7.2 사용자 흐름 (UX 와이어플로우)
 
-**소프트 인터셉트 시나리오** (`../README.md` 데이터 흐름 절 발췌):
+**소프트 인터셉트 시나리오** ([`../engineering/tech-spec.md`](../engineering/tech-spec.md) §7 데이터 흐름 절과 동기화):
 
 ```mermaid
 flowchart TD
@@ -301,7 +304,7 @@ flowchart LR
 - DB 측 부분 unique index (`items (user_id, url) WHERE deleted_at IS NULL AND url IS NOT NULL`).
 - 충돌 시 모달은 "이미 등록된 항목이 있어요" 표시.
 
-#### EX-7. 실패 경로 명시 (`../README.md` Issue 4 그대로 반영)
+#### EX-7. 실패 경로 명시 ([`../engineering/tech-spec.md`](../engineering/tech-spec.md) §6 그대로 반영)
 
 1. **Optimistic UI 금지** — insert 성공 응답 전까지 토스트 띄우지 않음. 실패 시 인라인 에러 + [다시 시도].
 2. **Session expired** — 401 시 SW가 refresh token 시도, 실패 시 popup으로 재인증 유도. 입력 중이던 데이터는 `chrome.storage.session`에 보관.
@@ -310,7 +313,7 @@ flowchart LR
 
 ### 7.4 기술 (참고)
 
-상세는 `../README.md` "아키텍처 개요" 절 참조. PRD 수준에서는 다음 결정만 명시:
+상세는 [`../engineering/tech-spec.md`](../engineering/tech-spec.md) §3 아키텍처 개요 참조. PRD 수준에서는 다음 결정만 명시:
 
 - **Manifest V3** 단일. V2는 다루지 않음.
 - **Chrome / Edge** 우선. Firefox 호환성은 Phase 2.
@@ -336,7 +339,7 @@ flowchart LR
 
 ### 얼마나 걸리는가
 
-캡스톤 8주 권장 (6주는 빠듯). `../README.md` "Next Steps" 절에서 주차별 작업이 이미 확정되어 있으며, 본 PRD는 그것을 다음과 같이 묶습니다.
+캡스톤 8주 권장 (6주는 빠듯). [`../engineering/build-plan.md`](../engineering/build-plan.md)에 주차별 작업이 상세히 확정되어 있으며, 본 PRD는 그것을 다음과 같이 묶습니다.
 
 ### V1 (캡스톤 시연 범위 — 8주)
 
@@ -363,7 +366,7 @@ flowchart LR
 - `TODO-1` Chrome Web Store 정식 등록 + 자동 업데이트 파이프라인.
 - `TODO-2` 셀렉터 회귀 알림 (CI fixture 미매칭 시 Slack/이메일).
 - `TODO-3` Firefox 포트 (`browser.identity` 어댑터, manifest 차이).
-- `TODO-4` Heuristic generic intercept (`plugin-overview.md` Approach C 휴리스틱 detector).
+- `TODO-4` Heuristic generic intercept (`../README.md` Approach C 휴리스틱 detector).
 - `TODO-5` 확장 ↔ 본 서비스 세션 SSO.
 - `TODO-6` 실 사용자 행동 정량 측정 ([안 삼] 선택률 변화, 7일 리텐션).
 
@@ -403,7 +406,7 @@ flowchart LR
 
 | Review | Trigger | Status | 비고 |
 |--------|---------|--------|------|
-| `/plan-eng-review` | Architecture & tests | CLEAR | `plugin-overview.md`에서 7개 이슈 모두 해결됨 |
+| `/plan-eng-review` | Architecture & tests | CLEAR | [`../engineering/tech-spec.md`](../engineering/tech-spec.md) §11에서 7개 이슈 모두 해결됨 |
 | `/pm-execution:create-prd` | 본 PRD 생성 | 본 문서 | — |
 | `/plan-ceo-review` | Scope & strategy | 미수행 | 캡스톤 범위 합의 후 생략 가능 |
 | `/plan-design-review` | UI/UX gaps | 미수행 | 모달 디자인 확정 시점에 권장 |
