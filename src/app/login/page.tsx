@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 declare global {
@@ -25,8 +25,21 @@ declare global {
 }
 
 export default function LoginPage() {
+  // useSearchParams 는 Suspense 경계 안에서 호출되어야 한다(Next.js App Router 규약).
+  return (
+    <Suspense fallback={<LoginShell />}>
+      <LoginInner />
+    </Suspense>
+  )
+}
+
+function LoginInner() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const initRef = useRef(false)
+  const [authError, setAuthError] = useState<string | null>(
+    searchParams.get('error') ? '로그인에 실패했습니다. 다시 시도해 주세요.' : null
+  )
 
   useEffect(() => {
     if (initRef.current) return
@@ -45,7 +58,12 @@ export default function LoginPage() {
             provider: 'google',
             token: credential,
           })
-          if (!error) router.push('/')
+          if (error) {
+            console.error('[One Tap login]', error)
+            setAuthError('로그인에 실패했습니다. 다시 시도해 주세요.')
+            return
+          }
+          router.push('/')
         },
         auto_select: true,
       })
@@ -65,6 +83,10 @@ export default function LoginPage() {
       script.async = true
       script.defer = true
       script.onload = initOneTap
+      script.onerror = () => {
+        // Google 스크립트 로드 실패 — 버튼 로그인은 그대로 동작하므로 묵음 처리
+        console.error('[One Tap] 스크립트 로드 실패')
+      }
       document.body.appendChild(script)
     }
 
@@ -75,13 +97,23 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     window.google?.accounts.id.cancel()
-    const supabase = createClient()
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
+    setAuthError(null)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+      if (error) {
+        console.error('[login]', error)
+        setAuthError('로그인에 실패했습니다. 다시 시도해 주세요.')
+      }
+    } catch (err) {
+      console.error('[login]', err)
+      setAuthError('연결이 불안정합니다. 잠시 후 다시 시도해 주세요.')
+    }
   }
 
   return (
@@ -103,13 +135,39 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {authError && (
+            <div
+              role="alert"
+              className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-center text-sm text-red-700"
+            >
+              {authError}
+            </div>
+          )}
+
           <button
             onClick={handleLogin}
             className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-full border border-zinc-200 bg-white px-6 py-3 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-50"
           >
             <GoogleIcon />
-            Google로 로그인하기
+            {authError ? '다시 시도' : 'Google로 로그인하기'}
           </button>
+        </div>
+      </div>
+    </main>
+  )
+}
+
+function LoginShell() {
+  return (
+    <main className="flex min-h-screen flex-col">
+      <header className="px-6 py-4">
+        <span className="text-sm text-zinc-300">← 홈으로</span>
+      </header>
+      <div className="flex flex-1 flex-col items-center justify-center px-6">
+        <div className="w-full max-w-sm flex flex-col gap-8">
+          <div className="flex flex-col gap-2 text-center">
+            <h1 className="text-xl font-semibold text-zinc-900">로그인하고 시작하기</h1>
+          </div>
         </div>
       </div>
     </main>

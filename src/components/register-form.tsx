@@ -63,9 +63,15 @@ export default function RegisterForm() {
 
     setServerError(null)
     startTransition(async () => {
-      const result = await registerItem(formData)
-      if (result && !result.success) {
-        setServerError(result.error)
+      try {
+        const result = await registerItem(formData)
+        if (result && !result.success) {
+          setServerError(result.error)
+        }
+      } catch (err) {
+        // 네트워크 단절, 서버 액션 자체 실패 등 — Next.js redirect()는 여기 도달하지 않음
+        console.error('[register]', err)
+        setServerError('연결이 불안정합니다. 잠시 후 다시 시도해 주세요.')
       }
     })
   }
@@ -167,22 +173,22 @@ export default function RegisterForm() {
           {/* 하단 제출 */}
           <div className="doc-form-foot">
             <span
-              className="doc-meta-row"
+              className="doc-meta-row doc-form-foot-sign"
               style={{ borderTop: 'none', padding: 0, margin: 0 }}
             >
               SIGN · _________________
             </span>
-            <div style={{ display: 'flex', gap: 10 }}>
+            <div className="doc-form-foot-actions flex gap-2.5">
               <a
                 href="/"
-                className="inline-flex items-center px-4 py-2 text-sm font-medium border-2 border-[var(--line-default)] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors"
+                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium border-2 border-[var(--line-default)] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors"
               >
                 취소
               </a>
               <button
                 type="submit"
                 disabled={!valid || isPending}
-                className="inline-flex items-center px-5 py-2 text-sm font-semibold bg-[var(--ink)] text-white border-2 border-[var(--line-default)] hover:bg-[var(--ink-2)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center px-5 py-2 text-sm font-semibold bg-[var(--ink)] text-white border-2 border-[var(--line-default)] hover:bg-[var(--ink-2)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 {isPending ? '등록 중…' : '냉각 시작 →'}
               </button>
