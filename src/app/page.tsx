@@ -146,11 +146,11 @@ export default async function Home() {
       </div>
 
       {/* 모바일 하단 고정 등록 버튼 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent px-4 pb-6 pt-4 md:hidden">
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent px-4 pb-5 pt-6 md:hidden">
         <div className="mx-auto max-w-2xl">
           <Link
             href="/register"
-            className="flex w-full cursor-pointer items-center justify-center rounded-full bg-zinc-900 py-4 text-sm font-medium text-white transition-colors hover:bg-zinc-700"
+            className="flex w-full cursor-pointer items-center justify-center border-2 border-[var(--line-default)] bg-[var(--ink)] py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--ink-2)]"
           >
             + 사고 싶은 물건 등록
           </Link>

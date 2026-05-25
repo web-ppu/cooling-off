@@ -249,17 +249,17 @@ export default function ChatScreen({ registration, itemId }: Props) {
     // - 모바일/태블릿: 전체 화면 가득
     // - 데스크탑(sm+): 가운데 정렬, max-w-2xl 카드 형태 + 미세한 보더
     // - 팀의 src/app/page.tsx 톤(zinc-100·px-6) 일치
-    <main className="flex min-h-screen flex-col bg-white sm:mx-auto sm:my-6 sm:min-h-[calc(100vh-3rem)] sm:max-w-2xl sm:rounded-2xl sm:border sm:border-zinc-200 sm:shadow-sm">
+    <main className="flex min-h-screen min-h-dvh flex-col bg-white sm:mx-auto sm:my-6 sm:min-h-[calc(100dvh-3rem)] sm:max-w-2xl sm:rounded-2xl sm:border sm:border-zinc-200 sm:shadow-sm">
       {/* 상단 — 물건 정보 + 턴 카운터 */}
-      <header className="flex shrink-0 items-center justify-between border-b border-zinc-100 px-6 py-4">
-        <div>
-          <div className="text-base font-semibold text-zinc-900">
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-100 px-4 py-4 sm:px-6">
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-base font-semibold text-zinc-900">
             {registration.productName}
           </div>
           <div className="text-xs text-zinc-500">{registration.price}</div>
         </div>
         <div
-          className="text-xs text-zinc-400 tabular-nums"
+          className="shrink-0 text-xs text-zinc-400 tabular-nums"
           aria-label={`현재 ${turnCount}턴 중 최대 ${MAX_TURNS}턴`}
         >
           {turnCount}/{MAX_TURNS}턴
@@ -269,7 +269,7 @@ export default function ChatScreen({ registration, itemId }: Props) {
       {/* 중간 — 대화 영역 */}
       <section
         aria-label="대화 내역"
-        className="flex-1 space-y-3 overflow-y-auto px-6 py-4"
+        className="flex-1 space-y-3 overflow-y-auto px-4 py-4 sm:px-6"
       >
         {messages.map((message, index) => (
           <MessageBubble key={index} message={message} />
@@ -288,7 +288,7 @@ export default function ChatScreen({ registration, itemId }: Props) {
           - 10턴 도달: TurnLimitNotice + [결정하기] 버튼
           - 관점 제시 후: 입력창 + [결정하기] 버튼
           - 초기: 입력창만 */}
-      <footer className="shrink-0 border-t border-zinc-100 px-6 py-4">
+      <footer className="shrink-0 border-t border-zinc-100 px-4 py-4 pb-[max(env(safe-area-inset-bottom),1rem)] sm:px-6 sm:pb-4">
         {/* issue #50: 결정 모드 진입 전에만 [결정하기] 버튼 표시.
             screen-spec §2-5: 관점 제시 이후 입력창 위에 표시. */}
         {showDecideButton && !isDecided && (
