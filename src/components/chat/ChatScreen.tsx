@@ -17,11 +17,17 @@ const MAX_MESSAGE_LENGTH = 500;
 const MAX_TURNS = 10;
 
 /**
- * 같은 AI 호출에 대한 연속 재시도 최대 횟수 (issue #65).
- * 임계치 도달 시 "다시 시도" 버튼을 비활성화하고 안내 문구로 전환한다.
- * 사용자가 새 메시지를 보내거나 응답이 성공하면 카운트는 리셋된다.
+ * 같은 AI 호출에 대한 재시도 최대 허용 횟수 (issue #65, screen-spec §3-3).
+ *
+ * screen-spec §3-3: "같은 사용자 메시지에 대한 AI 응답이 3회 연속 실패하면
+ * 'AI 없이 결정할 수 있습니다.' + [결정하기] 버튼 표시".
+ *
+ * → 총 실패 3회 = 첫 호출(retryCount=0) + 재시도 2회(retryCount=1, 2).
+ * → MAX_RETRIES=2: retryCount 가 2 이상이면 임계치 도달로 간주.
+ *
+ * 사용자가 새 메시지를 보내거나 재시도가 성공하면 카운트는 리셋된다.
  */
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 2;
 
 /**
  * AI 응답 실패 컨텍스트 (issue #65).
@@ -99,11 +105,21 @@ type Props = {
  * - 팩트 요약 호출이 실패해도 결정 흐름이 막히지 않는다.
  * - 결정 모드에서 실패 시 DecideFailureSection 이 3가지 선택지 제공:
  *   1) "다시 시도" (재시도 가능한 경우만)
- *   2) "요약 없이 결정하기" → 요약 카드 없이 곧장 [안 삼]/[삼] 선택으로 진행.
+ *   2) "AI 없이 결정하기" → 요약 카드 없이 곧장 [안 삼]/[삼] 선택으로 진행.
  *      screen-spec: "팩트 요약 없이 진행하는 경우에는 요약 카드 없이 바로
  *      [안 삼]/[삼] 표시". saveDecision 은 fact_summary=null 로 저장.
  *   3) "결정 취소하고 채팅으로 돌아가기" (escape hatch)
  * - 재시도가 무의미한 상황(안전 필터·임계치 도달)에서는 (2)를 primary 강조.
+ *
+ * 채팅 에러 문구 정리 (issue #67)
+ * - 사용자 노출 문구는 screen-spec §3-3 표준 일치 (존댓말 톤):
+ *   · "AI 응답을 받지 못했습니다." (일반 실패)
+ *   · "AI 없이 결정할 수 있습니다." (3회 연속 실패 = retryCount >= MAX_RETRIES)
+ *   · "표현을 바꿔 다시 보내주세요." (안전 필터 차단 — screen-spec 외 자체 정의)
+ * - 시스템 raw message(GEMINI_API_KEY 누락 등)는 사용자에게 노출하지 않고
+ *   console.error 로만 흘린다.
+ * - 채팅 모드 임계치 도달 시 [결정하기] 버튼이 자동 노출되어 사용자가
+ *   "AI 없이 결정" 경로로 진행할 수 있도록 한다 (screen-spec §3-3).
  */
 export default function ChatScreen({ registration, itemId }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -310,14 +326,25 @@ export default function ChatScreen({ registration, itemId }: Props) {
         setFactSummary(data.content);
       }
     } catch (error) {
-      setLastFailedSend(
-        buildFailureContext({
-          mode: prevContext.mode,
-          messagesSnapshot: prevContext.messagesSnapshot,
-          error,
-          previousRetryCount: prevContext.retryCount + 1,
-        })
-      );
+      const nextContext = buildFailureContext({
+        mode: prevContext.mode,
+        messagesSnapshot: prevContext.messagesSnapshot,
+        error,
+        previousRetryCount: prevContext.retryCount + 1,
+      });
+      setLastFailedSend(nextContext);
+
+      // screen-spec §3-3: "AI 응답 3회 연속 실패 → 'AI 없이 결정할 수 있습니다.'
+      // + [결정하기] 버튼 표시". 채팅 모드에서 임계치 도달 시 [결정하기] 를 자동
+      // 노출해 사용자가 곧장 결정으로 넘어갈 수 있게 한다.
+      // (결정 모드 실패는 이미 DecideFailureSection 안에서 "AI 없이 결정하기"
+      // 버튼을 제공하므로 자동 노출 대상 아님.)
+      if (
+        nextContext.mode === "chat" &&
+        nextContext.retryCount >= MAX_RETRIES
+      ) {
+        setShowDecideButton(true);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -373,11 +400,9 @@ export default function ChatScreen({ registration, itemId }: Props) {
         messages: messages.map((m) => ({ role: m.role, content: m.content })),
       });
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "알 수 없는 오류가 발생했습니다.";
-      setSaveErrorMessage(`결정 저장 실패: ${message}`);
+      // 시스템 raw message 는 console 로만 흘리고 사용자에게는 정형 문구만 노출 (#67).
+      console.error("[saveDecision] failed", error);
+      setSaveErrorMessage("결정을 저장하지 못했습니다. 다시 시도해 주세요.");
       setFinalDecision(null);
     }
   }
@@ -636,23 +661,27 @@ function TurnLimitNotice() {
       role="status"
       className="rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 text-center text-sm text-zinc-600"
     >
-      최대 대화 횟수({MAX_TURNS}턴)에 도달했어요.
+      최대 대화 횟수({MAX_TURNS}턴)에 도달했습니다.
       <br className="sm:hidden" /> 이제 결정으로 넘어가 주세요.
     </div>
   );
 }
 
 /**
- * AI 응답 실패 안내 + "다시 시도" 버튼 (issue #65).
+ * AI 응답 실패 안내 + "다시 시도" 버튼 (issue #65, #67).
  *
  * 메시지 영역 끝(handleSend 실패 시)과 결정 영역(handleDecide 실패 시) 양쪽에서
  * 재사용한다. 에러 종류·재시도 횟수에 따라 안내 문구와 버튼 표시를 결정한다.
  *
- * - errorKind === "content-filter": 같은 입력을 다시 보내도 또 차단되므로 "다시 시도" 숨김.
- * - retryCount >= MAX_RETRIES: 임계치 도달. "다시 시도" 비활성화 + 안내 문구 전환.
- * - 그 외: "다시 시도" 활성화.
+ * 문구 정합성 (screen-spec §3-3 표준):
+ * - 일반 실패        → "AI 응답을 받지 못했습니다." + [다시 시도]
+ * - 3회 연속 실패    → "AI 없이 결정할 수 있습니다." + [결정하기]
+ *   (채팅 모드에서는 [결정하기] 가 자동 노출되므로 본 컴포넌트는 안내만 표시.
+ *    결정 모드에서는 DecideFailureSection 의 "AI 없이 결정하기" 버튼으로 진행.)
+ * - 안전 필터 차단   → "표현을 바꿔 다시 보내주세요." (screen-spec 외, 자체 정의)
  *
  * 톤: PRD §8 — 오류 안내는 존댓말.
+ * 시스템 에러의 raw message(failure.message)는 사용자에게 노출하지 않는다 (#67).
  */
 function RetryNotice({
   failure,
@@ -670,8 +699,8 @@ function RetryNotice({
   const headline = isContentFilter
     ? "표현을 바꿔 다시 보내주세요."
     : isExhausted
-      ? "여러 번 응답을 받지 못했어요. 잠시 후 다시 시도해 주세요."
-      : "AI 응답을 받지 못했어요.";
+      ? "AI 없이 결정할 수 있습니다."
+      : "AI 응답을 받지 못했습니다.";
 
   return (
     <div
@@ -679,7 +708,6 @@ function RetryNotice({
       className="space-y-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
     >
       <div className="font-medium">{headline}</div>
-      <div className="text-xs text-red-600/80">{failure.message}</div>
       {canRetry && (
         <button
           type="button"
@@ -695,14 +723,15 @@ function RetryNotice({
 }
 
 /**
- * 결정 모드 안에서 발생한 팩트 요약 실패 처리 (issue #65, #66).
+ * 결정 모드 안에서 발생한 팩트 요약 실패 처리 (issue #65, #66, #67).
  *
  * RetryNotice + 3개 진행 옵션:
- * 1. "다시 시도"        — RetryNotice 안. 재시도 가능한 경우(transient + retryCount<MAX).
- * 2. "요약 없이 결정하기" — 팩트 요약을 만들지 못해도 결정 흐름을 막지 않는다 (issue #66).
- *                          screen-spec: "AI 응답 실패가 반복되어 AI 없이 결정하는 경우" 처리.
- *                          재시도 불가능한 상황(안전 필터 차단·임계치 도달)에서는 primary
- *                          스타일로 강조해서 사용자의 다음 행동을 가이드한다.
+ * 1. "다시 시도"     — RetryNotice 안. 재시도 가능한 경우(transient + retryCount<MAX).
+ * 2. "AI 없이 결정하기" — 팩트 요약을 만들지 못해도 결정 흐름을 막지 않는다 (issue #66).
+ *                       screen-spec §3-3: "AI 응답 실패가 반복되어 AI 없이 결정하는
+ *                       경우" + "AI 없이 결정할 수 있습니다." + [결정하기] 정책 적용.
+ *                       재시도 불가능한 상황(안전 필터 차단·임계치 도달)에서는 primary
+ *                       스타일로 강조해서 사용자의 다음 행동을 가이드한다.
  * 3. "결정 취소하고 채팅으로 돌아가기" — escape hatch. 채팅으로 복귀.
  *
  * 완료 기준 (issue #66): AI 실패 상황에서도 결정 흐름이 막히지 않는다.
@@ -720,8 +749,8 @@ function DecideFailureSection({
   onCancel: () => void;
   disabled: boolean;
 }) {
-  // 재시도가 무의미한 상황(안전 필터 차단·임계치 도달)에서는 "요약 없이 결정하기"가
-  // 사실상 유일한 진행 경로이므로 primary 스타일로 강조.
+  // 재시도가 무의미한 상황(안전 필터 차단·임계치 도달)에서는 "AI 없이 결정하기"가
+  // 사실상 유일한 진행 경로이므로 primary 스타일로 강조 (#67).
   const cannotRetry =
     failure.errorKind === "content-filter" ||
     failure.retryCount >= MAX_RETRIES;
@@ -739,7 +768,7 @@ function DecideFailureSection({
             : "w-full rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
         }
       >
-        요약 없이 결정하기
+        AI 없이 결정하기
       </button>
       <button
         type="button"
