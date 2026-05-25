@@ -63,9 +63,15 @@ export default function RegisterForm() {
 
     setServerError(null)
     startTransition(async () => {
-      const result = await registerItem(formData)
-      if (result && !result.success) {
-        setServerError(result.error)
+      try {
+        const result = await registerItem(formData)
+        if (result && !result.success) {
+          setServerError(result.error)
+        }
+      } catch (err) {
+        // 네트워크 단절, 서버 액션 자체 실패 등 — Next.js redirect()는 여기 도달하지 않음
+        console.error('[register]', err)
+        setServerError('연결이 불안정합니다. 잠시 후 다시 시도해 주세요.')
       }
     })
   }
