@@ -414,6 +414,11 @@ body {
 }
 .doc-row-num.accent { background: var(--accent); }
 .doc-row-body { padding: 18px 24px 22px; }
+@media (max-width: 480px) {
+  .doc-row { grid-template-columns: 44px 1fr; }
+  .doc-row-num { font-size: 18px; }
+  .doc-row-body { padding: 14px 16px 18px; }
+}
 .doc-row-label {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -435,6 +440,13 @@ body {
   padding: 16px 24px;
   gap: 16px;
   border-top: 2px solid var(--line-default);
+  flex-wrap: wrap;
+}
+@media (max-width: 480px) {
+  .doc-form-foot { padding: 14px 16px; }
+  .doc-form-foot .doc-form-foot-sign { display: none; }
+  .doc-form-foot .doc-form-foot-actions { width: 100%; }
+  .doc-form-foot .doc-form-foot-actions > * { flex: 1; justify-content: center; }
 }
 
 .field-input,

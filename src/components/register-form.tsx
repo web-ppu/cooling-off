@@ -173,22 +173,22 @@ export default function RegisterForm() {
           {/* 하단 제출 */}
           <div className="doc-form-foot">
             <span
-              className="doc-meta-row"
+              className="doc-meta-row doc-form-foot-sign"
               style={{ borderTop: 'none', padding: 0, margin: 0 }}
             >
               SIGN · _________________
             </span>
-            <div style={{ display: 'flex', gap: 10 }}>
+            <div className="doc-form-foot-actions flex gap-2.5">
               <a
                 href="/"
-                className="inline-flex items-center px-4 py-2 text-sm font-medium border-2 border-[var(--line-default)] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors"
+                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium border-2 border-[var(--line-default)] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors"
               >
                 취소
               </a>
               <button
                 type="submit"
                 disabled={!valid || isPending}
-                className="inline-flex items-center px-5 py-2 text-sm font-semibold bg-[var(--ink)] text-white border-2 border-[var(--line-default)] hover:bg-[var(--ink-2)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center px-5 py-2 text-sm font-semibold bg-[var(--ink)] text-white border-2 border-[var(--line-default)] hover:bg-[var(--ink-2)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 {isPending ? '등록 중…' : '냉각 시작 →'}
               </button>
