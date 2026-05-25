@@ -177,12 +177,14 @@ Generated: 2026-05-20 (`/pm-execution:create-prd` 기반 + `../README.md` 동기
 
 | 기준 | V1 처리 | 근거 |
 |------|---------|------|
-| 가격 < 10,000원 | 모달 표시 안 함 (즉시 통과) | `src/lib/cooling.ts` 의 cooling 미적용 가격대와 정합 (즉시 `cooling_ends_at == now()`로 등록될 가격대는 인터셉트 가치가 낮음) |
 | 카테고리(생필품·식료품 등) 자동 분류 | **V1 미지원** | 휴리스틱 false-positive 리스크 큼. `../README.md` Approach C에서 배제된 결정과 동일 |
+| 가격 기반 자동 제외 (예: "10,000원 미만은 통과") | **V1 미지원** | 본 서비스 cooling tier(`../../pm/prd.md` §4.가격별 냉각기)는 5만원 이하도 1일 cooling을 부여하므로, "cooling 미적용 가격대"가 존재하지 않음. 확장이 임의로 가격을 자르면 본 서비스 정책과 불일치. 사용자가 가격대별 임계를 원한다는 검증이 나오면 Phase 2 (`TODO-9`)로 도입 |
 | 사용자가 명시적으로 제외한 도메인·URL | 모달 표시 안 함 | 아래 "사용자 제어권" 참조 |
 | `items`에 이미 `status='cooling'`인 동일 URL | 모달 대신 "이미 식히는 중이에요" 토스트 | EX-6 중복 방지와 통합 |
 
 > **카테고리 분류를 V1에서 빼는 이유**: 쿠팡·네이버쇼핑이 명시적인 "생필품" 라벨을 일관되게 노출하지 않습니다. URL·상품명 휴리스틱으로 추정하면 false-positive(예: "초콜릿 선물세트"를 식료품으로 분류)가 발생하며, 캡스톤 6~8주 안에 신뢰할 분류기를 구축할 수 없습니다. 대신 사용자 제어권으로 우회하고, Phase 2에서 사용자 라벨링 데이터를 모은 뒤 검토합니다 (`TODO-7`).
+>
+> **가격 게이트를 V1에서 빼는 이유**: 노이즈를 줄이는 가장 직관적인 방법은 가격 임계지만, 그 임계를 정당화할 데이터가 V1 시점에 없습니다. 본 서비스 cooling 정책과 정합을 우선하고, 노이즈는 "사용자 제어권"으로 해결합니다. 사용자 테스트(Week 5)에서 "이 가격대는 모달 없어도 괜찮다"는 신호가 모이면 Phase 2 `TODO-9`로 가격 임계를 도입.
 
 #### 빈도 제한 — 얼마나 자주 띄울 것인가
 
@@ -200,12 +202,31 @@ popup 설정 메뉴와 모달 내 옵션으로 제공:
 
 | 컨트롤 | 동작 | 저장 위치 |
 |--------|------|-----------|
-| 사이트별 on/off 토글 (popup) | 도메인 단위 비활성 | `chrome.storage.sync` |
-| "오늘 이 사이트 그만 묻기" (모달 내 옵션) | 24h snooze, 로컬 자정 만료 | `chrome.storage.local` (timestamp) |
-| "이 URL 다시 묻지 않기" (모달 내 옵션) | 영구 skip list 등록 | `chrome.storage.sync` (URL 정규화 후 hash) |
-| 전체 확장 비활성화 | Chrome 기본 확장 관리 UI 사용 | — |
+| 사이트별 on/off 토글 (popup) | 도메인 단위 비활성. 토글이 off면 해당 도메인 content-script가 동작 중에 모달을 만들지 않음 | `chrome.storage.sync` |
+| "이 사이트 24시간 그만 묻기" (모달 내 ⋮ 메뉴) | 누른 시점부터 24시간 동안 같은 도메인의 모달 표시 안 함. 24h 경과 후 자동 만료 | `chrome.storage.local` (snooze-until timestamp) |
+| "이 URL 다시 묻지 않기" (모달 내 ⋮ 메뉴) | 정규화된 URL을 영구 skip list에 등록. 같은 URL은 다시 모달 안 뜸 | `chrome.storage.sync` (URL 정규화 후 hash) |
+| 전체 확장 비활성화 | Chrome 기본 확장 관리 UI 사용. content-script 자체가 로드되지 않음 | — |
 
-> **모달 내 버튼 위치**: 1차 액션은 [등록하고 식히기] / [그냥 사기]. "그만 묻기" 류는 모달 우측 상단 ⋮ 메뉴에 둡니다. 이 옵션이 primary만큼 눈에 띄면 사용자가 진짜 cooling이 필요한 시점에 무의식적으로 꺼버릴 가능성이 큽니다.
+> **모달 내 버튼 위치**: 1차 액션은 [등록하고 식히기] / [그냥 사기]. "그만 묻기" 류는 모달 우측 상단 ⋮ 메뉴에 둡니다. 이 옵션이 primary만큼 눈에 띄면 사용자가 진짜 cooling이 필요한 시점에 무의식적으로 꺼버릴 가능성이 큽니다. (모달 디자인은 `/plan-design-review` 시점에 재검토.)
+
+#### 게이트 적용 순서 (소프트 인터셉트 경로)
+
+구매 버튼 클릭부터 모달 표시까지 다음 순서로 게이트를 통과합니다. 한 단계에서 차단되면 그 아래는 평가하지 않습니다.
+
+1. **트리거 매칭** — 위 "트리거 조건" 표의 ✅ 행만 진행. ❌ 행은 즉시 통과(원래 동작).
+2. **사용자 제어 게이트** (OR 결합 — 하나라도 매치하면 모달 안 뜸):
+   - 전체 확장 비활성화 (Chrome UI)
+   - 사이트 토글 off (도메인 단위)
+   - URL skip list 매치
+   - 24h snooze 활성 (도메인 단위)
+3. **중복 게이트** — `items`에 `status='cooling'`인 동일 URL이 있으면 모달 대신 "이미 식히는 중이에요" 토스트.
+4. 위 모두 통과 → 정보 추출 + 모달 표시.
+
+> **컨트롤 우선순위는 두지 않음, OR 결합으로 충분**: 4개 컨트롤이 "어떤 게 우선?"이 아니라 "하나라도 매치하면 끔"이라 모호함이 없습니다. 사용자가 같은 URL에 대해 사이트 토글 off + URL skip을 동시에 걸어도 결과는 같음 (모달 안 뜸).
+
+#### Fallback(EX-3)에 대한 정책 적용
+
+확장 아이콘 직접 클릭은 **사용자의 명시적 의도**이므로 위 2단계(사용자 제어 게이트)를 우회합니다. 사이트 토글 off나 snooze 상태에서도 popup이 동작해 등록 가능. 단, 3단계(중복 게이트)는 동일하게 적용 — 이미 등록된 URL은 popup에서 "이미 식히는 중이에요"로 안내.
 
 #### 정책 검증 계획
 
@@ -224,18 +245,24 @@ popup 설정 메뉴와 모달 내 옵션으로 제공:
 
 ### 7.2 사용자 흐름 (UX 와이어플로우)
 
-**소프트 인터셉트 시나리오** ([`../engineering/tech-spec.md`](../engineering/tech-spec.md) §7 데이터 흐름 절과 동기화):
+**소프트 인터셉트 시나리오** ([`../engineering/tech-spec.md`](../engineering/tech-spec.md) §7과 동기화):
 
 ```mermaid
 flowchart TD
-  Click["사용자가 쿠팡에서 [구매하기] 클릭"] --> Detect["content-script가 click 감지"]
-  Detect --> Extract["DOM에서 상품명·가격·URL 추출"]
+  Click["사용자가 쿠팡에서 [바로구매] 클릭"] --> Trigger{"트리거 조건<br/>(§7.1 트리거)"}
+  Trigger -->|"매칭 ❌"| Pass1["원래 결제 동작 진행"]
+  Trigger -->|"매칭 ✅"| UserGate{"사용자 제어 게이트<br/>(사이트 off / skip / snooze)"}
+  UserGate -->|"차단"| Pass2["원래 결제 동작 진행"]
+  UserGate -->|"통과"| DupGate{"중복 게이트<br/>(items에 cooling 중?)"}
+  DupGate -->|"중복"| Toast["'이미 식히는 중이에요' 토스트"]
+  DupGate -->|"신규"| Extract["DOM에서 상품명·가격·URL 추출"]
   Extract --> Modal["인페이지 모달 (Shadow DOM) 표시"]
   Modal --> Choice{"사용자 선택"}
   Choice -->|"등록하고 식히기"| Auth{"로그인 상태?"}
   Choice -->|"그냥 사기"| Dismiss["모달 닫고 원래 결제 동작 진행"]
+  Choice -->|"⋮ 그만 묻기"| Mute["snooze / skip 등록 → 모달 닫음"]
   Auth -->|로그인됨| Save["background → Supabase insert"]
-  Auth -->|로그인 안 됨| Popup["popup 열어 로그인 유도"]
+  Auth -->|로그인 안 됨| LoginPopup["popup 열어 로그인 유도"]
   Save --> Confirm["냉각 시작 토스트 표시"]
   Confirm --> Return["사용자가 쇼핑 탭에서 결정"]
 ```
@@ -261,8 +288,7 @@ flowchart LR
 |------|------|
 | 대상 사이트 | 쿠팡 (`*://*.coupang.com/*`), 네이버쇼핑 (`*://shopping.naver.com/*`) |
 | 트리거 | "바로구매" / "지금 구매" / "구매하기" / 결제 진행 버튼 클릭 (event delegation). **"장바구니 담기"는 V1 제외** (§7.1 트리거 정책) |
-| 가격 게이트 | 추출 가격 < 10,000원이면 모달 표시 안 함 (§7.1 제외 조건) |
-| 제외 게이트 | 사용자 skip list / 사이트 off / 24h snooze 적용 시 모달 표시 안 함 (§7.1 사용자 제어권) |
+| 제외 게이트 | 사용자 skip list / 사이트 off / 24h snooze 적용 시 모달 표시 안 함 (§7.1 사용자 제어권). V1 가격·카테고리 게이트는 없음 |
 | 중복 게이트 | `items`에 cooling 중인 동일 URL이 있으면 모달 대신 "이미 식히는 중이에요" 토스트 |
 | SPA 대응 | `history.pushState` / `replaceState` monkey-patch로 URL 변경 감지 |
 | 모달 | Shadow DOM 격리, 호스트 스타일 영향 없음, CSP-strict 사이트에서도 동작 |
@@ -398,7 +424,7 @@ flowchart LR
 - Q4. 동일 URL을 짧은 기간 안에 여러 번 클릭하면? — 본 서비스 `../../pm/prd.md` "열린 질문"과 동일 영역, DB unique index로 1차 방어.
 - Q5. 사용자가 웹·확장 각각 로그인하는 부담이 등록 전환율을 얼마나 깎는가? (A5 검증)
 - Q6. 유사 확장(예: Beeftext·"잠깐만" 류 결제 지연 도구, Chrome 웹스토어의 "shopping pause/cooling-off" 키워드 확장)이 채택한 트리거·제외·빈도·제어 정책은? — Week 0에 5종 이상 직접 설치·사용·정리. 결과는 §7.1 정책 검증 및 ADR `intervention-policy.md`에 반영. (`TODO-10`)
-- Q7. 10,000원 가격 게이트는 적절한가? — `src/lib/cooling.ts` 의 가격→cooling duration 곡선과 정합되어야 하며, 사용자 테스트로 "이 가격대는 모달 없어도 괜찮다" 임계를 검증. 필요 시 정책 수정.
+- Q7. 사용자 테스트(Week 5)에서 "가격 임계가 있었으면 좋겠다" 신호가 모이는가? — 모이면 Phase 2 `TODO-9` (가격 threshold 사용자 커스터마이즈)로 도입. V1은 가격 게이트 없음.
 
 ---
 

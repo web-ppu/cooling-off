@@ -132,11 +132,16 @@ content script는 `*://*.coupang.com/*`, `*://shopping.naver.com/*` 같이 **도
 
 게이트 적용 순서 (PRD §7.1 정책과 정합):
 
-1. 트리거 매칭 (바로구매/구매하기 버튼이면 진행, 장바구니는 통과)
-2. 가격 < 10,000원 → 모달 표시 안 함
-3. 사용자 skip list / 사이트 off / 24h snooze → 모달 표시 안 함
-4. `items`에 cooling 중인 동일 URL → "이미 식히는 중이에요" 토스트
-5. 위 모두 통과 시 모달 표시
+1. 트리거 매칭 — 바로구매·구매하기·결제 진행 버튼이면 진행. 장바구니·찜하기·일반 클릭은 즉시 통과(원래 동작).
+2. 사용자 제어 게이트 (OR 결합 — 하나라도 매치하면 모달 안 뜸):
+   - 전체 확장 비활성화 (Chrome UI) — content-script 자체가 안 돌아감
+   - 사이트 토글 off (도메인 단위)
+   - URL skip list 매치 (정규화된 URL hash)
+   - 도메인 24h snooze 활성 (timestamp + 24h)
+3. `items`에 `status='cooling'`인 동일 URL → 모달 대신 "이미 식히는 중이에요" 토스트 (EX-6 정책)
+4. 위 모두 통과 시 모달 표시
+
+> Fallback (EX-3, 확장 아이콘 직접 클릭)은 위 2단계를 우회한다 — 사용자의 명시적 의도이므로 사이트 off나 snooze가 있어도 popup이 동작. 단, 3단계(중복 등록 방지)는 그대로 적용.
 
 ---
 
@@ -163,16 +168,20 @@ CREATE UNIQUE INDEX idx_items_user_url_active
 
 ```mermaid
 flowchart TD
-  Click["사용자가 쿠팡에서 [구매하기] 클릭"] --> Detect["content-script가 click 감지"]
-  Detect --> Gate{"§7.1 정책 게이트<br/>(가격/skip/사이트off/snooze)"}
-  Gate -->|"통과"| Extract["DOM에서 상품명·가격·URL 추출"]
-  Gate -->|"차단"| Pass["원래 결제 동작 진행"]
+  Click["사용자가 쿠팡에서 [바로구매] 클릭"] --> Trigger{"트리거 조건<br/>(§7.1 트리거)"}
+  Trigger -->|"매칭 ❌"| Pass1["원래 결제 동작 진행"]
+  Trigger -->|"매칭 ✅"| UserGate{"사용자 제어 게이트<br/>(사이트 off / skip / snooze)"}
+  UserGate -->|"차단"| Pass2["원래 결제 동작 진행"]
+  UserGate -->|"통과"| DupGate{"중복 게이트<br/>(items에 cooling 중?)"}
+  DupGate -->|"중복"| Toast["'이미 식히는 중이에요' 토스트"]
+  DupGate -->|"신규"| Extract["DOM에서 상품명·가격·URL 추출"]
   Extract --> Modal["인페이지 모달 표시"]
   Modal --> Choice{"사용자 선택"}
   Choice -->|"등록하고 식히기"| Auth{"로그인 상태?"}
   Choice -->|"그냥 사기"| Dismiss["모달 닫고 원래 동작 진행"]
+  Choice -->|"⋮ 그만 묻기"| Mute["snooze / skip 등록 → 모달 닫음"]
   Auth -->|로그인됨| Save["background → Supabase insert"]
-  Auth -->|로그인 안 됨| Popup["popup 열어 로그인 유도"]
+  Auth -->|로그인 안 됨| LoginPopup["popup 열어 로그인 유도"]
   Save --> Confirm["냉각 시작 토스트 표시"]
   Confirm --> Return["사용자가 쇼핑 탭에서 결정"]
 ```
@@ -242,10 +251,11 @@ PRD §7.1 정책 게이트는 별도 모듈로 분리:
 // shared/policy.ts
 interface PolicyDecision {
   show: boolean;
-  reason?: 'price_below_threshold' | 'site_disabled' | 'snoozed' | 'url_skipped' | 'already_cooling';
+  reason?: 'site_disabled' | 'snoozed' | 'url_skipped' | 'already_cooling';
 }
 
-/** 추출된 상품에 대해 모달을 표시할지 결정. PRD §7.1 게이트 로직을 단일 함수로 캡슐화. */
+/** 추출된 상품에 대해 모달을 표시할지 결정. PRD §7.1 게이트 로직을 단일 함수로 캡슐화.
+ *  V1에서는 가격·카테고리 게이트가 없음. Phase 2에 추가될 경우 reason 유니온 확장. */
 async function shouldShowModal(product: ProductInfo): Promise<PolicyDecision>;
 ```
 
