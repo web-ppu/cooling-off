@@ -71,8 +71,16 @@ export default async function ChatItemPage({
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50">
-      <ChatScreen registration={registration} itemId={itemId} />
+    <div
+      style={{
+        background: "var(--surface-2)",
+        minHeight: "100vh",
+        padding: "24px 16px",
+      }}
+    >
+      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+        <ChatScreen registration={registration} itemId={itemId} />
+      </div>
     </div>
   );
 }
