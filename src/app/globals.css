@@ -26,6 +26,21 @@ body {
 
 @layer components {
 
+/* ── brand mark (눈송이) ──────────────────────────────────────
+ * prototype 의 .pc-nav-brand .ice 패턴: 아이콘 본체는 accent,
+ * 1px 외곽선을 ink 로 둘러 에디토리얼 톤과 어우러지도록 한다.
+ */
+.brand-ice {
+  color: var(--accent);
+  font-size: 1.25em;
+  line-height: 1;
+  text-shadow:
+    -1px 0 var(--ink),
+    1px 0 var(--ink),
+    0 -1px var(--ink),
+    0 1px var(--ink);
+}
+
 .doc-tag {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -288,13 +303,22 @@ body {
   justify-content: space-between;
   gap: 14px;
   cursor: pointer;
-  transition: border-color 0.15s;
+  transition: background 0.15s, border-color 0.15s;
   text-decoration: none;
   color: inherit;
   width: 100%;
   position: relative;
 }
-.pc-item-card:hover { border-color: var(--line-active); }
+.pc-item-card:hover {
+  background: var(--accent);
+  border-color: var(--line-default);
+}
+/* 결정 대기(ready) — 기본 상태에서 파란 보더로 시각 구분 */
+.pc-item-card.ready { border-color: var(--line-active); }
+.pc-item-card.ready:hover {
+  background: var(--accent);
+  border-color: var(--line-default);
+}
 .pc-item-card-name {
   font-size: 15px;
   font-weight: 600;
