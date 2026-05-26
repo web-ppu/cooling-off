@@ -123,13 +123,24 @@ async function loadOrInitChatMessages(
     // 최초 진입 — 첫 AI 인사를 DB 에 박아 둔다.
     // 동시 진입 시 중복 INSERT 가능성은 있지만 (UNIQUE 제약 없음), MVP 에서는 허용.
     // 같은 내용이 두 줄 보일 뿐 흐름은 깨지지 않는다.
-    await supabase.from("chat_messages").insert({
+    //
+    // INSERT 실패 시 사용자 화면은 in-memory FIRST_AI_MESSAGE 로 정상 표시한다.
+    // 다만 DB 에 첫 인사가 없으면 추후 history detail 에서 turn_number=0 행이
+    // 누락된 채 보이고, 다음 진입 시 다시 INSERT 시도된다. silent fail 방지 차원에서
+    // 서버 로그를 남긴다.
+    const { error: insertError } = await supabase.from("chat_messages").insert({
       item_id: itemId,
       user_id: userId,
       role: "assistant",
       content: FIRST_AI_MESSAGE,
       turn_number: 0,
     });
+    if (insertError) {
+      console.error(
+        "[chat/[itemId]] FIRST_AI_MESSAGE insert failed:",
+        insertError
+      );
+    }
     return [{ role: "assistant", content: FIRST_AI_MESSAGE }];
   }
 
