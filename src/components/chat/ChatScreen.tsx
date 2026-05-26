@@ -12,114 +12,40 @@ const MAX_MESSAGE_LENGTH = 500;
 
 /**
  * 최대 턴 수. 1턴 = 사용자 메시지 1회 + AI 응답 1회 (docs/design/screen-spec.md §2-5).
- * 10턴 도달 시 추가 입력을 비활성화한다.
  */
 const MAX_TURNS = 10;
 
 /**
  * 같은 AI 호출에 대한 재시도 최대 허용 횟수 (issue #65, screen-spec §3-3).
- *
- * screen-spec §3-3: "같은 사용자 메시지에 대한 AI 응답이 3회 연속 실패하면
- * 'AI 없이 결정할 수 있습니다.' + [결정하기] 버튼 표시".
- *
- * → 총 실패 3회 = 첫 호출(retryCount=0) + 재시도 2회(retryCount=1, 2).
- * → MAX_RETRIES=2: retryCount 가 2 이상이면 임계치 도달로 간주.
- *
- * 사용자가 새 메시지를 보내거나 재시도가 성공하면 카운트는 리셋된다.
+ * 총 실패 3회 = 첫 호출(retryCount=0) + 재시도 2회(retryCount=1, 2).
  */
 const MAX_RETRIES = 2;
 
-/**
- * AI 응답 실패 컨텍스트 (issue #65).
- *
- * 실패한 호출의 재시도에 필요한 모든 정보를 단일 state로 관리한다.
- * - messages 배열을 오염시키지 않고(실패한 user 메시지를 중복 추가하지 않고)
- *   같은 messages 스냅샷으로 fetch 를 다시 호출할 수 있도록 한다.
- *
- * 한 번에 하나의 실패만 추적한다 (isLoading 가드로 동시 다중 호출 불가).
- */
 type FailedSendContext = {
-  /** 어떤 호출이 실패했는지 — "chat"은 일반 메시지, "decide"는 [결정하기] 팩트 요약 */
   mode: "chat" | "decide";
-  /** 재시도 시 fetch 에 그대로 보낼 messages 스냅샷 */
   messagesSnapshot: ChatMessage[];
-  /** 같은 호출에 대한 연속 실패 횟수 (0 = 첫 실패, MAX_RETRIES = 임계치 도달) */
   retryCount: number;
-  /** 에러 분류 — content-filter 는 재시도 의미 없음 */
   errorKind: "transient" | "content-filter";
-  /** 사용자에게 보일 한국어 에러 메시지 (서버가 본문에 담아준 한국어 message) */
   message: string;
 };
 
 type Props = {
   registration: Registration;
-  /**
-   * 결정 결과를 저장할 items 행의 ID.
-   *
-   * 있으면 [안 삼]/[삼] 클릭 시 saveDecision Server Action으로 Supabase에
-   * 저장하고 홈으로 리다이렉트한다. 없으면 stub 모드 (DB 저장 스킵, 화면
-   * placeholder만 표시) — 현재 `/chat` 라우트 Case A 하드코딩 상황 대응용.
-   *
-   * 추후 `/chat/[itemId]` 동적 라우트가 생기면 페이지에서 itemId를 받아
-   * 그대로 전달하면 된다. issue #52 통합 지점.
-   */
   itemId?: string;
 };
 
 /**
- * AI 채팅 화면 — 멀티턴 진행 + 실패 재시도 (issue #48~#52, #65).
+ * AI 채팅 화면 — brutalist 디자인 (prototype/styles 기반).
  *
- * 화면 정책: docs/design/screen-spec.md §2-5
- * - 상단: 물건 이름·가격 + 턴 카운터 (`N/10`)
- * - 중간: 대화 메시지 (AI/사용자 말풍선 구분)
- * - 하단: 메시지 입력 + 전송 + 글자수 카운터 (123/500)
- * - 첫 AI 메시지는 페이지 진입 시 고정 문장으로 자동 표시
- * - AI 응답 대기 중에는 로딩 인디케이터 표시
- * - 10턴 도달 시: 추가 입력 비활성화 + "최대 대화 횟수에 도달했어요" 안내
+ * 데스크탑: 그리드 320px(사이드바) + 1fr(채팅 메인).
+ * 모바일(880px 이하): 1열, 사이드바를 상단으로.
  *
- * 멀티턴 진행 로직 (issue #49)
- * - 사용자 메시지 + AI 응답이 순서대로 `messages` 상태에 누적됨.
- * - 매 요청마다 `messages` 전체를 API에 전달 → 이전 맥락 자동 반영.
- * - 1턴 = 사용자 메시지 1회 + AI 응답 1회.
- * - 사용자 메시지 수가 MAX_TURNS(10)에 도달하면 입력 차단.
+ * 사이드바(pc-chat-meta) — 물건 이름·가격·턴 카운터·처음 적은 이유·안내.
+ * 메인(pc-chat-main) — 채팅 stream + (조건부) decide-banner + (조건부) 입력창/결정 영역.
  *
- * [결정하기] 버튼 표시 신호 (issue #50)
- * - 서버 API가 매 응답마다 `showDecideButton` 불리언을 반환.
- * - 한 번 true가 되면 sticky로 유지(false로 돌아가지 않음). screen-spec §2-5.
+ * 정책·동작 메모는 globals.css 의 채팅 관련 클래스 정의(// Chat ...) 참고.
  *
- * 결정 직전 요약 (issue #51)
- * - [결정하기] 클릭 시 `<<DECIDE>>`를 메시지에 붙여 API 호출.
- * - 서버는 팩트 요약 모드로 전환되어 사실 불릿 목록을 반환.
- * - 사실이 1개도 없으면("요약할 사실 없음.") 카드 없이 바로 버튼만 표시.
- *
- * AI 응답 실패 재시도 (issue #65)
- * - handleSend(일반 메시지)와 handleDecide(팩트 요약) 둘 다 동일한 패턴.
- * - 실패 시 messages 배열은 오염시키지 않고 lastFailedSend state로 추적.
- * - "다시 시도" 버튼: 같은 messages 스냅샷으로 fetch 재호출.
- *   - 같은 호출에 대한 연속 실패 MAX_RETRIES(3)회 도달 시 버튼 비활성화.
- *   - 사용자가 새 메시지를 보내거나 재시도가 성공하면 카운트 리셋.
- * - 안전 필터 차단(finishReason='content-filter')은 재시도 의미 없음 →
- *   "다시 시도" 버튼 숨김 + 사용자에게 새 입력 권유.
- *
- * AI 응답 실패 시 결정 진행 (issue #66)
- * - 팩트 요약 호출이 실패해도 결정 흐름이 막히지 않는다.
- * - 결정 모드에서 실패 시 DecideFailureSection 이 3가지 선택지 제공:
- *   1) "다시 시도" (재시도 가능한 경우만)
- *   2) "AI 없이 결정하기" → 요약 카드 없이 곧장 [안 삼]/[삼] 선택으로 진행.
- *      screen-spec: "팩트 요약 없이 진행하는 경우에는 요약 카드 없이 바로
- *      [안 삼]/[삼] 표시". saveDecision 은 fact_summary=null 로 저장.
- *   3) "결정 취소하고 채팅으로 돌아가기" (escape hatch)
- * - 재시도가 무의미한 상황(안전 필터·임계치 도달)에서는 (2)를 primary 강조.
- *
- * 채팅 에러 문구 정리 (issue #67)
- * - 사용자 노출 문구는 screen-spec §3-3 표준 일치 (존댓말 톤):
- *   · "AI 응답을 받지 못했습니다." (일반 실패)
- *   · "AI 없이 결정할 수 있습니다." (3회 연속 실패 = retryCount >= MAX_RETRIES)
- *   · "표현을 바꿔 다시 보내주세요." (안전 필터 차단 — screen-spec 외 자체 정의)
- * - 시스템 raw message(GEMINI_API_KEY 누락 등)는 사용자에게 노출하지 않고
- *   console.error 로만 흘린다.
- * - 채팅 모드 임계치 도달 시 [결정하기] 버튼이 자동 노출되어 사용자가
- *   "AI 없이 결정" 경로로 진행할 수 있도록 한다 (screen-spec §3-3).
+ * issue #48~#52, #65, #66, #67 의 모든 로직 유지.
  */
 export default function ChatScreen({ registration, itemId }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -127,31 +53,19 @@ export default function ChatScreen({ registration, itemId }: Props) {
   ]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  // issue #50: [결정하기] 표시 신호. AI 응답에서 받아 sticky로 유지.
   const [showDecideButton, setShowDecideButton] = useState(false);
-
-  // [결정하기] 클릭 후 결정 모드 진입 여부.
   const [isDecided, setIsDecided] = useState(false);
-
-  // issue #51: 팩트 요약 텍스트. API의 <<DECIDE>> 응답 본문.
   const [factSummary, setFactSummary] = useState<string | null>(null);
-
-  // 최종 결정 ([안 삼] / [삼]) 후 상태.
   const [finalDecision, setFinalDecision] = useState<"안 삼" | "삼" | null>(
     null
   );
-
-  // issue #65: AI 응답 실패 컨텍스트 (handleSend·handleDecide 공통).
   const [lastFailedSend, setLastFailedSend] =
     useState<FailedSendContext | null>(null);
-
-  // 결정 저장(saveDecision) 실패 — AI 호출 흐름과 별개이므로 lastFailedSend 와 분리한다.
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
 
   const scrollAnchorRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  // 1턴 = 사용자 메시지 1회 + AI 응답 1회.
   const turnCount = useMemo(
     () => messages.filter((m) => m.role === "user").length,
     [messages]
@@ -162,6 +76,13 @@ export default function ChatScreen({ registration, itemId }: Props) {
     scrollAnchorRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading, lastFailedSend]);
 
+  // textarea auto-grow
+  useEffect(() => {
+    if (!textareaRef.current) return;
+    textareaRef.current.style.height = "44px";
+    textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+  }, [inputValue]);
+
   const trimmedInput = inputValue.trim();
   const canSend =
     trimmedInput.length > 0 &&
@@ -169,10 +90,6 @@ export default function ChatScreen({ registration, itemId }: Props) {
     !isLoading &&
     !isAtTurnLimit;
 
-  /**
-   * /api/chat 호출. 성공 시 응답을, 실패 시 한국어 메시지를 담은 Error 를 throw.
-   * 서버가 본문에 한국어 에러 메시지를 담아준다 (src/app/api/chat/route.ts 참고).
-   */
   async function callChatApi(messagesPayload: ChatMessage[]) {
     const response = await fetch("/api/chat", {
       method: "POST",
@@ -193,13 +110,6 @@ export default function ChatScreen({ registration, itemId }: Props) {
     };
   }
 
-  /**
-   * 에러를 분류해서 lastFailedSend 컨텍스트를 만든다 (issue #65).
-   *
-   * 안전 필터 차단은 같은 입력을 다시 보내도 또 차단되므로 재시도 의미 없음.
-   * → errorKind: "content-filter" 로 마킹해서 UI에서 재시도 버튼을 숨긴다.
-   * 그 외 (네트워크·5xx·429·빈 응답 등) 는 transient 로 마킹.
-   */
   function buildFailureContext(args: {
     mode: "chat" | "decide";
     messagesSnapshot: ChatMessage[];
@@ -226,10 +136,7 @@ export default function ChatScreen({ registration, itemId }: Props) {
 
   async function handleSend() {
     if (!canSend) return;
-
-    // 새 메시지를 보내면 이전 실패 컨텍스트는 리셋 (#65 — 같은 메시지 연속 3회 기준).
     setLastFailedSend(null);
-
     const userMessage: ChatMessage = { role: "user", content: trimmedInput };
     const next: ChatMessage[] = [...messages, userMessage];
     setMessages(next);
@@ -281,8 +188,6 @@ export default function ChatScreen({ registration, itemId }: Props) {
       const data = await callChatApi(messagesForDecide);
       setFactSummary(data.content);
     } catch (error) {
-      // issue #65: 결정 모드 유지하고 결정 영역 안에서 "다시 시도" UI 표시.
-      // (handleSend 와 통일된 재시도 UX)
       setLastFailedSend(
         buildFailureContext({
           mode: "decide",
@@ -296,13 +201,6 @@ export default function ChatScreen({ registration, itemId }: Props) {
     }
   }
 
-  /**
-   * 마지막 실패한 호출을 같은 messages 스냅샷으로 다시 시도한다 (issue #65).
-   *
-   * - 성공: messages 에 assistant 응답 추가 (또는 factSummary 갱신), lastFailedSend 클리어.
-   * - 실패: retryCount += 1 로 lastFailedSend 갱신.
-   * - 안전 필터 차단·임계치 도달 시 본 함수는 UI에서 호출되지 않는다 (가드).
-   */
   async function handleRetry() {
     if (!lastFailedSend || isLoading) return;
     if (lastFailedSend.errorKind === "content-filter") return;
@@ -333,12 +231,6 @@ export default function ChatScreen({ registration, itemId }: Props) {
         previousRetryCount: prevContext.retryCount + 1,
       });
       setLastFailedSend(nextContext);
-
-      // screen-spec §3-3: "AI 응답 3회 연속 실패 → 'AI 없이 결정할 수 있습니다.'
-      // + [결정하기] 버튼 표시". 채팅 모드에서 임계치 도달 시 [결정하기] 를 자동
-      // 노출해 사용자가 곧장 결정으로 넘어갈 수 있게 한다.
-      // (결정 모드 실패는 이미 DecideFailureSection 안에서 "AI 없이 결정하기"
-      // 버튼을 제공하므로 자동 노출 대상 아님.)
       if (
         nextContext.mode === "chat" &&
         nextContext.retryCount >= MAX_RETRIES
@@ -350,34 +242,12 @@ export default function ChatScreen({ registration, itemId }: Props) {
     }
   }
 
-  /**
-   * 결정 모드를 취소하고 채팅으로 돌아간다 (issue #65 escape hatch).
-   *
-   * 결정 모드 진입 후 안전 필터 차단·재시도 임계치 도달 등으로 더 이상
-   * 진행할 수 없을 때 사용자가 결정 흐름에서 빠져나올 수 있게 한다.
-   * 채팅은 그대로 이어진다.
-   */
   function handleCancelDecide() {
     setIsDecided(false);
     setFactSummary(null);
     setLastFailedSend(null);
   }
 
-  /**
-   * AI 응답이 반복 실패하거나 안전 필터로 차단되었을 때, 팩트 요약 없이
-   * 곧바로 [안 삼]/[삼] 선택으로 진행한다 (issue #66).
-   *
-   * screen-spec.md:
-   * > 팩트 요약 없이 진행하는 경우에는 요약 카드 없이 바로 [안 삼]/[삼] 표시.
-   * > - AI 응답 실패가 반복되어 AI 없이 결정하는 경우
-   *
-   * 동작:
-   * - lastFailedSend 클리어 → DecideFailureSection 가 사라짐.
-   * - factSummary 는 null 그대로 두어 FactSummarySection 이 요약 카드 없이
-   *   [안 삼]/[삼] 버튼만 표시하게 한다.
-   * - isDecided 는 true 유지.
-   * - 이후 사용자가 [안 삼]/[삼] 클릭 시 saveDecision 이 fact_summary=null 로 저장.
-   */
   function handleSkipSummary() {
     setLastFailedSend(null);
     setFactSummary(null);
@@ -387,7 +257,6 @@ export default function ChatScreen({ registration, itemId }: Props) {
     setFinalDecision(decision);
 
     if (!itemId) {
-      // stub 모드: itemId가 없으면 DB 저장 스킵.
       return;
     }
 
@@ -400,237 +269,261 @@ export default function ChatScreen({ registration, itemId }: Props) {
         messages: messages.map((m) => ({ role: m.role, content: m.content })),
       });
     } catch (error) {
-      // 시스템 raw message 는 console 로만 흘리고 사용자에게는 정형 문구만 노출 (#67).
       console.error("[saveDecision] failed", error);
       setSaveErrorMessage("결정을 저장하지 못했습니다. 다시 시도해 주세요.");
       setFinalDecision(null);
     }
   }
 
-  // chat 모드 실패는 메시지 영역 끝에 표시.
   const chatFailure = lastFailedSend?.mode === "chat" ? lastFailedSend : null;
-  // decide 모드 실패는 footer 결정 영역에 표시.
   const decideFailure =
     lastFailedSend?.mode === "decide" ? lastFailedSend : null;
 
   return (
-    // 반응형 컨테이너:
-    // - 모바일/태블릿: 전체 화면 가득
-    // - 데스크탑(sm+): 가운데 정렬, max-w-2xl 카드 형태 + 미세한 보더
-    // - 팀의 src/app/page.tsx 톤(zinc-100·px-6) 일치
-    <main className="flex min-h-screen min-h-dvh flex-col bg-white sm:mx-auto sm:my-6 sm:min-h-[calc(100dvh-3rem)] sm:max-w-2xl sm:rounded-2xl sm:border sm:border-zinc-200 sm:shadow-sm">
-      {/* 상단 — 물건 정보 + 턴 카운터 */}
-      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-100 px-4 py-4 sm:px-6">
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-base font-semibold text-zinc-900">
-            {registration.productName}
+    <div className="pc-chat-frame">
+      {/* ── 왼쪽 사이드바 ── */}
+      <aside className="pc-chat-meta">
+        <div>
+          <div className="meta-label">물건</div>
+          <div className="item-name">{registration.productName}</div>
+          <div className="item-price">{registration.price}</div>
+        </div>
+
+        <div>
+          <div
+            className="turn-meter"
+            aria-label={`현재 ${turnCount}턴 중 최대 ${MAX_TURNS}턴`}
+          >
+            턴 {turnCount} / {MAX_TURNS}
           </div>
-          <div className="text-xs text-zinc-500">{registration.price}</div>
+          <div className="turn-bar" aria-hidden>
+            <span
+              style={{
+                width: `${Math.min(100, (turnCount / MAX_TURNS) * 100)}%`,
+              }}
+            />
+          </div>
         </div>
-        <div
-          className="shrink-0 text-xs text-zinc-400 tabular-nums"
-          aria-label={`현재 ${turnCount}턴 중 최대 ${MAX_TURNS}턴`}
-        >
-          {turnCount}/{MAX_TURNS}턴
-        </div>
-      </header>
 
-      {/* 중간 — 대화 영역 */}
-      <section
-        aria-label="대화 내역"
-        className="flex-1 space-y-3 overflow-y-auto px-4 py-4 sm:px-6"
-      >
-        {messages.map((message, index) => (
-          <MessageBubble key={index} message={message} />
-        ))}
-        {isLoading && <LoadingBubble />}
-        {chatFailure && (
-          <RetryNotice
-            failure={chatFailure}
-            onRetry={() => void handleRetry()}
-            disabled={isLoading}
-          />
-        )}
-        <div ref={scrollAnchorRef} />
-      </section>
-
-      {/* 하단 — 상황별 분기:
-          - 결정 모드 (isDecided=true): 팩트 요약 카드 / 재시도 UI / 최종 결정 placeholder
-          - 10턴 도달: TurnLimitNotice + [결정하기] 버튼
-          - 관점 제시 후: 입력창 + [결정하기] 버튼
-          - 초기: 입력창만 */}
-      <footer className="shrink-0 border-t border-zinc-100 px-4 py-4 pb-[max(env(safe-area-inset-bottom),1rem)] sm:px-6 sm:pb-4">
-        {/* issue #50: 결정 모드 진입 전에만 [결정하기] 버튼 표시.
-            screen-spec §2-5: 관점 제시 이후 입력창 위에 표시. */}
-        {showDecideButton && !isDecided && (
-          <DecideButton
-            onClick={() => void handleDecide()}
-            disabled={isLoading}
-          />
+        {registration.purchaseReason && (
+          <div>
+            <div className="meta-label">처음 적은 이유</div>
+            <div className="reason">{registration.purchaseReason}</div>
+          </div>
         )}
 
-        {isDecided ? (
-          finalDecision ? (
-            <FinalDecisionPlaceholder decision={finalDecision} />
-          ) : isLoading ? (
-            <SummaryLoading />
-          ) : decideFailure ? (
-            <DecideFailureSection
-              failure={decideFailure}
-              onRetry={() => void handleRetry()}
-              onSkipSummary={handleSkipSummary}
-              onCancel={handleCancelDecide}
-              disabled={isLoading}
-            />
-          ) : (
-            <FactSummarySection
-              summary={factSummary}
-              onDecision={handleFinalDecision}
-            />
-          )
-        ) : isAtTurnLimit ? (
-          <TurnLimitNotice />
-        ) : (
-          <>
-            <div className="mb-1 flex justify-end text-xs text-zinc-400">
-              <span aria-live="polite">
-                {trimmedInput.length}/{MAX_MESSAGE_LENGTH}
-              </span>
+        <div style={{ marginTop: "auto" }}>
+          <p
+            style={{
+              fontSize: 11.5,
+              color: "var(--ink-3)",
+              lineHeight: 1.5,
+              margin: 0,
+            }}
+          >
+            AI는 현재 대화에서 나온 사실만 사용합니다. 판단은 직접 하세요.
+          </p>
+        </div>
+      </aside>
+
+      {/* ── 오른쪽 메인 ── */}
+      <section className="pc-chat-main">
+        <div className="pc-chat-stream" aria-label="대화 내역">
+          <div className="pc-chat-stream-inner">
+            <div className="bubble system">
+              AI가 현재 대화에서 나온 사실만 사용합니다
             </div>
-            <div className="flex items-end gap-2">
+            {messages.map((m, idx) => (
+              <div
+                key={idx}
+                className={`bubble ${m.role === "assistant" ? "ai" : "user"}`}
+              >
+                {m.content}
+              </div>
+            ))}
+            {isLoading && (
+              <div
+                className="bubble loading"
+                aria-label="AI가 응답을 작성하는 중입니다"
+              >
+                <span />
+                <span />
+                <span />
+              </div>
+            )}
+            {chatFailure && (
+              <RetryNotice
+                failure={chatFailure}
+                onRetry={() => void handleRetry()}
+                disabled={isLoading}
+              />
+            )}
+            <div ref={scrollAnchorRef} />
+          </div>
+        </div>
+
+        {/* 결정 배너: 결정 모드 진입 전, [결정하기] 버튼 노출 신호 켜진 경우만 */}
+        {showDecideButton && !isDecided && (
+          <div className="decide-banner">
+            <span className="label-text">관점이 정리됐어요</span>
+            <button
+              type="button"
+              onClick={() => void handleDecide()}
+              disabled={isLoading}
+            >
+              결정하기
+            </button>
+          </div>
+        )}
+
+        {/* 하단 — 상황별 분기 */}
+        {isDecided ? (
+          <div className="chat-input-bar">
+            {finalDecision ? (
+              <FinalDecisionPlaceholder decision={finalDecision} />
+            ) : isLoading ? (
+              <SummaryLoading />
+            ) : decideFailure ? (
+              <DecideFailureSection
+                failure={decideFailure}
+                onRetry={() => void handleRetry()}
+                onSkipSummary={handleSkipSummary}
+                onCancel={handleCancelDecide}
+                disabled={isLoading}
+              />
+            ) : (
+              <FactSummarySection
+                summary={factSummary}
+                onDecision={handleFinalDecision}
+              />
+            )}
+            {saveErrorMessage && (
+              <div
+                role="alert"
+                style={{
+                  marginTop: 10,
+                  fontSize: 13,
+                  color: "var(--danger)",
+                  border: "2px solid var(--danger)",
+                  padding: "8px 12px",
+                }}
+              >
+                {saveErrorMessage}
+              </div>
+            )}
+          </div>
+        ) : isAtTurnLimit ? (
+          <div className="chat-input-bar">
+            <TurnLimitNotice />
+          </div>
+        ) : (
+          <div className="chat-input-bar">
+            <div className="chat-input-row">
               <textarea
+                ref={textareaRef}
+                className="chat-input"
                 value={inputValue}
                 onChange={(e) =>
                   setInputValue(e.target.value.slice(0, MAX_MESSAGE_LENGTH))
                 }
                 onKeyDown={handleKeyDown}
-                placeholder="메시지를 입력해 주세요."
-                rows={2}
+                placeholder="메시지를 입력하세요"
+                rows={1}
                 disabled={isLoading}
-                className="flex-1 resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 disabled:bg-zinc-100"
               />
               <button
                 type="button"
+                className="chat-send"
                 onClick={() => void handleSend()}
                 disabled={!canSend}
-                className="shrink-0 rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-300"
+                aria-label="전송"
               >
-                전송
+                →
               </button>
             </div>
-          </>
-        )}
-
-        {saveErrorMessage && (
-          <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {saveErrorMessage}
+            <div className="chat-meter" aria-live="polite">
+              {trimmedInput.length}/{MAX_MESSAGE_LENGTH}
+            </div>
           </div>
         )}
-      </footer>
-    </main>
-  );
-}
-
-function MessageBubble({ message }: { message: ChatMessage }) {
-  const isUser = message.role === "user";
-  return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-      <div
-        className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
-          isUser ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-900"
-        }`}
-      >
-        {message.content}
-      </div>
+      </section>
     </div>
   );
 }
 
-function LoadingBubble() {
-  return (
-    <div
-      className="flex justify-start"
-      aria-label="AI가 응답을 작성하는 중입니다"
-    >
-      <div className="flex max-w-[80%] gap-1 rounded-2xl bg-zinc-100 px-4 py-3">
-        <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.3s]" />
-        <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.15s]" />
-        <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-400" />
-      </div>
-    </div>
-  );
-}
+// ────────────────────────────────────────────────────────────
+// 보조 컴포넌트들
+// ────────────────────────────────────────────────────────────
 
-function DecideButton({
-  onClick,
-  disabled,
-}: {
-  onClick: () => void;
-  disabled: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="mb-3 w-full rounded-full bg-zinc-900 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-300"
-    >
-      결정하기
-    </button>
-  );
-}
-
+/** 팩트 요약 로딩 인디케이터 (issue #51) */
 function SummaryLoading() {
   return (
     <div
       role="status"
       aria-live="polite"
-      className="flex items-center justify-center gap-2 rounded-md border border-zinc-200 bg-zinc-50 px-4 py-6 text-sm text-zinc-500"
+      style={{
+        display: "flex",
+        gap: 8,
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "16px 12px",
+        border: "2px solid var(--line-default)",
+        background: "var(--surface-2)",
+        fontFamily: "var(--font-mono)",
+        fontSize: 12,
+        color: "var(--ink-3)",
+        textTransform: "uppercase",
+        letterSpacing: "0.06em",
+      }}
     >
-      <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.3s]" />
-      <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.15s]" />
-      <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-400" />
-      <span className="ml-2">팩트 요약 만드는 중…</span>
+      <span className="bubble loading" style={{ padding: 0, background: "transparent" }}>
+        <span />
+        <span />
+        <span />
+      </span>
+      <span style={{ marginLeft: 8 }}>팩트 요약 만드는 중</span>
     </div>
   );
 }
 
+/**
+ * 팩트 요약 카드 + [안 삼]/[삼] 버튼 (issue #51).
+ *
+ * screen-spec §2-5:
+ * - 요약은 대화에서 나온 사실만 포함
+ * - 사실이 1개도 없으면 카드 없이 바로 버튼만 표시
+ */
 function FactSummarySection({
   summary,
   onDecision,
 }: {
   summary: string | null;
-  /** async 가능 — DB 저장은 Server Action이라 Promise를 반환할 수 있다. */
   onDecision: (decision: "안 삼" | "삼") => void | Promise<void>;
 }) {
   const trimmed = summary?.trim() ?? "";
   const hasSummary = trimmed.length > 0 && trimmed !== "요약할 사실 없음.";
 
   return (
-    <div className="space-y-3">
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {hasSummary && (
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
-          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            대화에서 정리된 사실
-          </div>
-          <div className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-800">
-            {trimmed}
-          </div>
+        <div className="fact-card">
+          <h4>대화에서 정리된 사실</h4>
+          <div className="body">{trimmed}</div>
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="decide-row">
         <button
           type="button"
+          className="decide-btn"
           onClick={() => void onDecision("안 삼")}
-          className="rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-50"
         >
           안 삼
         </button>
         <button
           type="button"
+          className="decide-btn primary"
           onClick={() => void onDecision("삼")}
-          className="rounded-full bg-zinc-900 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-zinc-700"
         >
           삼
         </button>
@@ -639,6 +532,7 @@ function FactSummarySection({
   );
 }
 
+/** [안 삼] / [삼] 선택 후 placeholder. */
 function FinalDecisionPlaceholder({
   decision,
 }: {
@@ -647,22 +541,57 @@ function FinalDecisionPlaceholder({
   return (
     <div
       role="status"
-      className="rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 text-center text-sm text-zinc-600"
+      className="fact-card"
+      style={{ textAlign: "center" }}
     >
-      <span className="font-medium text-zinc-900">[{decision}]</span> 으로
-      결정했어. 결정 기록 저장은 다음 단계에서 추가될 예정.
+      <div
+        style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: 12,
+          letterSpacing: "0.06em",
+          textTransform: "uppercase",
+          color: "var(--ink-3)",
+          marginBottom: 6,
+        }}
+      >
+        결정 완료
+      </div>
+      <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)" }}>
+        [{decision}] 으로 결정했어요.
+      </div>
     </div>
   );
 }
 
+/** 10턴 도달 시 입력 영역 자리에 표시. */
 function TurnLimitNotice() {
   return (
     <div
       role="status"
-      className="rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 text-center text-sm text-zinc-600"
+      style={{
+        textAlign: "center",
+        padding: "14px 16px",
+        border: "2px solid var(--line-default)",
+        background: "var(--surface-2)",
+        fontSize: 14,
+        color: "var(--ink-2)",
+      }}
     >
+      <div
+        style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: 11,
+          letterSpacing: "0.06em",
+          textTransform: "uppercase",
+          color: "var(--ink-3)",
+          marginBottom: 4,
+        }}
+      >
+        TURN LIMIT
+      </div>
       최대 대화 횟수({MAX_TURNS}턴)에 도달했습니다.
-      <br className="sm:hidden" /> 이제 결정으로 넘어가 주세요.
+      <br />
+      이제 결정으로 넘어가 주세요.
     </div>
   );
 }
@@ -670,18 +599,11 @@ function TurnLimitNotice() {
 /**
  * AI 응답 실패 안내 + "다시 시도" 버튼 (issue #65, #67).
  *
- * 메시지 영역 끝(handleSend 실패 시)과 결정 영역(handleDecide 실패 시) 양쪽에서
- * 재사용한다. 에러 종류·재시도 횟수에 따라 안내 문구와 버튼 표시를 결정한다.
- *
- * 문구 정합성 (screen-spec §3-3 표준):
- * - 일반 실패        → "AI 응답을 받지 못했습니다." + [다시 시도]
- * - 3회 연속 실패    → "AI 없이 결정할 수 있습니다." + [결정하기]
- *   (채팅 모드에서는 [결정하기] 가 자동 노출되므로 본 컴포넌트는 안내만 표시.
- *    결정 모드에서는 DecideFailureSection 의 "AI 없이 결정하기" 버튼으로 진행.)
- * - 안전 필터 차단   → "표현을 바꿔 다시 보내주세요." (screen-spec 외, 자체 정의)
- *
- * 톤: PRD §8 — 오류 안내는 존댓말.
- * 시스템 에러의 raw message(failure.message)는 사용자에게 노출하지 않는다 (#67).
+ * screen-spec §3-3 표준 문구:
+ * - 일반 실패     → "AI 응답을 받지 못했습니다." + [다시 시도]
+ * - 3회 연속 실패 → "AI 없이 결정할 수 있습니다." + [결정하기]
+ *   (채팅 모드에서는 [결정하기] 자동 노출 — 본 컴포넌트는 안내만)
+ * - 안전 필터 차단 → "표현을 바꿔 다시 보내주세요." (자체 정의)
  */
 function RetryNotice({
   failure,
@@ -703,17 +625,14 @@ function RetryNotice({
       : "AI 응답을 받지 못했습니다.";
 
   return (
-    <div
-      role="alert"
-      className="space-y-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-    >
-      <div className="font-medium">{headline}</div>
+    <div role="alert" className="retry-notice">
+      <div className="headline">{headline}</div>
       {canRetry && (
         <button
           type="button"
+          className="retry-btn"
           onClick={onRetry}
           disabled={disabled}
-          className="rounded-md border border-red-300 bg-white px-3 py-1.5 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
         >
           다시 시도
         </button>
@@ -726,15 +645,11 @@ function RetryNotice({
  * 결정 모드 안에서 발생한 팩트 요약 실패 처리 (issue #65, #66, #67).
  *
  * RetryNotice + 3개 진행 옵션:
- * 1. "다시 시도"     — RetryNotice 안. 재시도 가능한 경우(transient + retryCount<MAX).
- * 2. "AI 없이 결정하기" — 팩트 요약을 만들지 못해도 결정 흐름을 막지 않는다 (issue #66).
- *                       screen-spec §3-3: "AI 응답 실패가 반복되어 AI 없이 결정하는
- *                       경우" + "AI 없이 결정할 수 있습니다." + [결정하기] 정책 적용.
- *                       재시도 불가능한 상황(안전 필터 차단·임계치 도달)에서는 primary
- *                       스타일로 강조해서 사용자의 다음 행동을 가이드한다.
- * 3. "결정 취소하고 채팅으로 돌아가기" — escape hatch. 채팅으로 복귀.
+ * 1. "다시 시도" (재시도 가능한 경우)
+ * 2. "AI 없이 결정하기" — 팩트 요약 없이 [안 삼]/[삼] 으로 진행 (#66)
+ * 3. "결정 취소하고 채팅으로 돌아가기" (escape hatch)
  *
- * 완료 기준 (issue #66): AI 실패 상황에서도 결정 흐름이 막히지 않는다.
+ * 재시도 무의미(안전 필터·임계치 도달) 시 (2)를 primary 강조.
  */
 function DecideFailureSection({
   failure,
@@ -749,32 +664,27 @@ function DecideFailureSection({
   onCancel: () => void;
   disabled: boolean;
 }) {
-  // 재시도가 무의미한 상황(안전 필터 차단·임계치 도달)에서는 "AI 없이 결정하기"가
-  // 사실상 유일한 진행 경로이므로 primary 스타일로 강조 (#67).
   const cannotRetry =
     failure.errorKind === "content-filter" ||
     failure.retryCount >= MAX_RETRIES;
 
   return (
-    <div className="space-y-3">
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <RetryNotice failure={failure} onRetry={onRetry} disabled={disabled} />
       <button
         type="button"
+        className={cannotRetry ? "decide-btn primary" : "outline-btn"}
         onClick={onSkipSummary}
         disabled={disabled}
-        className={
-          cannotRetry
-            ? "w-full rounded-full bg-zinc-900 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-300"
-            : "w-full rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
-        }
+        style={{ width: "100%" }}
       >
         AI 없이 결정하기
       </button>
       <button
         type="button"
+        className="outline-btn"
         onClick={onCancel}
         disabled={disabled}
-        className="w-full rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
       >
         결정 취소하고 채팅으로 돌아가기
       </button>
