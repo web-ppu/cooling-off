@@ -309,8 +309,20 @@ export default function ChatScreen({
         factSummary,
       });
     } catch (error) {
+      // Next.js 의 redirect() 는 NEXT_REDIRECT 에러를 throw 해서 동작한다.
+      // 이 catch 가 그걸 일반 에러로 잡으면 사용자에게는 redirect 가 실패한
+      // 것처럼 보인다 (실제로는 DB 저장 + 리다이렉트 모두 성공). Next.js 가
+      // 처리하도록 재-throw 한다.
+      if (isNextRedirectError(error)) {
+        throw error;
+      }
+
       console.error("[saveDecision] failed", error);
-      setSaveErrorMessage("결정을 저장하지 못했습니다. 다시 시도해 주세요.");
+      const message =
+        error instanceof Error
+          ? error.message
+          : "결정을 저장하지 못했습니다. 다시 시도해 주세요.";
+      setSaveErrorMessage(message);
       setFinalDecision(null);
     }
   }
@@ -735,6 +747,23 @@ function DecideFailureSection({
 /** 메시지 배열에서 사용자 메시지 개수를 센다 (= 현재까지 진행된 턴 수). */
 function countUserMessages(msgs: ChatMessage[]): number {
   return msgs.filter((m) => m.role === "user").length;
+}
+
+/**
+ * Next.js 의 `redirect()` 가 throw 하는 `NEXT_REDIRECT` 에러인지 판별한다.
+ *
+ * Server Action 끝에서 `redirect("/")` 가 호출되면 NEXT_REDIRECT 가 throw 되어
+ * client component 의 try-catch 까지 전파된다. 이를 일반 에러로 처리하면
+ * 사용자에게 "저장 실패" 처럼 보이지만 실제로는 DB 저장 + redirect 모두 성공한
+ * 정상 흐름이다. catch 에서 본 함수로 판별해 재-throw 하면 Next.js 가 처리한다.
+ *
+ * 식별: error.digest 가 문자열이고 "NEXT_REDIRECT" 로 시작.
+ */
+function isNextRedirectError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  if (!("digest" in error)) return false;
+  const digest = (error as { digest?: unknown }).digest;
+  return typeof digest === "string" && digest.startsWith("NEXT_REDIRECT");
 }
 
 /**

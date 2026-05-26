@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { isAdmin } from "@/lib/admin";
 
 /**
  * 결정 결과 저장 / 대화 누적 Server Actions.
@@ -43,8 +44,19 @@ export async function saveDecision(input: SaveDecisionInput) {
   if (!user) redirect("/login");
 
   // items 업데이트만 수행. chat_messages 는 appendChatTurn 으로 누적 저장됨.
+  //
+  // 정책:
+  // - 일반 사용자: status='ready' 인 본인 item 만 결정 가능 (냉각 정책 강제).
+  // - admin 화이트리스트 사용자: cooling 상태 item 도 결정 가능 (테스트/시연용 우회).
+  //   src/lib/admin.ts 의 isAdmin 게이트가 통과한 경우.
+  // - status='decided' 는 양쪽 모두 거부 (이미 결정 끝남).
+  const isAdminUser = isAdmin(user.email);
+  const allowedStatuses = isAdminUser
+    ? ["cooling", "ready"]
+    : ["ready"];
+
   const factSummaryArray = parseFactSummary(factSummary);
-  const { error: itemError } = await supabase
+  const { data: updatedItems, error: itemError } = await supabase
     .from("items")
     .update({
       decision,
@@ -54,10 +66,19 @@ export async function saveDecision(input: SaveDecisionInput) {
     })
     .eq("id", itemId)
     .eq("user_id", user.id)
-    .eq("status", "ready");
+    .in("status", allowedStatuses)
+    .select("id");
 
   if (itemError) {
     throw new Error(`결정 저장 실패: ${itemError.message}`);
+  }
+
+  // 0 rows update 검증 — Supabase 는 조건 미일치를 error 로 만들지 않으므로
+  // 결정 정보 손실을 방지하기 위해 명시적으로 검사한다.
+  if (!updatedItems || updatedItems.length === 0) {
+    throw new Error(
+      "결정할 수 없는 상태입니다. 항목이 존재하지 않거나 이미 결정이 완료됐어요."
+    );
   }
 
   revalidatePath("/");
