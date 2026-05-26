@@ -115,18 +115,6 @@ export function buildSystemPrompt(registration: Registration): string {
 }
 
 /**
- * 테스트용 하드코딩 등록 정보 (Case A — 에어팟 프로3).
- * 추후 실제 등록 flow가 생기면 이 값을 사용자가 입력한 값으로 대체한다.
- */
-export const TEST_REGISTRATION: Registration = {
-  productName: "에어팟 프로3",
-  price: "350,000원",
-  coolingPeriod: "14일",
-  purchaseReason:
-    "지금 에어팟 프로1 쓰고 있는데, 쓴지 2~3년 돼서 배터리도 빨리 닳고 프로3에 좋은 기능이 많이 나왔어. 자동 번역이랑 제스처로 볼륨 조절하는 기능 등등",
-};
-
-/**
  * AI 응답에서 메타 태그를 분리한다.
  * 입력 예: "...본문...\n[show_decide_button: true]"
  * 출력: { displayText: "...본문...", showDecideButton: true }
