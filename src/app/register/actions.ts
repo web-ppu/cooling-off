@@ -48,6 +48,11 @@ export async function registerItem(formData: FormData): Promise<RegisterResult> 
   })
 
   if (error) {
+    // 부분 unique index(idx_items_user_url_active) 위반: 같은 URL을 이미 활성 상태로 등록함.
+    // Postgres unique_violation = SQLSTATE 23505.
+    if (error.code === '23505') {
+      return { success: false, error: '이미 등록한 상품이에요. 홈에서 확인할 수 있어요.' }
+    }
     return { success: false, error: '저장 중 오류가 발생했습니다. 다시 시도해 주세요.' }
   }
 

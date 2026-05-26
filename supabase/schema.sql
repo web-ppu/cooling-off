@@ -59,6 +59,13 @@ CREATE INDEX idx_items_cooling_expiry
   ON items (cooling_ends_at)
   WHERE deleted_at IS NULL AND status = 'cooling';
 
+-- 중복 등록 방지: 한 사용자가 같은 URL을 활성 상태로 중복 등록할 수 없다.
+-- 브라우저 확장의 중복 게이트(EX-6)와 web 등록 흐름의 공통 방어선.
+-- url 이 null 이면(직접 입력 등록 등) 제약 대상이 아니다.
+CREATE UNIQUE INDEX idx_items_user_url_active
+  ON items (user_id, url)
+  WHERE deleted_at IS NULL AND url IS NOT NULL;
+
 -- 대화 다시 보기: 메시지 순서 조회
 CREATE INDEX idx_chat_messages_item
   ON chat_messages (item_id, turn_number);
