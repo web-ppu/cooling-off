@@ -5,13 +5,18 @@
   "type": "module",
   "description": "쿨링오프 브라우저 확장 (소프트 인터셉트). web과 분리된 의존성.",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@crxjs/vite-plugin": "^2.4.0",
+    "@types/chrome": "^0.1.42",
     "jsdom": "^25.0.0",
     "typescript": "^5.6.0",
+    "vite": "^7.0.0",
     "vitest": "^3.0.0"
   }
 }
