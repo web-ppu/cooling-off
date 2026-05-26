@@ -5,46 +5,36 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 /**
- * 결정 결과 저장 Server Action (issue #52).
+ * 결정 결과 저장 / 대화 누적 Server Actions.
  *
- * [안 삼] / [삼] 선택 시 호출되어 items 테이블에 결정·요약을 저장하고,
- * chat_messages 테이블에 전체 대화 기록을 누적한다.
- *
- * 경민이 작성한 cooling/actions.ts 패턴(Server Action + Supabase + auth check
- * + redirect)을 그대로 따른다. supabase/schema.sql 기준.
+ * 동작 분리 (issue: 대화 turn-by-turn 영구 저장):
+ * - 채팅 진행 중에는 매 턴마다 `appendChatTurn` 으로 chat_messages 에 누적 INSERT.
+ *   페이지 진입 시(/chat/[itemId]) 기존 chat_messages 를 그대로 복원해 화면을 띄운다.
+ *   덕분에 새로고침/재진입해도 대화가 끊기지 않는다.
+ * - [안 삼]/[삼] 클릭 시 `saveDecision` 이 호출되어 items 레코드만 결정 상태로 업데이트한다.
+ *   chat_messages 는 이미 누적되어 있으므로 더 이상 일괄 INSERT 하지 않는다.
  *
  * 흐름:
  * 1. 인증 확인 (auth.getUser) — 비로그인이면 /login으로 리다이렉트
  * 2. items.UPDATE: decision, decided_at, status='decided', fact_summary
  *    - WHERE id = itemId AND user_id = current AND status = 'ready'
  *    - (RLS도 같은 조건 강제하지만 명시적 검증 포함)
- * 3. chat_messages.INSERT: 모든 대화 메시지 누적
- *    - 첫 AI 고정 인사는 turn_number=0
- *    - 사용자/AI 짝은 turn_number=1..N
- * 4. revalidatePath('/') 후 홈으로 리다이렉트
+ * 3. revalidatePath('/') 후 홈으로 리다이렉트
  *
  * 호출 측(ChatScreen): itemId가 있는 경우에만 호출. itemId 없으면 stub 모드
- * (현재 /chat 페이지의 Case A 하드코딩 상황). 추후 /chat/[itemId] 동적 라우트로
- * 옮기면 자연스럽게 통합된다.
+ * (현재 /chat 페이지의 Case A 하드코딩 상황) — 저장 자체를 스킵.
  */
 export type DecisionLabel = "bought" | "passed";
-
-export type ChatMessageInput = {
-  role: "user" | "assistant";
-  content: string;
-};
 
 export type SaveDecisionInput = {
   itemId: string;
   decision: DecisionLabel;
   /** AI가 출력한 팩트 요약 본문(불릿 목록 텍스트). 없으면 null. */
   factSummary: string | null;
-  /** 첫 고정 인사부터 마지막 AI 응답까지의 전체 대화. */
-  messages: ChatMessageInput[];
 };
 
 export async function saveDecision(input: SaveDecisionInput) {
-  const { itemId, decision, factSummary, messages } = input;
+  const { itemId, decision, factSummary } = input;
 
   const supabase = await createClient();
   const {
@@ -52,7 +42,7 @@ export async function saveDecision(input: SaveDecisionInput) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // 1) items 업데이트
+  // items 업데이트만 수행. chat_messages 는 appendChatTurn 으로 누적 저장됨.
   const factSummaryArray = parseFactSummary(factSummary);
   const { error: itemError } = await supabase
     .from("items")
@@ -70,28 +60,75 @@ export async function saveDecision(input: SaveDecisionInput) {
     throw new Error(`결정 저장 실패: ${itemError.message}`);
   }
 
-  // 2) chat_messages 누적
-  if (messages.length > 0) {
-    const rows = withTurnNumbers(messages).map((msg) => ({
-      item_id: itemId,
-      user_id: user.id,
-      role: msg.role,
-      content: msg.content,
-      turn_number: msg.turnNumber,
-    }));
-
-    const { error: chatError } = await supabase
-      .from("chat_messages")
-      .insert(rows);
-
-    if (chatError) {
-      throw new Error(`대화 기록 저장 실패: ${chatError.message}`);
-    }
-  }
-
-  // 3) 홈 캐시 무효화 후 이동
   revalidatePath("/");
   redirect("/");
+}
+
+/**
+ * 한 턴 분량의 대화(사용자 메시지 + AI 응답) 를 chat_messages 에 누적 INSERT 한다.
+ *
+ * - turn_number 는 같은 턴 안에서 user/assistant 가 공유한다 (schema 규약).
+ * - 첫 AI 고정 인사는 페이지 진입 시 turn_number=0 으로 별도 INSERT 되므로
+ *   본 함수는 turn_number ≥ 1 에 해당하는 사용자/AI 메시지 한 쌍만 처리한다.
+ * - 본 함수는 fire-and-forget 으로 호출된다. 실패해도 사용자 화면은 진행되며,
+ *   다음 새로고침 시 해당 턴은 누락된 상태로 남는다 (MVP 단순화).
+ *
+ * 검증:
+ * - 로그인 확인
+ * - itemId 가 본인 소유이고 soft-delete 되지 않은 활성 item 인지 확인
+ *   (status 는 검증하지 않는다 — admin 이 cooling 상태에서 진입한 경우도 누적 저장 허용)
+ */
+export type AppendChatTurnInput = {
+  itemId: string;
+  turnNumber: number;
+  userMessage: string;
+  assistantMessage: string;
+};
+
+export async function appendChatTurn(input: AppendChatTurnInput): Promise<void> {
+  const { itemId, turnNumber, userMessage, assistantMessage } = input;
+
+  if (turnNumber < 1) {
+    throw new Error("turnNumber 는 1 이상이어야 합니다.");
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("로그인이 필요합니다.");
+
+  // 본인 소유 확인 (RLS 도 동일 조건이지만 명시적 검증)
+  const { data: item } = await supabase
+    .from("items")
+    .select("user_id")
+    .eq("id", itemId)
+    .is("deleted_at", null)
+    .single();
+  if (!item || item.user_id !== user.id) {
+    throw new Error("권한이 없습니다.");
+  }
+
+  const { error } = await supabase.from("chat_messages").insert([
+    {
+      item_id: itemId,
+      user_id: user.id,
+      role: "user",
+      content: userMessage,
+      turn_number: turnNumber,
+    },
+    {
+      item_id: itemId,
+      user_id: user.id,
+      role: "assistant",
+      content: assistantMessage,
+      turn_number: turnNumber,
+    },
+  ]);
+
+  if (error) {
+    throw new Error(`대화 저장 실패: ${error.message}`);
+  }
 }
 
 /**
@@ -119,21 +156,4 @@ function parseFactSummary(text: string | null): string[] | null {
     .filter((line) => line.length > 0);
 
   return facts.length > 0 ? facts : null;
-}
-
-/**
- * ChatScreen의 메시지 배열에 turn_number를 부여한다.
- *
- * - 첫 메시지는 항상 AI 고정 인사("네 말 들어볼게..."). turn_number=0.
- * - 그 이후 사용자 메시지가 등장할 때마다 turn_number 1씩 증가.
- * - 같은 턴 안의 AI 응답은 사용자와 동일한 turn_number를 공유.
- *
- * supabase/schema.sql: "item 1개당 최대 10턴 (사용자 + AI 각 1회 = 1턴)".
- */
-function withTurnNumbers(messages: ChatMessageInput[]) {
-  let turn = 0;
-  return messages.map((msg) => {
-    if (msg.role === "user") turn += 1;
-    return { ...msg, turnNumber: turn };
-  });
 }
