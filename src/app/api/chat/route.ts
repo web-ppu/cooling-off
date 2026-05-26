@@ -7,7 +7,6 @@ import {
   type ChatMessage,
   type Registration,
 } from "@/lib/chat/systemPrompt";
-import { getMockResponse } from "@/lib/chat/mockResponses";
 
 const DEFAULT_GEMINI_MODEL = "gemini-3.1-flash-lite";
 
@@ -20,12 +19,12 @@ const DEFAULT_GEMINI_MODEL = "gemini-3.1-flash-lite";
  *
  * 서버는 다음을 한다.
  * 1. 시스템 프롬프트 + 등록 정보 합성
- * 2. AI 호출 (USE_MOCK_AI=true면 mock, 아니면 Vercel AI SDK 기반 Gemini 호출)
+ * 2. Vercel AI SDK 기반 Gemini 호출
  * 3. 응답 본문에서 메타 태그 분리
  * 4. 키워드 기반 보강 (메타 태그가 없을 때 [결정하기] 신호 추정)
  * 5. { content, showDecideButton } 형태로 반환
  *
- * 선정 모델: Gemini 3.1 Flash-Lite (docs/engineering/model-selection.md v1.1)
+ * 선정 모델: Gemini 3.1 Flash-Lite (docs/engineering/model-selection.md v1.2).
  * 모델 ID는 GEMINI_MODEL 환경변수로 오버라이드 가능.
  */
 export async function POST(request: NextRequest) {
@@ -58,15 +57,10 @@ export async function POST(request: NextRequest) {
   }
 
   const systemPrompt = buildSystemPrompt(registration);
-  const useMock = process.env.USE_MOCK_AI !== "false";
   let rawResponse: string;
 
   try {
-    if (useMock) {
-      rawResponse = await callMock(messages, lastMessage.content);
-    } else {
-      rawResponse = await callGemini(systemPrompt, messages);
-    }
+    rawResponse = await callGemini(systemPrompt, messages);
   } catch (error) {
     const message =
       error instanceof Error
@@ -83,57 +77,6 @@ export async function POST(request: NextRequest) {
     content: displayText,
     showDecideButton: finalShowDecideButton,
   });
-}
-
-/**
- * dev/mock 전용 — `_MOCK_FAIL_ONCE_` 키워드 호출 횟수 누적 카운터 (issue #65 검증용).
- * 홀수 번째 호출(1, 3, ...)은 실패, 짝수 번째(2, 4, ...)는 성공시켜
- * "다시 시도" 시 성공하는 흐름을 사용자가 직접 확인할 수 있게 한다.
- *
- * USE_MOCK_AI=true 일 때만 의미 있고, 서버 재시작 시 리셋된다.
- * Production 코드 경로(USE_MOCK_AI=false)에는 영향 없음.
- */
-let mockFailOnceCounter = 0;
-
-/**
- * Mock 호출 — 정적 응답 반환. UI 동작·멀티턴 흐름·실패 재시도 흐름 검증용.
- *
- * 실패 시뮬레이션 키워드 (issue #65 검증용 — USE_MOCK_AI=true 에서만 동작):
- * - `_MOCK_FAIL_ONCE_` : 첫 호출 실패, 다시 시도(2번째)는 성공.
- *   → "재시도 성공 시 대화가 이어진다" 검증용.
- * - `_MOCK_FAIL_`      : 매번 실패. 같은 메시지로 재시도해도 또 실패.
- *   → "반복 실패 횟수 관리"(3회 임계치) 검증용.
- * - `_MOCK_BLOCK_`     : 안전 필터 차단. 재시도 불가.
- *   → 안전 필터 분기 UX 검증용.
- *
- * 키워드는 Production 에서 사용자가 쓸 가능성이 거의 없는 형태로 선택.
- */
-async function callMock(
-  messages: ChatMessage[],
-  userMessage: string
-): Promise<string> {
-  await new Promise((resolve) => setTimeout(resolve, 600));
-
-  // 순서 주의: _MOCK_FAIL_ONCE_ 가 _MOCK_FAIL_ 도 포함하므로 더 구체적인 것부터 검사.
-  if (userMessage.includes("_MOCK_FAIL_ONCE_")) {
-    mockFailOnceCounter += 1;
-    if (mockFailOnceCounter % 2 === 1) {
-      throw new Error("Mock 일시 실패 — 다시 시도하면 성공합니다.");
-    }
-    // 짝수 번째 호출(=재시도) → 정상 응답으로 대화 이어주기.
-    const userTurnIndex = messages.filter((m) => m.role === "user").length - 1;
-    return getMockResponse(userTurnIndex, userMessage);
-  }
-
-  if (userMessage.includes("_MOCK_FAIL_")) {
-    throw new Error("Mock 실패 시뮬레이션 — 네트워크 오류 가정.");
-  }
-  if (userMessage.includes("_MOCK_BLOCK_")) {
-    throw new Error("응답이 안전 필터에 의해 차단되었습니다.");
-  }
-
-  const userTurnIndex = messages.filter((m) => m.role === "user").length - 1;
-  return getMockResponse(userTurnIndex, userMessage);
 }
 
 /**
