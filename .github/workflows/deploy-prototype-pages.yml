@@ -28,26 +28,17 @@ jobs:
           cache: npm
           cache-dependency-path: |
             prototype/package-lock.json
-            prototype2/package-lock.json
 
       - name: Install prototype dependencies
         run: npm ci --prefix prototype
 
-      - name: Install prototype2 dependencies
-        run: npm ci --prefix prototype2
-
       - name: Build prototype
         run: npm run build --prefix prototype
-
-      - name: Build prototype2
-        run: npm run build --prefix prototype2
 
       - name: Assemble Pages artifact
         run: |
           rm -rf _site
-          mkdir -p _site/prototype2
           cp -R prototype/dist/. _site/
-          cp -R prototype2/dist/. _site/prototype2/
           touch _site/.nojekyll
 
       - name: Setup Pages
