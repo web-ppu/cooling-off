@@ -183,14 +183,14 @@ content script는 `*://*.coupang.com/*`, `*://shopping.naver.com/*` 같이 **도
 1. **Optimistic UI 금지** — 모달 [등록] 클릭 후 Supabase insert가 성공 응답을 반환하기 전까지 "냉각 시작" 토스트를 띄우지 않는다. 실패 시 모달 안에 인라인 에러 + [다시 시도] 버튼.
 2. **Session expired** — insert 시 401 응답이 오면 SW가 자동으로 refresh token 시도. 실패하면 popup을 자동 열어 재인증 유도. 이때 사용자가 입력 중이던 상품 정보는 `chrome.storage.session`에 보관해서 재인증 후 복원.
 3. **CSP-strict 호스트** — Shadow DOM 모달이 호스트 페이지의 CSP를 위반하지 않도록, 인라인 스타일이 아닌 `<style>` 태그를 Shadow DOM 내부에 주입. fixture에 CSP가 엄격한 사이트 1~2개를 포함해서 검증.
-4. **이중 클릭 / 중복 등록** — content script에서 5초 debounce + 서버 측 `items` 테이블에 `(user_id, url)` 부분 unique constraint 추가 (`WHERE deleted_at IS NULL`). 충돌 시 모달은 "이미 등록된 항목이 있어요"를 표시.
+4. **이중 클릭 / 중복 등록** — content script에서 5초 debounce + 서버 측 `items` 테이블에 `(user_id, url)` 부분 unique constraint 추가 (결정 전 항목만 — `WHERE deleted_at IS NULL AND status <> 'decided'`). 충돌 시 모달은 "이미 등록된 항목이 있어요"를 표시. (decided/삭제 항목은 제외 → 지난 구매를 다시 식힐 수 있다.)
 
 → Supabase 마이그레이션 1줄 추가 필요:
 
 ```sql
 CREATE UNIQUE INDEX idx_items_user_url_active
   ON items (user_id, url)
-  WHERE deleted_at IS NULL AND url IS NOT NULL;
+  WHERE deleted_at IS NULL AND url IS NOT NULL AND status <> 'decided';
 ```
 
 ---
@@ -296,7 +296,7 @@ async function shouldShowModal(product: ProductInfo): Promise<PolicyDecision>;
 
 ### 쿨링오프 웹(이 프로젝트)에서 필요한 변경
 
-- **마이그레이션 1줄** — `items` 테이블에 `(user_id, url) WHERE deleted_at IS NULL AND url IS NOT NULL` 부분 unique index 추가 (§6 — 중복 등록 방지).
+- **마이그레이션 1줄** — `items` 테이블에 `(user_id, url) WHERE deleted_at IS NULL AND url IS NOT NULL AND status <> 'decided'` 부분 unique index 추가 (§6 — 결정 전 중복 등록 방지).
 - **`src/lib/cooling.ts`** — **이미 구현됨** (`getCoolingDays`/`getCoolingEndsAt`/`COOLING_TIERS`). 확장은 이 함수 본문을 복사한다 (§2). 추가 작성 불필요.
 - **Supabase 콘솔 — Auth → URL Configuration** — `https://<EXTENSION_ID>.chromiumapp.org/` redirect URI 추가 (§4). EXTENSION_ID는 첫 unpacked 로드 시점에 확정.
 - **RLS 정책 확인** — `schema.sql:71-83`의 기존 정책 그대로 동작. 변경 불필요.

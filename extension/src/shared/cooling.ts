@@ -35,6 +35,8 @@ export function getCoolingEndsAt(price: number): Date {
   return endsAt
 }
 
+// 표시용 tier 테이블. 활성 tier 선택은 getCoolingDays와 동일하게 `price <= max`로 한다
+// (경계값에서 표시 tier와 실제 냉각일이 어긋나지 않도록).
 export const COOLING_TIERS = [
   { label: '5만원 이하', days: '1일', min: 0, max: 50000 },
   { label: '5만~10만원', days: '2일', min: 50000, max: 100000 },

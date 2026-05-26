@@ -71,8 +71,9 @@ export class CoupangExtractor implements SiteExtractor {
   detectPurchaseIntent(onClick: (e: MouseEvent) => void): () => void {
     const selector = BUY_BUTTON_SELECTORS.join(',')
     const handler = (e: MouseEvent) => {
-      const target = e.target as Element | null
-      if (target?.closest(selector)) onClick(e)
+      // e.target은 Text 등 비-Element 노드일 수 있으므로 instanceof로 좁힌 뒤 closest 호출
+      const target = e.target
+      if (target instanceof Element && target.closest(selector)) onClick(e)
     }
     // capture 단계에서 가로채 사이트 핸들러보다 먼저 본다 (tech-spec §5).
     document.addEventListener('click', handler, true)

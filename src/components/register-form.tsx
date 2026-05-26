@@ -37,9 +37,9 @@ export default function RegisterForm() {
   const valid = !nameErr && !priceErr && !reasonErr && price !== ''
 
   const cooling = priceNum >= 1 ? getCoolingDaysLabel(priceNum) : null
-  const activeTierIdx = COOLING_TIERS.findIndex(
-    (t) => priceNum >= t.min && priceNum < t.max
-  )
+  // 활성 tier는 getCoolingDays와 동일한 `<= max` 경계로 고른다.
+  // (>= min && < max 로 고르면 경계값(예: 50,000원)에서 표시 tier와 실제 냉각일이 어긋남)
+  const activeTierIdx = COOLING_TIERS.findIndex((t) => priceNum <= t.max)
 
   function blur(field: string) {
     setTouched((prev) => ({ ...prev, [field]: true }))
