@@ -1,7 +1,6 @@
-# 쿨링오프 브라우저 확장 — 빌드 일정
+# 쿨링오프 브라우저 확장 — 빌드 작업 목록
 
-> 캡스톤 8주 권장 (Week 0 설정 추가로 6주 압축은 빠듯).
-> 주차별 결과물과 의존성, 외부 선행 작업을 정리합니다.
+> 작업 항목과 의존성, 외부 선행 작업을 정리합니다.
 > 아키텍처·인터페이스 명세는 [`./tech-spec.md`](./tech-spec.md), 제품 정책은 [`../pm/prd.md`](../pm/prd.md), 설계 배경은 [`../README.md`](../README.md).
 
 Status: DRAFT
@@ -9,7 +8,7 @@ Generated: 2026-05-20 (`/office-hours` 설계 메모에서 분리)
 
 ---
 
-## 0주차 — 인프라 설정 + 정책 근거 조사 (eng-review Issue 6 + PRD §7.1)
+## 인프라 설정 + 정책 근거 조사 (eng-review Issue 6 + PRD §7.1)
 
 - `extension/` 디렉토리 생성. 자체 `package.json` (web과 분리된 의존성).
 - Vitest + JSDOM + Playwright 설치 + tsconfig.
@@ -22,7 +21,7 @@ Generated: 2026-05-20 (`/office-hours` 설계 메모에서 분리)
 
 ---
 
-## 1주차 — 기반 + 인증
+## 기반 + 인증
 
 - Manifest V3 스켈레톤. content-script + popup + background SW 골격.
 - `chrome.identity.launchWebAuthFlow` 기반 OAuth 흐름 동작 확인.
@@ -31,7 +30,7 @@ Generated: 2026-05-20 (`/office-hours` 설계 메모에서 분리)
 
 ---
 
-## 2~3주차 — 쿠팡 추출기
+## 쿠팡 추출기
 
 - `SiteExtractor` 인터페이스 확정 (`onClick` 콜백 + Promise extract).
 - 쿠팡 셀렉터 작성, 50개 fixture 테스트 통과 (목표: 이름 95%+ / 가격 90%+).
@@ -41,14 +40,14 @@ Generated: 2026-05-20 (`/office-hours` 설계 메모에서 분리)
 
 ---
 
-## 4주차 — 네이버쇼핑 추출기
+## 네이버쇼핑 추출기
 
 - 쿠팡과 동일 인터페이스로 구현. 추상화의 유효성 검증.
 - 50개 fixture 동일 기준.
 
 ---
 
-## 5주차 — Fallback + 통합 + 실패 경로 + 사용자 테스트
+## Fallback + 통합 + 실패 경로 + 사용자 테스트
 
 - 확장 아이콘 클릭 시 fallback 동작 (popup이 현재 탭 URL+title 자동 입력).
 - 실패 경로 4가지 모두 구현 + 단위 테스트 (tech-spec §6).
@@ -58,7 +57,7 @@ Generated: 2026-05-20 (`/office-hours` 설계 메모에서 분리)
 
 ---
 
-## 6주차 — 안정화 + 측정 + 문서
+## 안정화 + 측정 + 문서
 
 - 셀렉터 회귀 테스트 CI 게이트.
 - ADR 작성 (소프트 인터셉트, 독립 인증, chrome.identity 선택, 사이트별 추출기, cooling 로직 복사, intervention-policy 최종화 = 총 5종 이상).
@@ -66,28 +65,28 @@ Generated: 2026-05-20 (`/office-hours` 설계 메모에서 분리)
 
 ---
 
-## 7~8주차 — 발표 자료 + 리허설
+## 발표 자료 + 리허설
 
 - 시연 시나리오 리허설 (Playwright recording을 데모 백업으로 준비).
 - 포스터·슬라이드.
-- 시간 남으면: Approach C의 휴리스틱 fallback 요소 일부 추가 (논문 그래프 확장).
+- 여유가 생기면: Approach C의 휴리스틱 fallback 요소 일부 추가 (논문 그래프 확장).
 
 ---
 
-## 외부 선행 작업 (Week 0 이전에 끝나야 안전)
+## 외부 선행 작업 (확장 작업 시작 전에 끝나야 안전)
 
 - 본 서비스 측 `src/lib/cooling.ts` 작성 (web과 확장이 같은 로직을 공유하므로 web 쪽이 먼저 존재해야 복사 가능).
 - `items` 테이블에 `(user_id, url) WHERE deleted_at IS NULL AND url IS NOT NULL` unique index 마이그레이션 적용.
-- Supabase 콘솔에 `https://<EXTENSION_ID>.chromiumapp.org/` redirect URI 등록 (EXTENSION_ID는 Week 0의 첫 unpacked 로드 시점에 확정).
+- Supabase 콘솔에 `https://<EXTENSION_ID>.chromiumapp.org/` redirect URI 등록 (EXTENSION_ID는 첫 unpacked 로드 시점에 확정).
 
 ---
 
-## 시간 산정 가정
+## 선행 가정 + 검증
 
-| 가정 | 검증 시점 |
+| 가정 | 검증 방법 |
 |------|----------|
-| 쿠팡·네이버쇼핑 셀렉터가 1~2개로 안정적으로 잡힘 (PRD A1) | Week 2 fixture 50개 통과 여부 |
-| `chrome.identity.launchWebAuthFlow` OAuth 콜백이 안정적으로 동작 (PRD A3) | Week 1 PoC |
-| 본 서비스 cooling.ts가 확장 시작 전 분리되어 있음 (PRD A4) | Week 0 이전 외부 선행 작업 |
+| 쿠팡·네이버쇼핑 셀렉터가 1~2개로 안정적으로 잡힘 (PRD A1) | fixture 50개 통과 여부 |
+| `chrome.identity.launchWebAuthFlow` OAuth 콜백이 안정적으로 동작 (PRD A3) | OAuth PoC |
+| 본 서비스 cooling.ts가 확장 시작 전 분리되어 있음 (PRD A4) | 외부 선행 작업 |
 
-이 중 하나라도 깨지면 일정이 1~2주 밀린다. Week 0 끝 시점에 위 셋이 모두 통과했는지 명시적으로 체크하고, 안 됐으면 즉시 일정 재조정.
+이 중 하나라도 깨지면 후속 작업이 막힌다. 인프라 작업을 끝낸 시점에 위 셋이 모두 통과했는지 명시적으로 체크하고, 안 됐으면 즉시 범위를 재조정한다.

@@ -7,7 +7,7 @@ Status: DRAFT
 Mode: Builder (학술 / 졸업 프로젝트 캡스톤 적용)
 
 > 이 문서는 *왜·무엇을 만드는가*를 다루는 설계 개요입니다.
-> 구현 명세는 [`engineering/tech-spec.md`](./engineering/tech-spec.md), 주차별 일정은 [`engineering/build-plan.md`](./engineering/build-plan.md), 제품 요구사항(정책 포함)은 [`pm/prd.md`](./pm/prd.md)에 있습니다.
+> 구현 명세는 [`engineering/tech-spec.md`](./engineering/tech-spec.md), 빌드 작업 목록은 [`engineering/build-plan.md`](./engineering/build-plan.md), 제품 요구사항(정책 포함)은 [`pm/prd.md`](./pm/prd.md)에 있습니다.
 
 ---
 
@@ -28,7 +28,7 @@ Mode: Builder (학술 / 졸업 프로젝트 캡스톤 적용)
 
 ## Constraints
 
-- 학술 캡스톤 일정 (실 구현 6~8주 가정).
+- 학술 캡스톤 프로젝트.
 - 한국 사용자 시장 우선. 쿠팡·네이버쇼핑이 1차 타겟.
 - 쇼핑 사이트의 결제 흐름을 *물리적으로* 막지 않는다 (TOS 리스크, 체크아웃 흐름 파손 위험).
 - 쿨링오프 백엔드는 이미 Supabase + Google OAuth. 확장은 같은 백엔드를 쓰지만 인증 컨텍스트는 별도다.
@@ -46,24 +46,24 @@ Mode: Builder (학술 / 졸업 프로젝트 캡스톤 적용)
 
 ### Approach A — 쿠팡 1개 폴리시 + 표준 fallback (안전 데모)
 
-- Effort: S (4~6주). Risk: Low.
+- Effort: S. Risk: Low.
 - 쿠팡만 깊이 통합. 나머지 사이트는 확장 아이콘 클릭 시 URL+탭제목만 등록.
 - Pros: 시연 안정성 최고. 디버깅 부담 단일.
 - Cons: 일반화 주장 약함.
 
 ### Approach B — 쿠팡 + 네이버쇼핑 + fallback (균형형) — **선택됨**
 
-- Effort: M (6~8주). Risk: Med.
+- Effort: M. Risk: Med.
 - 사이트별 content script 2개 + 공유 `SiteExtractor` 인터페이스 + 백그라운드 service worker로 세션 유지.
 - Pros: "여러 한국 주력 사이트에서 동작"의 시각 증명. 추출기 추상화 자체가 발표거리.
 - Cons: 셀렉터 디버깅 2배. 시연 중 한 사이트 깨짐 시 전체 신뢰도 다운.
 
 ### Approach C — 쿠팡 폴리시 + 휴리스틱 일반화 (연구 지향)
 
-- Effort: M (5~7주). Risk: Med-High.
+- Effort: M. Risk: Med-High.
 - 쿠팡은 hand-tuned. 나머지는 휴리스틱(`구매/주문/결제` 텍스트 + 인근 가격 패턴) 기반 generic intercept.
 - Pros: precision/recall trade-off가 thesis 장으로 들어감. 학술 기여 명확.
-- Cons: 휴리스틱 false-positive 시 데모 곤란. 평가 데이터셋 구성 별도 1~2주.
+- Cons: 휴리스틱 false-positive 시 데모 곤란. 평가 데이터셋 구성에 별도 공수 필요.
 
 ## Recommended Approach — B
 
@@ -76,7 +76,7 @@ Mode: Builder (학술 / 졸업 프로젝트 캡스톤 적용)
 - C의 휴리스틱 리스크(false-positive로 인한 데모 사고)를 피하면서 A보다 학술적 깊이를 확보.
 
 > 데이터 모델, 인증, 주입 전략, 인터페이스, 의존성 등 구현 명세는 [`engineering/tech-spec.md`](./engineering/tech-spec.md)로 분리되어 있다.
-> 주차별 빌드 일정은 [`engineering/build-plan.md`](./engineering/build-plan.md), 정책 결정 근거 ADR은 [`engineering/adr/intervention-policy.md`](./engineering/adr/intervention-policy.md).
+> 빌드 작업 목록은 [`engineering/build-plan.md`](./engineering/build-plan.md), 정책 결정 근거 ADR은 [`engineering/adr/intervention-policy.md`](./engineering/adr/intervention-policy.md).
 
 ## Open Questions
 
@@ -87,7 +87,7 @@ Mode: Builder (학술 / 졸업 프로젝트 캡스톤 적용)
 - **Q3.** 가격이 추출되지 않은 경우(예: "회원가만 노출") popup에서 사용자가 직접 입력하게 fallback. 이 UX가 매끄러운지 확인 필요.
 - **Q4.** 동일 URL을 짧은 기간 안에 여러 번 클릭하면 어떻게? (중복 등록 방지 vs 의도된 재등록 구분 — 웹 측 `../pm/prd.md` "열린 질문"과 동일)
 - **Q5.** Manifest V2 종료 일정과 Firefox 차이 — MV3로 통일 가정. Firefox는 캡스톤 범위 밖.
-- **Q6.** 유사 확장(결제 지연·cooling 류) 5종 이상을 Week 0에 직접 설치·사용해 트리거·제외·빈도·제어 정책 비교. `pm/prd.md` §7.1 정책의 근거로 사용하고 [`engineering/adr/intervention-policy.md`](./engineering/adr/intervention-policy.md)로 정리.
+- **Q6.** 유사 확장(결제 지연·cooling 류) 5종 이상을 직접 설치·사용해 트리거·제외·빈도·제어 정책 비교. `pm/prd.md` §7.1 정책의 근거로 사용하고 [`engineering/adr/intervention-policy.md`](./engineering/adr/intervention-policy.md)로 정리.
 
 ## Success Criteria
 
@@ -121,7 +121,7 @@ Mode: Builder (학술 / 졸업 프로젝트 캡스톤 적용)
 
 1. **개발용 배포**: Chrome 개발자 모드에서 unpacked 로드. 시연·심사용으로 충분.
 2. **GitHub Releases**: 빌드된 `.zip`을 자동으로 release artifact로 업로드 (GitHub Actions). 평가자가 받아 설치 가능.
-3. **Chrome Web Store**: **캡스톤 범위 밖.** 심사·결제·정책 검토 시간이 1~2주 추가로 들고, 학술적 기여와 무관. README에 "Phase 2 후보"로 기재.
+3. **Chrome Web Store**: **캡스톤 범위 밖.** 심사·결제·정책 검토 공수가 추가로 들고, 학술적 기여와 무관. README에 "Phase 2 후보"로 기재.
 
 CI/CD:
 
@@ -141,9 +141,9 @@ CI/CD:
 
 다음 항목은 캡스톤 범위 밖이며, 빠진 게 아니라 *의도적으로* 뺀 것:
 
-- **Chrome Web Store 정식 배포** — 심사·정책 검토 1~2주. dev 모드 로드 + GitHub Releases zip으로 시연·평가 충분.
+- **Chrome Web Store 정식 배포** — 심사·정책 검토 공수 필요. dev 모드 로드 + GitHub Releases zip으로 시연·평가 충분.
 - **Firefox 호환성** — MV3 + chrome.identity가 Firefox에서 다르게 동작 (browser.identity). 단일 브라우저(Chrome/Edge) 캡스톤 범위로 한정.
-- **휴리스틱 일반 감지** (Approach C) — 시간 남으면 Week 7~8에 추가, 기본 범위엔 없음.
+- **휴리스틱 일반 감지** (Approach C) — 여유가 생기면 추가, 기본 범위엔 없음.
 - **사용자 행동 정량 측정** — "안 삼" 선택률 변화 등은 Phase 2. 캡스톤은 `../pm/prd.md` "학술 성과"의 시연·문서화 기준만.
 - **셀렉터 깨짐 자동 알림** — fixture 회귀 테스트만 캡스톤 범위. 프로덕션 모니터링은 Phase 2.
 - **확장 ↔ web 세션 SSO** — 별도 로그인 유지 ([`engineering/tech-spec.md`](./engineering/tech-spec.md) §4 결정). SSO는 Phase 2.
@@ -161,7 +161,7 @@ CI/CD:
 - `TODO-7` 카테고리 자동 분류 기반 제외 (생필품·식료품 휴리스틱, PRD §7.1 제외 조건)
 - `TODO-8` 사용자 행동 학습 기반 동적 빈도 조절 (PRD §7.1 빈도 제한)
 - `TODO-9` 가격 threshold의 사용자 커스터마이즈 (PRD §7.1 제외 조건)
-- `TODO-10` 유사 확장 비교 정리 ADR — Week 0 조사 결과를 [`engineering/adr/intervention-policy.md`](./engineering/adr/intervention-policy.md)로 정식화 (PRD §7.1 정책 근거)
+- `TODO-10` 유사 확장 비교 정리 ADR — 조사 결과를 [`engineering/adr/intervention-policy.md`](./engineering/adr/intervention-policy.md)로 정식화 (PRD §7.1 정책 근거)
 
 루트 `TODOS.md`가 생기면 위 항목을 옮길 것.
 

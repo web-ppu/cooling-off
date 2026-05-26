@@ -1,7 +1,7 @@
 # 쿨링오프 브라우저 확장 — 기술 명세
 
 > 이 문서는 확장 구현 시 참고하는 아키텍처·인증·주입 전략·인터페이스·의존성 명세입니다.
-> 제품 결정과 정책은 [`../pm/prd.md`](../pm/prd.md), 설계 배경과 접근법 비교는 [`../README.md`](../README.md), 주차별 빌드 일정은 [`./build-plan.md`](./build-plan.md)을 보세요.
+> 제품 결정과 정책은 [`../pm/prd.md`](../pm/prd.md), 설계 배경과 접근법 비교는 [`../README.md`](../README.md), 빌드 작업 목록은 [`./build-plan.md`](./build-plan.md)을 보세요.
 
 Status: DRAFT
 Generated: 2026-05-20 (`/office-hours` 설계 메모에서 분리)
@@ -14,7 +14,7 @@ Generated: 2026-05-20 (`/office-hours` 설계 메모에서 분리)
 |------|------|
 | 설계 개요 (Problem / Approaches / Premises) | [`../README.md`](../README.md) |
 | 제품 요구사항 (정책 §7.1 포함) | [`../pm/prd.md`](../pm/prd.md) |
-| 주차별 빌드 일정 | [`./build-plan.md`](./build-plan.md) |
+| 빌드 작업 목록 | [`./build-plan.md`](./build-plan.md) |
 | 본 서비스 PRD | [`../../pm/prd.md`](../../pm/prd.md) |
 | 본 서비스 기술 메모 | [`../../engineering/tech-spec.md`](../../engineering/tech-spec.md) |
 | 본 서비스 스키마 | `supabase/schema.sql` (저장소 루트) |
@@ -128,7 +128,7 @@ content script는 `*://*.coupang.com/*`, `*://shopping.naver.com/*` 같이 **도
 4. history.pushState / popstate 감지 → 1번부터 재실행
 ```
 
-쿠팡·네이버쇼핑이 SPA이므로 `history.pushState`·`replaceState`를 monkey-patch해서 URL 변경을 가로채야 한다. 이 패턴은 표준이지만 테스트로 커버되어야 한다 (build-plan Week 0 fixture에 SPA 네비게이션 시나리오 포함).
+쿠팡·네이버쇼핑이 SPA이므로 `history.pushState`·`replaceState`를 monkey-patch해서 URL 변경을 가로채야 한다. 이 패턴은 표준이지만 테스트로 커버되어야 한다 (build-plan 인프라 작업의 fixture에 SPA 네비게이션 시나리오 포함).
 
 게이트 적용 순서 (PRD §7.1 정책과 정합):
 
@@ -267,7 +267,7 @@ async function shouldShowModal(product: ProductInfo): Promise<PolicyDecision>;
 
 - **마이그레이션 1줄** — `items` 테이블에 `(user_id, url) WHERE deleted_at IS NULL AND url IS NOT NULL` 부분 unique index 추가 (§6 — 중복 등록 방지).
 - **`src/lib/cooling.ts` 작성** — 본 서비스 tech-spec에 계획되었으나 미구현. 확장 작업 시작 *전에* web 측에 구현되어 있어야 확장이 복사 가능 (§2).
-- **Supabase 콘솔 — Auth → URL Configuration** — `https://<EXTENSION_ID>.chromiumapp.org/` redirect URI 추가 (§4). EXTENSION_ID는 Week 0에 확정.
+- **Supabase 콘솔 — Auth → URL Configuration** — `https://<EXTENSION_ID>.chromiumapp.org/` redirect URI 추가 (§4). EXTENSION_ID는 첫 unpacked 로드 시점에 확정.
 - **RLS 정책 확인** — `schema.sql:71-83`의 기존 정책 그대로 동작. 변경 불필요.
 - **CORS** — Supabase REST API는 anon key 호출에 `Access-Control-Allow-Origin: *` 응답. 확장 호출 가능. 자체 API 라우트 호출 시 `chrome-extension://` 허용 필요 — 캡스톤 범위에선 불필요.
 
@@ -302,7 +302,7 @@ async function shouldShowModal(product: ProductInfo): Promise<PolicyDecision>;
 | 3 | Architecture | §4 chrome.identity + custom storage (P1) |
 | 4 | Architecture | §6 실패 경로 4가지 명시 (P1) |
 | 5 | Code quality | §9 SiteExtractor 시그니처 정정 (P2) |
-| 6 | Tests | `./build-plan.md` Week 0 인프라 + fixture 자동 수집 (P0) |
+| 6 | Tests | `./build-plan.md` 인프라 설정 + fixture 자동 수집 (P0) |
 | 7 | Performance | §5 SPA 대응 + 주입 전략 (P2) |
 
 미해결 결정: 없음.

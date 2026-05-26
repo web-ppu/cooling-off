@@ -7,7 +7,7 @@
 > |----------|------|
 > | 설계 개요 (design doc) | [`../README.md`](../README.md) |
 > | 확장 기술 명세 | [`../engineering/tech-spec.md`](../engineering/tech-spec.md) |
-> | 확장 빌드 일정 | [`../engineering/build-plan.md`](../engineering/build-plan.md) |
+> | 확장 빌드 작업 목록 | [`../engineering/build-plan.md`](../engineering/build-plan.md) |
 > | 개입 정책 ADR | [`../engineering/adr/intervention-policy.md`](../engineering/adr/intervention-policy.md) |
 > | 본 서비스 PRD | [`../../pm/prd.md`](../../pm/prd.md) |
 > | 본 서비스 기획 배경 | [`../../pm/기획-배경.md`](../../pm/기획-배경.md) |
@@ -53,7 +53,7 @@ Generated: 2026-05-20 (`/pm-execution:create-prd` 기반 + `../README.md` 동기
 
 - 본 서비스 MVP가 등록·냉각·결정 루프를 검증한 상태. 확장은 그 루프의 *입구*만 교체합니다.
 - Chrome MV3 + `chrome.identity.launchWebAuthFlow` 조합이 안정화되어, 확장에서도 Supabase 세션 유지가 가능해졌습니다.
-- 캡스톤 일정상 6~8주 분량의 명확한 모듈이 필요하며, 확장은 기존 본 서비스와 결합도가 낮아 적합합니다.
+- 확장은 기존 본 서비스와 결합도가 낮아 캡스톤 단위 모듈로 적합합니다.
 
 ---
 
@@ -111,7 +111,6 @@ Generated: 2026-05-20 (`/pm-execution:create-prd` 기반 + `../README.md` 동기
 
 ### 제약
 
-- 캡스톤 일정 6~8주 (실 구현 기준).
 - 한국 사용자 시장 우선. 쿠팡·네이버쇼핑이 1차 타겟.
 - 결제 흐름을 *물리적으로* 막지 않음 (TOS 리스크 + 체크아웃 흐름 파손 회피).
 - 확장은 본 서비스와 같은 Supabase 백엔드를 쓰지만 인증 컨텍스트는 별도.
@@ -182,9 +181,9 @@ Generated: 2026-05-20 (`/pm-execution:create-prd` 기반 + `../README.md` 동기
 | 사용자가 명시적으로 제외한 도메인·URL | 모달 표시 안 함 | 아래 "사용자 제어권" 참조 |
 | `items`에 이미 `status='cooling'`인 동일 URL | 모달 대신 "이미 식히는 중이에요" 토스트 | EX-6 중복 방지와 통합 |
 
-> **카테고리 분류를 V1에서 빼는 이유**: 쿠팡·네이버쇼핑이 명시적인 "생필품" 라벨을 일관되게 노출하지 않습니다. URL·상품명 휴리스틱으로 추정하면 false-positive(예: "초콜릿 선물세트"를 식료품으로 분류)가 발생하며, 캡스톤 6~8주 안에 신뢰할 분류기를 구축할 수 없습니다. 대신 사용자 제어권으로 우회하고, Phase 2에서 사용자 라벨링 데이터를 모은 뒤 검토합니다 (`TODO-7`).
+> **카테고리 분류를 V1에서 빼는 이유**: 쿠팡·네이버쇼핑이 명시적인 "생필품" 라벨을 일관되게 노출하지 않습니다. URL·상품명 휴리스틱으로 추정하면 false-positive(예: "초콜릿 선물세트"를 식료품으로 분류)가 발생하며, 캡스톤 범위에서 신뢰할 분류기를 구축할 수 없습니다. 대신 사용자 제어권으로 우회하고, Phase 2에서 사용자 라벨링 데이터를 모은 뒤 검토합니다 (`TODO-7`).
 >
-> **가격 게이트를 V1에서 빼는 이유**: 노이즈를 줄이는 가장 직관적인 방법은 가격 임계지만, 그 임계를 정당화할 데이터가 V1 시점에 없습니다. 본 서비스 cooling 정책과 정합을 우선하고, 노이즈는 "사용자 제어권"으로 해결합니다. 사용자 테스트(Week 5)에서 "이 가격대는 모달 없어도 괜찮다"는 신호가 모이면 Phase 2 `TODO-9`로 가격 임계를 도입.
+> **가격 게이트를 V1에서 빼는 이유**: 노이즈를 줄이는 가장 직관적인 방법은 가격 임계지만, 그 임계를 정당화할 데이터가 V1 시점에 없습니다. 본 서비스 cooling 정책과 정합을 우선하고, 노이즈는 "사용자 제어권"으로 해결합니다. 사용자 테스트에서 "이 가격대는 모달 없어도 괜찮다"는 신호가 모이면 Phase 2 `TODO-9`로 가격 임계를 도입.
 
 #### 빈도 제한 — 얼마나 자주 띄울 것인가
 
@@ -232,8 +231,8 @@ popup 설정 메뉴와 모달 내 옵션으로 제공:
 
 위 정책은 *가정*이며, 캡스톤 진행 중 다음 방식으로 검증합니다.
 
-- Week 0 — 유사 확장 조사로 경쟁 제품의 트리거·제외·빈도·제어 정책 5건 이상 정리 (Q6, `TODO-10`).
-- Week 5 — 사용자 테스트 1~2회에서 "노이즈로 느꼈는가 / 어디서 끄고 싶었는가"를 인터뷰. 결과는 ADR 추가 또는 정책 수정으로 반영.
+- 유사 확장 조사로 경쟁 제품의 트리거·제외·빈도·제어 정책 5건 이상 정리 (Q6, `TODO-10`).
+- 사용자 테스트 1~2회에서 "노이즈로 느꼈는가 / 어디서 끄고 싶었는가"를 인터뷰. 결과는 ADR 추가 또는 정책 수정으로 반영.
 - 본 정책 결정의 근거는 별도 ADR ([`../engineering/adr/intervention-policy.md`](../engineering/adr/intervention-policy.md))로 분리해 발표 자료에 포함.
 
 #### V1에서 제외한 정책 항목 (Phase 2 후보)
@@ -353,9 +352,9 @@ flowchart LR
 
 | ID | 가정 | 검증 방식 |
 |----|------|-----------|
-| A1 | 쿠팡·네이버쇼핑의 구매 버튼은 셀렉터 1~2개로 안정적으로 잡힌다 | Week 0 fixture 50개 수집 후 셀렉터 회귀 테스트 |
+| A1 | 쿠팡·네이버쇼핑의 구매 버튼은 셀렉터 1~2개로 안정적으로 잡힌다 | fixture 50개 수집 후 셀렉터 회귀 테스트 |
 | A2 | 사용자는 "쿨링오프 등록"과 "구매 진행"이 동등하게 제시될 때 비합리적 클릭을 하지 않는다 | 사용자 테스트 1~2회 (Phase 2 또는 발표 직전) |
-| A3 | `chrome.identity.launchWebAuthFlow` + Supabase OAuth 콜백이 안정적으로 동작한다 | Week 1 PoC |
+| A3 | `chrome.identity.launchWebAuthFlow` + Supabase OAuth 콜백이 안정적으로 동작한다 | PoC |
 | A4 | 본 서비스의 cooling 로직은 확장 출시 시점에 이미 `src/lib/cooling.ts`로 분리되어 있다 | 본 서비스 작업 의존 — 확장 시작 전 처리 |
 | A5 | 사용자가 웹·확장에 각각 로그인하는 부담을 받아들인다 | 사용자 테스트로 확인. 안 된다면 Phase 2의 SSO 검토 |
 
@@ -363,20 +362,20 @@ flowchart LR
 
 ## 8. 릴리스
 
-### 얼마나 걸리는가
+### 해야 하는 일
 
-캡스톤 8주 권장 (6주는 빠듯). [`../engineering/build-plan.md`](../engineering/build-plan.md)에 주차별 작업이 상세히 확정되어 있으며, 본 PRD는 그것을 다음과 같이 묶습니다.
+[`../engineering/build-plan.md`](../engineering/build-plan.md)에 작업 항목과 의존성이 상세히 확정되어 있으며, 본 PRD는 그것을 다음과 같이 묶습니다.
 
-### V1 (캡스톤 시연 범위 — 8주)
+### V1 (캡스톤 시연 범위)
 
 | 단계 | 내용 |
 |------|------|
-| 인프라 + 인증 (W0~W1) | 빌드 파이프라인, fixture 자동 수집, OAuth 흐름, cooling.ts 복사 + 스냅샷 |
-| 쿠팡 추출기 (W2~W3) | SiteExtractor 인터페이스, 50 fixture 통과, 인페이지 모달, SPA 주입 전략 |
-| 네이버쇼핑 추출기 (W4) | 같은 인터페이스 재사용, 50 fixture 통과 |
-| Fallback + 통합 + 실패 경로 (W5) | 확장 아이콘 클릭 fallback, 실패 경로 4가지 + e2e |
-| 안정화 + 측정 + 문서 (W6) | 회귀 게이트, ADR 5종, 추출 품질 측정 자동화 |
-| 발표 + 리허설 (W7~W8) | 시연 리허설, Playwright recording 백업, 포스터·슬라이드 |
+| 인프라 + 인증 | 빌드 파이프라인, fixture 자동 수집, OAuth 흐름, cooling.ts 복사 + 스냅샷 |
+| 쿠팡 추출기 | SiteExtractor 인터페이스, 50 fixture 통과, 인페이지 모달, SPA 주입 전략 |
+| 네이버쇼핑 추출기 | 같은 인터페이스 재사용, 50 fixture 통과 |
+| Fallback + 통합 + 실패 경로 | 확장 아이콘 클릭 fallback, 실패 경로 4가지 + e2e |
+| 안정화 + 측정 + 문서 | 회귀 게이트, ADR 5종, 추출 품질 측정 자동화 |
+| 발표 + 리허설 | 시연 리허설, Playwright recording 백업, 포스터·슬라이드 |
 
 **V1 포함**:
 - 쿠팡 + 네이버쇼핑 인터셉트 (EX-1, EX-2).
@@ -423,8 +422,8 @@ flowchart LR
 - Q3. 가격이 추출되지 않은 경우(예: "회원가만 노출") popup fallback UX가 매끄러운가?
 - Q4. 동일 URL을 짧은 기간 안에 여러 번 클릭하면? — 본 서비스 `../../pm/prd.md` "열린 질문"과 동일 영역, DB unique index로 1차 방어.
 - Q5. 사용자가 웹·확장 각각 로그인하는 부담이 등록 전환율을 얼마나 깎는가? (A5 검증)
-- Q6. 유사 확장(예: Beeftext·"잠깐만" 류 결제 지연 도구, Chrome 웹스토어의 "shopping pause/cooling-off" 키워드 확장)이 채택한 트리거·제외·빈도·제어 정책은? — Week 0에 5종 이상 직접 설치·사용·정리. 결과는 §7.1 정책 검증 및 ADR `intervention-policy.md`에 반영. (`TODO-10`)
-- Q7. 사용자 테스트(Week 5)에서 "가격 임계가 있었으면 좋겠다" 신호가 모이는가? — 모이면 Phase 2 `TODO-9` (가격 threshold 사용자 커스터마이즈)로 도입. V1은 가격 게이트 없음.
+- Q6. 유사 확장(예: Beeftext·"잠깐만" 류 결제 지연 도구, Chrome 웹스토어의 "shopping pause/cooling-off" 키워드 확장)이 채택한 트리거·제외·빈도·제어 정책은? — 5종 이상 직접 설치·사용·정리. 결과는 §7.1 정책 검증 및 ADR `intervention-policy.md`에 반영. (`TODO-10`)
+- Q7. 사용자 테스트에서 "가격 임계가 있었으면 좋겠다" 신호가 모이는가? — 모이면 Phase 2 `TODO-9` (가격 threshold 사용자 커스터마이즈)로 도입. V1은 가격 게이트 없음.
 
 ---
 
@@ -439,4 +438,4 @@ flowchart LR
 | `/codex review` | Independent 2nd opinion | 미수행 | V1 구현 직전 권장 |
 
 **미해결 결정**: 없음 (PRD 수준).
-**다음 액션**: 본 서비스 측 `src/lib/cooling.ts` 작성 + `items` unique index 마이그레이션 + Supabase 콘솔에 확장 redirect URI 등록 → 그다음 Week 0 인프라 작업 시작.
+**다음 액션**: 본 서비스 측 `src/lib/cooling.ts` 작성 + `items` unique index 마이그레이션 + Supabase 콘솔에 확장 redirect URI 등록 → 그다음 인프라 작업 시작.
