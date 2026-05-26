@@ -6,7 +6,11 @@ import {
   type ChatMessage,
   type Registration,
 } from "@/lib/chat/systemPrompt";
-import { saveDecision, type DecisionLabel } from "@/app/chat/actions";
+import {
+  appendChatTurn,
+  saveDecision,
+  type DecisionLabel,
+} from "@/app/chat/actions";
 
 const MAX_MESSAGE_LENGTH = 500;
 
@@ -32,6 +36,14 @@ type FailedSendContext = {
 type Props = {
   registration: Registration;
   itemId?: string;
+  /**
+   * 페이지(server component) 가 DB 에서 미리 로드한 기존 대화.
+   *
+   * /chat/[itemId] 진입 시 chat_messages 를 turn_number 오름차순으로 조회해
+   * 전달한다. 새로고침/재진입해도 이전 대화가 이어진다.
+   * 빈 배열이거나 미전달이면 기본값 [FIRST_AI_MESSAGE] 로 시작한다 (stub 모드 호환).
+   */
+  initialMessages?: ChatMessage[];
 };
 
 /**
@@ -47,10 +59,16 @@ type Props = {
  *
  * issue #48~#52, #65, #66, #67 의 모든 로직 유지.
  */
-export default function ChatScreen({ registration, itemId }: Props) {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: "assistant", content: FIRST_AI_MESSAGE },
-  ]);
+export default function ChatScreen({
+  registration,
+  itemId,
+  initialMessages,
+}: Props) {
+  const [messages, setMessages] = useState<ChatMessage[]>(
+    initialMessages && initialMessages.length > 0
+      ? initialMessages
+      : [{ role: "assistant", content: FIRST_AI_MESSAGE }]
+  );
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showDecideButton, setShowDecideButton] = useState(false);
@@ -152,6 +170,14 @@ export default function ChatScreen({ registration, itemId }: Props) {
       if (data.showDecideButton) {
         setShowDecideButton(true);
       }
+      // turn-by-turn 영구 저장 (fire-and-forget).
+      // turnNumber = 새로 추가된 user 메시지가 몇 번째 사용자 메시지인지.
+      persistTurnIfNeeded({
+        itemId,
+        turnNumber: countUserMessages(next),
+        userMessage: userMessage.content,
+        assistantMessage: data.content,
+      });
     } catch (error) {
       setLastFailedSend(
         buildFailureContext({
@@ -220,6 +246,19 @@ export default function ChatScreen({ registration, itemId }: Props) {
         if (data.showDecideButton) {
           setShowDecideButton(true);
         }
+        // turn-by-turn 영구 저장: 재시도 성공 시점에 한 턴이 완료된다.
+        // messagesSnapshot 의 마지막 user 메시지가 이번 턴의 입력.
+        const lastUserMessage = [...prevContext.messagesSnapshot]
+          .reverse()
+          .find((m) => m.role === "user");
+        if (lastUserMessage) {
+          persistTurnIfNeeded({
+            itemId,
+            turnNumber: countUserMessages(prevContext.messagesSnapshot),
+            userMessage: lastUserMessage.content,
+            assistantMessage: data.content,
+          });
+        }
       } else {
         setFactSummary(data.content);
       }
@@ -262,11 +301,12 @@ export default function ChatScreen({ registration, itemId }: Props) {
 
     const dbDecision: DecisionLabel = decision === "삼" ? "bought" : "passed";
     try {
+      // chat_messages 는 이미 appendChatTurn 으로 누적되어 있으므로 여기서는
+      // items 결정 상태만 갱신한다.
       await saveDecision({
         itemId,
         decision: dbDecision,
         factSummary,
-        messages: messages.map((m) => ({ role: m.role, content: m.content })),
       });
     } catch (error) {
       console.error("[saveDecision] failed", error);
@@ -690,4 +730,30 @@ function DecideFailureSection({
       </button>
     </div>
   );
+}
+
+/** 메시지 배열에서 사용자 메시지 개수를 센다 (= 현재까지 진행된 턴 수). */
+function countUserMessages(msgs: ChatMessage[]): number {
+  return msgs.filter((m) => m.role === "user").length;
+}
+
+/**
+ * itemId 가 있을 때만 한 턴을 DB 에 fire-and-forget 으로 저장한다.
+ *
+ * 실패해도 사용자 화면 흐름은 계속된다 (console.error 로만 로그).
+ * 다음 새로고침 시 해당 턴은 누락된 상태로 남는다 — MVP 단순화.
+ */
+function persistTurnIfNeeded(args: {
+  itemId: string | undefined;
+  turnNumber: number;
+  userMessage: string;
+  assistantMessage: string;
+}) {
+  if (!args.itemId) return; // stub 모드 (/chat) — DB 저장 스킵
+  void appendChatTurn({
+    itemId: args.itemId,
+    turnNumber: args.turnNumber,
+    userMessage: args.userMessage,
+    assistantMessage: args.assistantMessage,
+  }).catch((err) => console.error("[appendChatTurn]", err));
 }
