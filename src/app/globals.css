@@ -39,8 +39,9 @@ body {
     1px 0 var(--ink),
     0 -1px var(--ink),
     0 1px var(--ink);
-}
-
+}  
+  
+/* ── doc-tag ────────────────────────────────────────────────── */
 .doc-tag {
   font-family: var(--font-mono);
   font-size: 11px;
