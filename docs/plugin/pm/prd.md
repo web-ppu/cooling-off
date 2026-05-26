@@ -231,7 +231,7 @@ popup 설정 메뉴와 모달 내 옵션으로 제공:
 
 위 정책은 *가정*이며, 캡스톤 진행 중 다음 방식으로 검증합니다.
 
-- 유사 확장 조사로 경쟁 제품의 트리거·제외·빈도·제어 정책 5건 이상 정리 (Q6, `TODO-10`).
+- 유사 확장 조사로 경쟁 제품의 트리거·제외·빈도·제어 정책 5건 이상 정리 (Q6, `TODO-10`) — **1차 완료**: Icebox·Impause·Checkout Chill·Pause·일반 차단기 5종을 [`../engineering/adr/intervention-policy.md`](../engineering/adr/intervention-policy.md) §3에 정리. 5종 모두 가격 게이트·카테고리 자동 분류가 없어 본 정책 결정을 뒷받침.
 - 사용자 테스트 1~2회에서 "노이즈로 느꼈는가 / 어디서 끄고 싶었는가"를 인터뷰. 결과는 ADR 추가 또는 정책 수정으로 반영.
 - 본 정책 결정의 근거는 별도 ADR ([`../engineering/adr/intervention-policy.md`](../engineering/adr/intervention-policy.md))로 분리해 발표 자료에 포함.
 
@@ -422,7 +422,7 @@ flowchart LR
 - Q3. 가격이 추출되지 않은 경우(예: "회원가만 노출") popup fallback UX가 매끄러운가?
 - Q4. 동일 URL을 짧은 기간 안에 여러 번 클릭하면? — 본 서비스 `../../pm/prd.md` "열린 질문"과 동일 영역, DB unique index로 1차 방어.
 - Q5. 사용자가 웹·확장 각각 로그인하는 부담이 등록 전환율을 얼마나 깎는가? (A5 검증)
-- Q6. 유사 확장(예: Beeftext·"잠깐만" 류 결제 지연 도구, Chrome 웹스토어의 "shopping pause/cooling-off" 키워드 확장)이 채택한 트리거·제외·빈도·제어 정책은? — 5종 이상 직접 설치·사용·정리. 결과는 §7.1 정책 검증 및 ADR `intervention-policy.md`에 반영. (`TODO-10`)
+- Q6. 유사 확장(Chrome 웹스토어의 "shopping pause/cooling-off/delay purchase/impulse" 키워드 확장)이 채택한 트리거·제외·빈도·제어 정책은? — **1차 정리 완료** (Icebox·Impause·Checkout Chill·Pause·일반 차단기 5종, §7.1 검증 계획 및 ADR `intervention-policy.md` §3). 남은 작업: "미공개" 항목을 실제 설치로 보강. (`TODO-10`)
 - Q7. 사용자 테스트에서 "가격 임계가 있었으면 좋겠다" 신호가 모이는가? — 모이면 Phase 2 `TODO-9` (가격 threshold 사용자 커스터마이즈)로 도입. V1은 가격 게이트 없음.
 
 ---

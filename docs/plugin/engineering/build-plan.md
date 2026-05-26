@@ -17,7 +17,7 @@ Generated: 2026-05-20 (`/office-hours` 설계 메모에서 분리)
 - **Fixture 수집 자동화**: `extension/scripts/collect-fixtures.ts` (Playwright) — 쿠팡·네이버쇼핑의 카테고리별 (가전·패션·도서·생활·식품 각 10개) 상품 페이지 HTML 5개씩 = 50개/사이트 다운로드. `extension/tests/fixtures/{coupang,naver-shopping}/` 에 git-tracked로 저장.
 - Supabase 콘솔에 확장 redirect URI 등록 (tech-spec §4).
 - `(user_id, url)` unique index 마이그레이션 적용 (tech-spec §6).
-- **유사 확장 조사 (Q6, `TODO-10`)**: Chrome 웹스토어에서 "shopping pause", "cooling off", "delay purchase", "결제 지연", "충동구매 방지" 키워드로 5종 이상 직접 설치·사용. 각 확장의 (a) 트리거 조건, (b) 제외/카테고리 처리, (c) 빈도 제한, (d) 사용자 제어권, (e) 가격 게이트 유무를 표로 정리. 결과는 [`./adr/intervention-policy.md`](./adr/intervention-policy.md)로 커밋. PRD §7.1 정책의 근거로 인용.
+- **유사 확장 조사 (Q6, `TODO-10`)**: 1차 데스크 리서치 완료 — Chrome 웹스토어 등록 정보·공개 리뷰 기반으로 Icebox·Impause·Checkout Chill·Pause·일반 차단기 5종을 (a) 트리거 조건, (b) 제외/카테고리 처리, (c) 빈도 제한, (d) 사용자 제어권, (e) 가격 게이트 유무 축으로 [`./adr/intervention-policy.md`](./adr/intervention-policy.md) §3에 정리(PRD §7.1 정책의 근거로 인용). 남은 작업: "미공개" 표기 항목을 실제 설치로 확인·보강.
 
 ---
 
