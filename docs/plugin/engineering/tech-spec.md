@@ -22,6 +22,37 @@ Generated: 2026-05-20 (`/office-hours` 설계 메모에서 분리)
 
 ---
 
+## 0. 착수 전 검증 (De-risking Spikes)
+
+본 설계의 미지수는 대부분 *문서로 더 메꿀 수 없고 코드로만 검증되는* 것들이다. 기능 구현 전에 아래 spike로 먼저 부딪쳐, [`./build-plan.md`](./build-plan.md) "선행 가정" 표의 PRD A1/A3 가정을 실측한다. 하나라도 깨지면 즉시 범위를 재조정한다.
+
+### Spike 1 — 셀렉터 안정성 (PRD A1, 최우선 리스크)
+
+확장 전체가 `SiteExtractor`(§9)의 추출 신뢰도에 달려 있는데, 실제 셀렉터는 코드로만 검증된다.
+
+- **검증 질문**: 쿠팡 상품 페이지에서 (a) "바로구매/구매하기" 버튼, (b) 상품명, (c) 가격을 1~2개 셀렉터로 안정적으로 잡을 수 있는가? 카테고리(가전·패션·도서·생활·식품)를 가로질러도 같은 셀렉터가 통하는가?
+- **통과 기준**: 카테고리별 fixture에서 이름 95%+ / 가격 90%+ (PRD 품질 게이트).
+- **실패 시**: 셀렉터가 카테고리마다 갈라지면 추출기 추상화 비용이 급증 → 사이트 1곳(쿠팡)으로 V1 범위 축소 검토.
+
+### Spike 2 — OAuth 한 바퀴 (PRD A3)
+
+`chrome.identity.launchWebAuthFlow` + Supabase code-exchange는 MV3 SW 환경·PKCE 때문에 까다롭다(§4).
+
+- **검증 질문**: popup에서 Google 로그인 → `chromiumapp.org` 콜백 → Supabase session 교환 → `chrome.storage.local` 저장 → SW에서 그 session으로 `items` insert가 한 바퀴 도는가?
+- **통과 기준**: 로그인 후 SW가 session을 읽어 인증된 insert 1건 성공.
+- **실패 시**: redirect URI/PKCE 설정 문제면 해결, SDK 비호환이면 수동 OAuth 흐름 직접 구현으로 우회(§4).
+
+### 착수 전 확정할 미정 항목
+
+spike와 함께 다음 빈칸을 메운다(현재 설계에 비어 있음):
+
+- **트리거 버튼 감지 방식**: §9 `detectPurchaseIntent`가 버튼을 *어떻게* 식별할지 — 텍스트 매칭("바로구매"/"구매하기"/"결제") vs 셀렉터 vs aria. Spike 1에서 같이 결정.
+- **네이버쇼핑 도메인 경계**: `shopping.naver.com`은 집계 페이지이고 실제 "바로구매"는 `smartstore.naver.com`·외부 몰에서 일어나는 경우가 많다. content-script `matches` 패턴이 정작 구매 버튼이 있는 호스트를 덮는지 착수 전 확인. 안 덮으면 §5 매칭 도메인 조정.
+- **manifest 권한 목록**: `identity`, `storage`, host_permissions(`*.coupang.com`, `shopping.naver.com`+실제 결제 호스트, `chromiumapp.org`). manifest 작성 시 확정.
+- **OAuth e2e 자동화**: Google 로그인은 자동화가 막혀 있어 Playwright e2e는 전용 테스트 계정 또는 session 주입(mock)이 필요. §6 e2e 작성 시 방식 결정.
+
+---
+
 ## 1. 데이터 모델 정합성 (eng-review Issue 1)
 
 확장은 **`public.items`** 테이블에 직접 insert한다 (`supabase/schema.sql` 참조). 별도 `registrations` 테이블을 만들지 않는다.
@@ -266,7 +297,7 @@ async function shouldShowModal(product: ProductInfo): Promise<PolicyDecision>;
 ### 쿨링오프 웹(이 프로젝트)에서 필요한 변경
 
 - **마이그레이션 1줄** — `items` 테이블에 `(user_id, url) WHERE deleted_at IS NULL AND url IS NOT NULL` 부분 unique index 추가 (§6 — 중복 등록 방지).
-- **`src/lib/cooling.ts` 작성** — 본 서비스 tech-spec에 계획되었으나 미구현. 확장 작업 시작 *전에* web 측에 구현되어 있어야 확장이 복사 가능 (§2).
+- **`src/lib/cooling.ts`** — **이미 구현됨** (`getCoolingDays`/`getCoolingEndsAt`/`COOLING_TIERS`). 확장은 이 함수 본문을 복사한다 (§2). 추가 작성 불필요.
 - **Supabase 콘솔 — Auth → URL Configuration** — `https://<EXTENSION_ID>.chromiumapp.org/` redirect URI 추가 (§4). EXTENSION_ID는 첫 unpacked 로드 시점에 확정.
 - **RLS 정책 확인** — `schema.sql:71-83`의 기존 정책 그대로 동작. 변경 불필요.
 - **CORS** — Supabase REST API는 anon key 호출에 `Access-Control-Allow-Origin: *` 응답. 확장 호출 가능. 자체 API 라우트 호출 시 `chrome-extension://` 허용 필요 — 캡스톤 범위에선 불필요.
@@ -284,7 +315,7 @@ async function shouldShowModal(product: ProductInfo): Promise<PolicyDecision>;
 |------|------|-----------|
 | `items` 테이블 schema | `supabase/schema.sql` | 그대로 사용, 변경 없음 |
 | RLS 정책 | `supabase/schema.sql:71-83` | 그대로 사용 |
-| 가격→cooling 변환 | `src/lib/cooling.ts` (web에 신규 추가 예정) | 복사 + 스냅샷 테스트 |
+| 가격→cooling 변환 | `src/lib/cooling.ts` (web에 이미 구현됨) | 복사 + 스냅샷 테스트 |
 | Supabase 타입 | `src/lib/supabase/types.ts` | 복사 또는 import (확장이 같은 DB 스키마 사용) |
 | OAuth callback | `src/app/auth/callback/route.ts` | 사용 안 함 (확장은 자체 redirect URL 사용) |
 | `createBrowserClient` 패턴 | `src/lib/supabase/client.ts` | 참고용 (확장은 storage 어댑터 다름) |

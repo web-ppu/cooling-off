@@ -75,8 +75,8 @@ Generated: 2026-05-20 (`/office-hours` 설계 메모에서 분리)
 
 ## 외부 선행 작업 (확장 작업 시작 전에 끝나야 안전)
 
-- 본 서비스 측 `src/lib/cooling.ts` 작성 (web과 확장이 같은 로직을 공유하므로 web 쪽이 먼저 존재해야 복사 가능).
-- `items` 테이블에 `(user_id, url) WHERE deleted_at IS NULL AND url IS NOT NULL` unique index 마이그레이션 적용.
+- 본 서비스 측 `src/lib/cooling.ts` — **이미 구현됨** (`getCoolingDays`/`getCoolingEndsAt`). 확장은 이 함수 본문을 복사한다.
+- `items` 테이블에 `(user_id, url) WHERE deleted_at IS NULL AND url IS NOT NULL` 부분 unique index 추가 (이 repo는 마이그레이션 폴더 없이 단일 `supabase/schema.sql`을 쓰므로, schema.sql 인덱스 절에 추가 후 SQL Editor에서 적용).
 - Supabase 콘솔에 `https://<EXTENSION_ID>.chromiumapp.org/` redirect URI 등록 (EXTENSION_ID는 첫 unpacked 로드 시점에 확정).
 
 ---
@@ -87,6 +87,6 @@ Generated: 2026-05-20 (`/office-hours` 설계 메모에서 분리)
 |------|----------|
 | 쿠팡·네이버쇼핑 셀렉터가 1~2개로 안정적으로 잡힘 (PRD A1) | fixture 50개 통과 여부 |
 | `chrome.identity.launchWebAuthFlow` OAuth 콜백이 안정적으로 동작 (PRD A3) | OAuth PoC |
-| 본 서비스 cooling.ts가 확장 시작 전 분리되어 있음 (PRD A4) | 외부 선행 작업 |
+| 본 서비스 cooling.ts가 확장 시작 전 분리되어 있음 (PRD A4) | ✅ 충족 — `src/lib/cooling.ts` 이미 존재 |
 
 이 중 하나라도 깨지면 후속 작업이 막힌다. 인프라 작업을 끝낸 시점에 위 셋이 모두 통과했는지 명시적으로 체크하고, 안 됐으면 즉시 범위를 재조정한다.

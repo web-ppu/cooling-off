@@ -178,4 +178,4 @@ CI/CD:
 | DX Review | `/plan-devex-review` | Developer experience gaps | 0 | — | — |
 
 **UNRESOLVED:** 0
-**VERDICT:** ENG CLEARED — ready to implement. 시작 전 권장: web 측 `src/lib/cooling.ts` 작성, `items` unique index 마이그레이션 적용, Supabase 콘솔에 확장 redirect URI 등록.
+**VERDICT:** ENG CLEARED — ready to implement. 시작 전 권장: `items` unique index를 `supabase/schema.sql`에 추가·적용, Supabase 콘솔에 확장 redirect URI 등록. (web 측 `src/lib/cooling.ts`는 이미 구현되어 있음 — `getCoolingDays`/`getCoolingEndsAt`.)

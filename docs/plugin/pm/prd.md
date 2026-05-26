@@ -438,4 +438,4 @@ flowchart LR
 | `/codex review` | Independent 2nd opinion | 미수행 | V1 구현 직전 권장 |
 
 **미해결 결정**: 없음 (PRD 수준).
-**다음 액션**: 본 서비스 측 `src/lib/cooling.ts` 작성 + `items` unique index 마이그레이션 + Supabase 콘솔에 확장 redirect URI 등록 → 그다음 인프라 작업 시작.
+**다음 액션**: `items` unique index를 `supabase/schema.sql`에 추가·적용 + Supabase 콘솔에 확장 redirect URI 등록 → 그다음 인프라 작업 시작. (`src/lib/cooling.ts`는 이미 구현 완료.)
