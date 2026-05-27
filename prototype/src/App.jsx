@@ -29,8 +29,9 @@ function seedItems() {
 export default function App() {
   const { isPc } = useViewport();
 
-  const [auth, setAuth] = useState("logged-in");
-  const [route, setRoute] = useState({ name: "home" });
+  const isLoginPreview = window.location.pathname === "/login";
+  const [auth, setAuth] = useState(isLoginPreview ? "logged-out" : "logged-in");
+  const [route, setRoute] = useState(isLoginPreview ? { name: "non-auth-home" } : { name: "home" });
   const [now, setNow] = useState(Date.now());
   const [items, setItems] = useState(() => seedItems());
   const [records, setRecords] = useState(() => [...HISTORY_SEED]);
@@ -136,13 +137,14 @@ export default function App() {
         onDelete={onDeleteRecord} /> : null;
     }
 
+    const showNav = auth === "logged-in" && route.name !== "non-auth-home";
     return (
       <div className="pc-app" data-accent="blue">
-        <PcNav
+        {showNav && <PcNav
           route={route} setRoute={setRoute} auth={auth}
           onLogin={() => setRoute({ name: "login" })}
           onLogout={() => setAuth("logged-out")}
-        />
+        />}
         {pcContent}
       </div>
     );
