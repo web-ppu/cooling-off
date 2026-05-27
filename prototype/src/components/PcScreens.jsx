@@ -1,14 +1,47 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   Icon,
+  SnowflakeLogo,
   formatKRW,
   formatRemainingShort,
-  formatTimerBig,
   formatReadyAt,
   formatMonth,
   formatDateOnly,
   coolingDaysLabel,
+  timerParts,
 } from "../utils.jsx";
+
+// ─── Snow Background ────────────────────────────────────────────────────
+function SnowBackground() {
+  const flakes = useMemo(() => Array.from({ length: 30 }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 98}%`,
+    duration: 6 + Math.random() * 10,
+    delay: -(Math.random() * 14),
+    size: 8 + Math.random() * 24,
+    opacity: 0.15 + Math.random() * 0.55,
+  })), []);
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0,
+      overflow: "hidden", pointerEvents: "none", zIndex: 0,
+    }}>
+      {flakes.map(f => (
+        <span key={f.id} style={{
+          position: "absolute",
+          top: -30,
+          left: f.left,
+          fontSize: f.size,
+          opacity: f.opacity * 0.35,
+          color: "var(--ink-3)",
+          animation: `snowfall ${f.duration}s ${f.delay}s linear infinite`,
+          userSelect: "none",
+        }}>❄</span>
+      ))}
+    </div>
+  );
+}
 
 // ─── Top Nav ──────────────────────────────────────────────────────────
 export function PcNav({ route, setRoute, auth, onLogin, onLogout }) {
@@ -32,13 +65,7 @@ export function PcNav({ route, setRoute, auth, onLogin, onLogout }) {
             click: () => setRoute({ name: "about", from: "home" }),
           },
         ]
-      : [
-          {
-            key: "about",
-            label: "About",
-            click: () => setRoute({ name: "about", from: "non-auth-home" }),
-          },
-        ];
+      : [];
 
   return (
     <nav className="pc-nav">
@@ -48,7 +75,7 @@ export function PcNav({ route, setRoute, auth, onLogin, onLogout }) {
           setRoute({ name: auth === "logged-in" ? "home" : "non-auth-home" })
         }
       >
-        <span className="ice">❄</span> 쿨링오프
+        <SnowflakeLogo size={22} /> 쿨링오프
       </button>
       <div className="pc-nav-links">
         {links.map((l) => (
@@ -70,108 +97,74 @@ export function PcNav({ route, setRoute, auth, onLogin, onLogout }) {
         ))}
       </div>
       <div className="pc-nav-spacer"></div>
-      <div className="pc-nav-actions">
-        {auth === "logged-in" ? (
+      {auth === "logged-in" && (
+        <div className="pc-nav-actions">
           <button className="btn btn-ghost btn-sm" onClick={onLogout}>
             로그아웃
           </button>
-        ) : (
-          <button className="btn btn-primary btn-sm" onClick={onLogin}>
-            로그인
-          </button>
-        )}
-      </div>
+        </div>
+      )}
     </nav>
   );
 }
 
 export function PcNonAuthHome({ onLogin, onAbout }) {
   return (
-    <div className="pc-stage" style={{ paddingTop: 60 }}>
-      <div className="doc-header landing-doc-header">
-        <div className="doc-header-row">
-          <span className="doc-tag">SERVICE</span>
-          <span className="doc-tag">v1.0</span>
-          <span className="doc-tag accent">PUBLIC</span>
+    <div
+      className="pc-stage"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+        minHeight: "calc(100vh - 64px)",
+        paddingBottom: 80,
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <SnowBackground />
+      <div style={{ maxWidth: 480, width: "100%", position: "relative", zIndex: 1 }}>
+        <div style={{
+          fontSize: 22,
+          fontWeight: 700,
+          letterSpacing: "-0.035em",
+          lineHeight: 1.55,
+          margin: "0 0 12px",
+          color: "var(--ink)",
+        }}>
+          <div>사고 싶은 마음을 바로 결제로</div>
+          <div>넘기지 않도록 잠시 식혀 보세요.</div>
         </div>
-        <h1 className="doc-title landing-title">
-          사고 싶은 마음을
-          <br />
-          바로 결제로
-          <br />
-          <span className="doc-title-em">넘기지 마세요.</span>
-        </h1>
-        <div className="doc-meta-row">
-          <span>FILE / cooling-off.app</span>
-          <span>/</span>
-          <span>EST. 2026</span>
-          <span>/</span>
-          <span>LANG · KO</span>
-        </div>
-      </div>
-
-      <div className="landing-grid">
-        <div className="landing-spec">
-          <div className="landing-spec-head">
-            <span className="doc-tag">SUMMARY</span>
-            <span className="doc-tag">3 STEPS</span>
-          </div>
-          <ol className="landing-steps">
-            <li>
-              <span className="landing-step-num">01</span>
-              <div>
-                <div className="landing-step-title">REGISTER · 등록</div>
-                <div className="landing-step-desc">
-                  사고 싶은 물건과 가격을 입력합니다.
-                </div>
-              </div>
-            </li>
-            <li>
-              <span className="landing-step-num">02</span>
-              <div>
-                <div className="landing-step-title">COOL · 냉각</div>
-                <div className="landing-step-desc">
-                  가격에 따라 1일 ~ 30일을 기다립니다.
-                </div>
-              </div>
-            </li>
-            <li>
-              <span className="landing-step-num accent">03</span>
-              <div>
-                <div className="landing-step-title">DECIDE · 결정</div>
-                <div className="landing-step-desc">
-                  AI 채팅으로 점검한 뒤 직접 결정합니다.
-                </div>
-              </div>
-            </li>
-          </ol>
-          <div className="landing-cta">
-            <button
-              className="btn btn-primary"
-              onClick={onLogin}
-              style={{ minWidth: 200 }}
-            >
-              로그인하고 시작하기 →
-            </button>
-            <button className="btn btn-ghost" onClick={onAbout}>
-              쿨링오프가 뭔가요?
-            </button>
-          </div>
-        </div>
-
-        <aside className="landing-side">
-          <div className="landing-side-head">
-            <span className="doc-tag">QUOTE</span>
-          </div>
-          <blockquote className="landing-quote">
-            "사고 싶은 마음과 실제 만족은
-            <br />
-            <span className="hl">다릅니다.</span>"
-          </blockquote>
-          <div className="landing-side-foot">
-            <span>— 쿨링오프</span>
-          </div>
-        </aside>
+        <p style={{
+          fontSize: 15,
+          color: "var(--ink-3)",
+          margin: "0 0 40px",
+          lineHeight: 1.5,
+        }}>
+          충동구매와 결제 사이에 시간과 AI 채팅을 돕니다.
+        </p>
+        <button
+          className="btn btn-primary btn-block"
+          onClick={onLogin}
+        >
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4c-.2 1.2-.9 2.3-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3z" /><path d="M12 22c2.7 0 5-.9 6.6-2.5l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6C4.7 19.7 8.1 22 12 22z" /><path d="M6.4 13.9c-.2-.6-.3-1.2-.3-1.9s.1-1.3.3-1.9V7.5H3.1C2.4 8.9 2 10.4 2 12s.4 3.1 1.1 4.5l3.3-2.6z" /><path d="M12 6c1.5 0 2.8.5 3.8 1.5l2.8-2.8C17 3.1 14.7 2 12 2 8.1 2 4.7 4.3 3.1 7.5l3.3 2.6C7.2 7.8 9.4 6 12 6z" /></svg>
+            Google로 로그인하기
+          </span>
+        </button>
+        <button
+          onClick={onAbout}
+          style={{
+            display: "block",
+            appearance: "none", border: "none", background: "transparent",
+            margin: "18px auto 0", fontSize: 14, color: "var(--ink-3)",
+            textDecoration: "underline", cursor: "pointer", fontFamily: "inherit",
+          }}
+        >
+          쿨링오프가 뭔가요?
+        </button>
       </div>
     </div>
   );
@@ -424,8 +417,10 @@ export function PcCoolingScreen({ item, now, onBack, onDelete }) {
   if (!item) return null;
   const readyAt = item.addedAt + item.days * 86400 * 1000;
   const ms = readyAt - now;
+  const parts = timerParts(ms);
   return (
     <div className="pc-stage narrow">
+      <SnowBackground />
       <div className="pc-page-header">
         <button className="btn btn-ghost btn-sm" onClick={onBack}>
           ← 홈
@@ -463,7 +458,15 @@ export function PcCoolingScreen({ item, now, onBack, onDelete }) {
 
           <div className="cooling-timer-frame">
             <div className="cooling-timer-label">REMAINING</div>
-            <div className="cooling-timer">{formatTimerBig(ms)}</div>
+            <div className="cooling-timer">
+              <span className="cooling-timer-seg">{parts.d}</span>
+              <span className="cooling-timer-sep">:</span>
+              <span className="cooling-timer-seg">{parts.h}</span>
+              <span className="cooling-timer-sep">:</span>
+              <span className="cooling-timer-seg">{parts.m}</span>
+              <span className="cooling-timer-sep">:</span>
+              <span className="cooling-timer-seg">{parts.s}</span>
+            </div>
             <div className="cooling-timer-axis">
               <span>D</span>
               <span>·</span>
@@ -718,12 +721,18 @@ export function PcChatScreen({
   const [visibleCount, setVisibleCount] = useState(simIndex ?? 1);
   const [draft, setDraft] = useState("");
   const [showSummary, setShowSummary] = useState(false);
+  const [showCursor, setShowCursor] = useState(true);
   const scrollRef = useRef(null);
   const textareaRef = useRef(null);
 
   useEffect(() => {
     if (simIndex !== undefined) setVisibleCount(simIndex);
   }, [simIndex]);
+  useEffect(() => {
+    setShowCursor(true);
+    const t = setTimeout(() => setShowCursor(false), 2000);
+    return () => clearTimeout(t);
+  }, [visibleCount]);
   useEffect(() => {
     if (scrollRef.current)
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -831,15 +840,18 @@ export function PcChatScreen({
               <div className="bubble system">
                 AI가 현재 대화에서 나온 사실만 사용합니다
               </div>
-              {visible.map(([role, text], idx) => (
-                <div
-                  key={idx}
-                  className={`bubble ${role}`}
-                  style={{ maxWidth: "80%" }}
-                >
-                  {text}
-                </div>
-              ))}
+              {visible.map(([role, text], idx) => {
+                const isLastAi = role === "ai" && idx === visible.length - 1;
+                return (
+                  <div
+                    key={idx}
+                    className={`bubble ${role}${isLastAi && showCursor ? " bubble-cursor" : ""}`}
+                    style={{ maxWidth: "80%" }}
+                  >
+                    {text}
+                  </div>
+                );
+              })}
               {visibleCount < turns.length && visibleCount % 2 === 1 && (
                 <div className="bubble system" style={{ fontSize: 11.5 }}>
                   아래 입력창에 답해 보세요

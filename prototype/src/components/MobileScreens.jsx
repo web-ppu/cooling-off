@@ -1,8 +1,40 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
-  Icon, formatKRW, formatRemainingShort, timerParts,
+  Icon, SnowflakeLogo, formatKRW, formatRemainingShort, timerParts,
   formatReadyAt, formatReadyAtKorean, formatMonth, formatDateOnly, coolingDaysLabel,
 } from "../utils.jsx";
+
+// ─── Snow Background ────────────────────────────────────────────────────
+function SnowBackground() {
+  const flakes = useMemo(() => Array.from({ length: 22 }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 96}%`,
+    duration: 5 + Math.random() * 8,
+    delay: -(Math.random() * 12),
+    size: 7 + Math.random() * 21,
+    opacity: 0.15 + Math.random() * 0.55,
+  })), []);
+
+  return (
+    <div style={{
+      position: "absolute", inset: 0,
+      overflow: "hidden", pointerEvents: "none", zIndex: 0,
+    }}>
+      {flakes.map(f => (
+        <span key={f.id} style={{
+          position: "absolute",
+          top: -30,
+          left: f.left,
+          fontSize: f.size,
+          opacity: f.opacity * 0.35,
+          color: "var(--ink-3)",
+          animation: `snowfall ${f.duration}s ${f.delay}s linear infinite`,
+          userSelect: "none",
+        }}>❄</span>
+      ))}
+    </div>
+  );
+}
 
 // ─── Status Bar (iOS-style) ─────────────────────────────────────────────
 export function StatusBar() {
@@ -45,76 +77,57 @@ export function HeaderBar({ left, title, right, onBack, center }) {
 // ─── Non-auth Home (mobile) ────────────────────────────────────────────
 export function NonAuthHome({ onLogin, onAbout }) {
   return (
-    <>
-      <HeaderBar
-        left={<span className="brand"><span className="ice">❄</span> 쿨링오프</span>}
-        right={<button className="btn-icon" onClick={onAbout} aria-label="About"><Icon.Help /></button>}
-      />
-      <div className="screen">
-        <div className="screen-pad" style={{ paddingBottom: 24 }}>
-          <div className="m-doc-header">
-            <div className="m-doc-tags">
-              <span className="doc-tag">SERVICE</span>
-              <span className="doc-tag">v1.0</span>
-              <span className="doc-tag accent">PUBLIC</span>
-            </div>
-            <h1 className="m-doc-title">
-              사고 싶은 마음을<br />
-              바로 결제로<br />
-              <span className="doc-title-em">넘기지 마세요.</span>
-            </h1>
-            <div className="m-doc-meta">
-              <span>FILE / cooling-off.app</span>
-              <span>EST. 2026</span>
-            </div>
-          </div>
-
-          <div className="m-spec-card">
-            <div className="m-spec-head">
-              <span className="doc-tag">SUMMARY</span>
-              <span className="doc-tag">3 STEPS</span>
-            </div>
-            <ol className="m-steps">
-              <li>
-                <span className="m-step-num">01</span>
-                <div>
-                  <div className="m-step-title">REGISTER · 등록</div>
-                  <div className="m-step-desc">사고 싶은 물건과 가격을 입력합니다.</div>
-                </div>
-              </li>
-              <li>
-                <span className="m-step-num">02</span>
-                <div>
-                  <div className="m-step-title">COOL · 냉각</div>
-                  <div className="m-step-desc">가격에 따라 1일 ~ 30일을 기다립니다.</div>
-                </div>
-              </li>
-              <li>
-                <span className="m-step-num accent">03</span>
-                <div>
-                  <div className="m-step-title">DECIDE · 결정</div>
-                  <div className="m-step-desc">AI 채팅으로 점검한 뒤 직접 결정합니다.</div>
-                </div>
-              </li>
-            </ol>
-          </div>
-
-          <blockquote className="m-quote">
-            <span className="doc-tag">QUOTE</span>
-            <p>
-              "사고 싶은 마음과 실제 만족은<br />
-              <span className="hl">다릅니다.</span>"
-            </p>
-            <span className="m-quote-foot">— 쿨링오프</span>
-          </blockquote>
+    <div className="screen" style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+      <SnowBackground />
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        textAlign: "center",
+        padding: "0 32px",
+        position: "relative",
+        zIndex: 1,
+      }}>
+        <div style={{
+          fontSize: 18,
+          fontWeight: 700,
+          letterSpacing: "-0.035em",
+          lineHeight: 1.55,
+          margin: "0 0 10px",
+          color: "var(--ink)",
+        }}>
+          <div>사고 싶은 마음을 바로 결제로</div>
+          <div>넘기지 않도록 잠시 식혀 보세요.</div>
         </div>
-
-        <div className="fixed-bottom" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <button className="btn btn-primary btn-block" onClick={onLogin}>로그인하고 시작하기 →</button>
-          <button className="btn btn-ghost btn-block" onClick={onAbout}>쿨링오프가 뭔가요?</button>
-        </div>
+        <p style={{
+          fontSize: 14,
+          color: "var(--ink-3)",
+          margin: "0 0 32px",
+          lineHeight: 1.5,
+        }}>
+          충동구매와 결제 사이에 시간과 AI 채팅을 돕니다.
+        </p>
+        <button
+          className="btn btn-primary btn-block"
+          onClick={onLogin}
+        >
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4c-.2 1.2-.9 2.3-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3z" /><path d="M12 22c2.7 0 5-.9 6.6-2.5l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6C4.7 19.7 8.1 22 12 22z" /><path d="M6.4 13.9c-.2-.6-.3-1.2-.3-1.9s.1-1.3.3-1.9V7.5H3.1C2.4 8.9 2 10.4 2 12s.4 3.1 1.1 4.5l3.3-2.6z" /><path d="M12 6c1.5 0 2.8.5 3.8 1.5l2.8-2.8C17 3.1 14.7 2 12 2 8.1 2 4.7 4.3 3.1 7.5l3.3 2.6C7.2 7.8 9.4 6 12 6z" /></svg>
+            Google로 로그인하기
+          </span>
+        </button>
+        <button
+          onClick={onAbout}
+          style={{
+            appearance: "none", border: "none", background: "transparent",
+            marginTop: 18, fontSize: 14, color: "var(--ink-3)",
+            textDecoration: "underline", cursor: "pointer", fontFamily: "inherit",
+          }}
+        >
+          쿨링오프가 뭔가요?
+        </button>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -344,7 +357,7 @@ export function HomeScreen({ items, now, onOpenCooling, onOpenChat, onDelete, on
   return (
     <>
       <HeaderBar
-        left={<span className="brand"><span className="ice">❄</span> 쿨링오프</span>}
+        left={<span className="brand"><SnowflakeLogo size={18} /> 쿨링오프</span>}
         right={
           <>
             <button className="btn btn-ghost btn-sm" onClick={onHistory}>기록</button>
@@ -442,6 +455,7 @@ export function CoolingScreen({ item, now, onBack, onDelete }) {
         <button className="btn btn-ghost btn-sm" onClick={() => { onDelete(item.id); onBack(); }}>삭제</button>
       } />
       <div className="screen">
+        <SnowBackground />
         <div className="screen-pad">
           <div className="m-cooling-doc">
             <div className="m-cooling-tags">
@@ -602,12 +616,19 @@ export function ChatScreen({ item, simIndex, onBack, onDelete, onDecide, sim }) 
   const [visibleCount, setVisibleCount] = useState(simIndex ?? 1);
   const [draft, setDraft] = useState("");
   const [showSummary, setShowSummary] = useState(false);
+  const [showCursor, setShowCursor] = useState(true);
   const scrollRef = useRef(null);
   const textareaRef = useRef(null);
 
   useEffect(() => {
     if (simIndex !== undefined) setVisibleCount(simIndex);
   }, [simIndex]);
+
+  useEffect(() => {
+    setShowCursor(true);
+    const t = setTimeout(() => setShowCursor(false), 2000);
+    return () => clearTimeout(t);
+  }, [visibleCount]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -656,9 +677,12 @@ export function ChatScreen({ item, simIndex, onBack, onDelete, onDecide, sim }) 
       <div className="screen" ref={scrollRef}>
         <div className="chat-stream">
           <div className="bubble system">AI가 현재 대화에서 나온 사실만 사용합니다</div>
-          {visible.map(([role, text], idx) => (
-            <div key={idx} className={`bubble ${role}`}>{text}</div>
-          ))}
+          {visible.map(([role, text], idx) => {
+            const isLastAi = role === "ai" && idx === visible.length - 1;
+            return (
+              <div key={idx} className={`bubble ${role}${isLastAi && showCursor ? " bubble-cursor" : ""}`}>{text}</div>
+            );
+          })}
           {visibleCount < turns.length && visibleCount % 2 === 1 && (
             <div className="bubble system" style={{ fontSize: 11.5 }}>아래 입력창에 답해 보세요</div>
           )}

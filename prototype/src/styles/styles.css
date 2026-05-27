@@ -85,15 +85,6 @@ input, textarea, button { font-family: inherit; color: inherit; }
   padding: 0;
   color: var(--ink);
 }
-.pc-nav-brand .ice {
-  color: var(--accent);
-  font-size: 1.43em;
-  text-shadow:
-    -1px 0 var(--ink),
-    1px 0 var(--ink),
-    0 -1px var(--ink),
-    0 1px var(--ink);
-}
 .pc-nav-links {
   display: flex;
   gap: 4px;
@@ -135,6 +126,8 @@ input, textarea, button { font-family: inherit; color: inherit; }
   align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
+  position: relative;
+  z-index: 1;
 }
 .pc-page-title {
   font-size: 30px;
@@ -170,7 +163,7 @@ input, textarea, button { font-family: inherit; color: inherit; }
   justify-content: space-between;
   gap: 16px;
   cursor: pointer;
-  transition: border-color .15s;
+  transition: border-color .15s, transform .15s, box-shadow .15s;
   text-align: left;
   width: 100%;
   appearance: none;
@@ -178,7 +171,7 @@ input, textarea, button { font-family: inherit; color: inherit; }
   color: inherit;
   position: relative;
 }
-.pc-item-card:hover { border-color: var(--line-active); }
+.pc-item-card:hover { border-color: var(--line-active); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,.07); }
 .pc-item-card .name { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
 .pc-item-card .meta { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
 
@@ -492,6 +485,8 @@ input, textarea, button { font-family: inherit; color: inherit; }
 .bubble.ai { align-self: flex-start; background: var(--surface-2); color: var(--ink); border-bottom-left-radius: 6px; }
 .bubble.user { align-self: flex-end; background: var(--ink); color: var(--surface); border-bottom-right-radius: 6px; }
 .bubble.system { align-self: center; font-size: 12.5px; color: var(--ink-3); background: transparent; padding: 4px 8px; }
+@keyframes cursor-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.bubble-cursor::after { content: "|"; margin-left: 2px; animation: cursor-blink 1s step-end infinite; opacity: 1; }
 
 /* fact summary */
 .fact-card {
@@ -584,6 +579,8 @@ input, textarea, button { font-family: inherit; color: inherit; }
   flex-direction: column;
   min-height: 100%;
   box-sizing: border-box;
+  position: relative;
+  z-index: 1;
 }
 
 /* fixed bottom (mobile) — sticks to bottom of scroll viewport */
@@ -1186,6 +1183,14 @@ input, textarea, button { font-family: inherit; color: inherit; }
 .splash p { margin: 0; color: var(--ink-3); line-height: 1.55; font-size: 14.5px; }
 @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
 
+@keyframes snowfall {
+  0%   { transform: translateY(-30px) translateX(0px) rotate(0deg); opacity: 0; }
+  8%   { opacity: 1; }
+  50%  { transform: translateY(50vh) translateX(12px) rotate(180deg); }
+  92%  { opacity: 0.7; }
+  100% { transform: translateY(108vh) translateX(-8px) rotate(360deg); opacity: 0; }
+}
+
 .guide {
   font-size: 12.5px;
   color: var(--ink-3);
@@ -1202,6 +1207,8 @@ input, textarea, button { font-family: inherit; color: inherit; }
   border: 2px solid var(--line-default);
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 1;
 }
 .cooling-card-head {
   display: flex;
@@ -1306,6 +1313,18 @@ input, textarea, button { font-family: inherit; color: inherit; }
   letter-spacing: -0.04em;
   color: var(--ink);
   line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  white-space: nowrap;
+}
+.cooling-timer-sep {
+  font-size: 0.38em;
+  font-weight: 300;
+  padding: 0 4px;
+  color: var(--ink-3);
+  align-self: center;
+  letter-spacing: 0;
 }
 .cooling-timer-axis {
   display: flex;
