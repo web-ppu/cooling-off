@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { isAdmin } from "@/lib/admin";
 import { formatKRW, formatReadyAt } from "@/lib/format";
-import AdminResetButton from "@/components/admin-reset-button";
 
 export const dynamic = "force-dynamic";
 
@@ -92,7 +91,6 @@ export default async function AdminPage() {
           <li>이 도구는 테스트/QA 전용입니다. 시연·실 사용에서는 정상 흐름을 따르세요.</li>
           <li>cooling 중인 item 으로 채팅 진입해도 cooling_ends_at 등 DB 데이터는 수정되지 않습니다.</li>
           <li>채팅 후 [안 삼]/[삼] 선택 시 일반 흐름과 동일하게 items 가 decided 로 전환됩니다.</li>
-          <li>🔄 초기화 — 해당 item 의 채팅 기록을 모두 삭제하고 결정 상태를 클리어합니다. 되돌릴 수 없으니 시연 직전엔 주의.</li>
         </ul>
       </section>
     </main>
@@ -131,21 +129,18 @@ function AdminItemRow({ item }: { item: AdminItem }) {
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2">
-        {canEnterChat ? (
-          <Link
-            href={`/chat/${item.id}`}
-            className="rounded-full bg-zinc-900 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-zinc-700"
-          >
-            🔧 채팅 진입
-          </Link>
-        ) : (
-          <span className="text-xs text-zinc-400">
-            {item.decision === "bought" ? "삼" : "안 삼"} · 결정 완료
-          </span>
-        )}
-        <AdminResetButton itemId={item.id} itemName={item.name} />
-      </div>
+      {canEnterChat ? (
+        <Link
+          href={`/chat/${item.id}`}
+          className="shrink-0 rounded-full bg-zinc-900 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-zinc-700"
+        >
+          🔧 채팅 진입
+        </Link>
+      ) : (
+        <span className="shrink-0 text-xs text-zinc-400">
+          {item.decision === "bought" ? "삼" : "안 삼"} · 결정 완료
+        </span>
+      )}
     </li>
   );
 }
