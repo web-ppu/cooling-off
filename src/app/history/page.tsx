@@ -29,17 +29,17 @@ function groupByMonth(items: HistoryItem[]) {
 
 export default async function HistoryPage() {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
 
-  const { data } = await supabase
-    .from('items')
-    .select('id, name, price, decision, decided_at')
-    .eq('status', 'decided')
-    .is('deleted_at', null)
-    .order('decided_at', { ascending: false })
+  const [{ data: { user } }, { data }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
+      .from('items')
+      .select('id, name, price, decision, decided_at')
+      .eq('status', 'decided')
+      .is('deleted_at', null)
+      .order('decided_at', { ascending: false }),
+  ])
+  if (!user) redirect('/login')
 
   const items: HistoryItem[] = data ?? []
   const groups = groupByMonth(items)
