@@ -10,28 +10,34 @@ export const dynamic = 'force-dynamic'
 
 export default async function Home() {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+
+  // auth 확인·만료 전환·목록 조회를 모두 병렬 실행
+  const [{ data: { user } }, , { data }] = await Promise.all([
+    supabase.auth.getUser(),
+    transitionExpiredItems(supabase),
+    supabase
+      .from('items')
+      .select('id, name, price, status, cooling_ends_at, created_at')
+      .is('deleted_at', null)
+      .in('status', ['cooling', 'ready'])
+      .order('created_at', { ascending: false }),
+  ])
 
   if (!user) {
     return <NonAuthHome />
   }
 
-  // 만료된 냉각 항목을 결정 대기로 전환 (앱 재진입 시 상태 동기화)
-  await transitionExpiredItems(supabase)
-
-  const { data } = await supabase
-    .from('items')
-    .select('id, name, price, status, cooling_ends_at, created_at')
-    .is('deleted_at', null)
-    .in('status', ['cooling', 'ready'])
-    .order('created_at', { ascending: false })
-
+  const now = new Date()
   const items: Pick<
     Item,
     'id' | 'name' | 'price' | 'status' | 'cooling_ends_at' | 'created_at'
-  >[] = data ?? []
+  >[] = (data ?? []).map((item) =>
+    item.status === 'cooling' &&
+    item.cooling_ends_at &&
+    new Date(item.cooling_ends_at) <= now
+      ? { ...item, status: 'ready' as const }
+      : item
+  )
 
   const readyItems = items.filter((i) => i.status === 'ready')
   const coolingItems = items.filter((i) => i.status === 'cooling')
