@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useSyncExternalStore, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import {
   saveSubscription,
   updateProposalState,
 } from '@/lib/notification/actions'
 import { urlBase64ToArrayBuffer } from '@/lib/notification/vapid'
 import { formatKstShortDateTime } from '@/lib/notification/time'
+import { useIsPushSupported } from '@/lib/notification/platform'
 
 type Props = {
   /** 가장 최근에 등록된 항목의 cooling_ends_at (ISO 문자열). */
@@ -26,22 +27,10 @@ type Props = {
  *   - Push API / Service Worker / Notification API 미지원 환경에서는 렌더 스킵
  *     (iOS Safari 미설치 사용자 — iOS PR 에서 별도 카드 추가 예정)
  */
-// 외부(브라우저 API) 상태이므로 useSyncExternalStore 로 안전하게 감지.
-// SSR 에서는 false 로 시작 → 하이드레이션 후 실제 지원 여부로 전환.
-const subscribeNoop = () => () => {}
-const isPushSupported = () =>
-  typeof window !== 'undefined' &&
-  'serviceWorker' in navigator &&
-  'PushManager' in window &&
-  'Notification' in window
-const isPushSupportedServer = () => false
-
 export default function NotificationPermissionCard({ coolingEndsAt }: Props) {
-  const supported = useSyncExternalStore(
-    subscribeNoop,
-    isPushSupported,
-    isPushSupportedServer
-  )
+  // 부모(라우터) 가 이미 capability 를 검사하지만, 단독 사용/직접 import 도 가능하므로
+  // 자체 가드를 둔다.
+  const supported = useIsPushSupported()
   const [isPending, startTransition] = useTransition()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
