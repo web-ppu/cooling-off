@@ -24,6 +24,7 @@ export default async function AppHeader({ user: userProp }: Props) {
         <div className="flex items-center justify-between px-4 py-3 md:hidden">
           <Link
             href="/"
+            prefetch={false}
             className="flex items-center gap-1.5 text-base font-extrabold tracking-tight"
           >
             <span className="brand-ice">❄</span>
@@ -32,6 +33,7 @@ export default async function AppHeader({ user: userProp }: Props) {
           <div className="flex items-center gap-1">
             <Link
               href="/history"
+              prefetch={false}
               className="cursor-pointer rounded px-2 py-1 text-sm text-zinc-500 hover:text-zinc-900"
             >
               기록
@@ -50,6 +52,7 @@ export default async function AppHeader({ user: userProp }: Props) {
         <div className="hidden h-16 items-center gap-6 px-8 md:flex">
           <Link
             href="/"
+            prefetch={false}
             className="flex items-center gap-2 text-lg font-extrabold tracking-tight"
           >
             <span className="brand-ice">❄</span>

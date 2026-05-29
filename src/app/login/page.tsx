@@ -119,7 +119,7 @@ function LoginInner() {
   return (
     <main className="flex min-h-screen flex-col">
       <header className="px-6 py-4">
-        <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-900">
+        <Link href="/" prefetch={false} className="text-sm text-zinc-500 hover:text-zinc-900">
           ← 홈으로
         </Link>
       </header>

@@ -52,7 +52,7 @@ export default async function AdminPage() {
             화이트리스트(ADMIN_EMAILS) 멤버 전용 · 정상 사용자 정책 영향 없음
           </p>
         </div>
-        <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-900">
+        <Link href="/" prefetch={false} className="text-sm text-zinc-500 hover:text-zinc-900">
           ← 홈
         </Link>
       </header>
@@ -70,6 +70,7 @@ export default async function AdminPage() {
             등록된 물건이 없어요. 먼저{" "}
             <Link
               href="/register"
+              prefetch={false}
               className="font-medium text-zinc-700 underline underline-offset-2"
             >
               등록
@@ -132,6 +133,7 @@ function AdminItemRow({ item }: { item: AdminItem }) {
       {canEnterChat ? (
         <Link
           href={`/chat/${item.id}`}
+          prefetch={false}
           className="shrink-0 rounded-full bg-zinc-900 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-zinc-700"
         >
           🔧 채팅 진입

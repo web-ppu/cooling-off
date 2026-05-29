@@ -33,7 +33,7 @@ export default function NavLinks() {
           ? 'font-semibold text-[var(--ink)] bg-[var(--surface-2)]'
           : 'font-medium text-[var(--ink-3)] hover:bg-[var(--surface-2)] hover:text-[var(--ink)]'
         return (
-          <Link key={href} href={href} className={`${base} ${state}`}>
+          <Link key={href} href={href} prefetch={false} className={`${base} ${state}`}>
             {label}
           </Link>
         )

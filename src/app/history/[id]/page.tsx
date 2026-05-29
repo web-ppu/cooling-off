@@ -59,7 +59,7 @@ export default async function HistoryDetailPage({
   return (
     <main className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between px-4 py-4 md:px-8">
-        <Link href="/history" className="text-sm text-zinc-500 hover:text-zinc-900">
+        <Link href="/history" prefetch={false} className="text-sm text-zinc-500 hover:text-zinc-900">
           ← 기록으로
         </Link>
         <DeleteHistoryButton itemId={id} />

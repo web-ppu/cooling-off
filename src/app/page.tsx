@@ -61,6 +61,7 @@ export default async function Home() {
             {/* PC 전용 등록 버튼 */}
             <Link
               href="/register"
+              prefetch={false}
               className="hidden items-center gap-2 border-2 border-[var(--line-default)] bg-[var(--ink)] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[var(--ink-2)] md:inline-flex"
             >
               + 사고 싶은 물건 등록
@@ -89,6 +90,7 @@ export default async function Home() {
             </h3>
             <Link
               href="/register"
+              prefetch={false}
               className="inline-flex border-2 border-[var(--line-default)] bg-[var(--ink)] px-6 py-3 text-sm font-semibold text-white"
             >
               지금 등록하기
@@ -150,6 +152,7 @@ export default async function Home() {
         <div className="mx-auto max-w-2xl">
           <Link
             href="/register"
+            prefetch={false}
             className="flex w-full cursor-pointer items-center justify-center border-2 border-[var(--line-default)] bg-[var(--ink)] py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--ink-2)]"
           >
             + 사고 싶은 물건 등록
@@ -166,7 +169,7 @@ function ReadyCard({
   item: Pick<Item, 'id' | 'name' | 'price'>
 }) {
   return (
-    <Link href={`/chat/${item.id}`} className="pc-item-card ready">
+    <Link href={`/chat/${item.id}`} prefetch={false} className="pc-item-card ready">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <div className="pc-item-card-name">{item.name}</div>
@@ -192,7 +195,7 @@ function CoolingCard({
   item: Pick<Item, 'id' | 'name' | 'cooling_ends_at' | 'created_at'>
 }) {
   return (
-    <Link href={`/cooling/${item.id}`} className="pc-item-card">
+    <Link href={`/cooling/${item.id}`} prefetch={false} className="pc-item-card">
       <div className="min-w-0 flex-1">
         <div className="pc-item-card-name">{item.name}</div>
         <CoolingMeta

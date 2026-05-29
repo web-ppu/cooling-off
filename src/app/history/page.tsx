@@ -47,7 +47,7 @@ export default async function HistoryPage() {
   return (
     <main className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between px-4 py-4 md:px-8">
-        <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-900">
+        <Link href="/" prefetch={false} className="text-sm text-zinc-500 hover:text-zinc-900">
           ← 홈으로
         </Link>
         <span className="font-mono text-xs tracking-widest text-zinc-400">RECORD</span>
@@ -124,7 +124,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
     : ''
 
   return (
-    <Link href={`/history/${item.id}`} className="pc-item-card">
+    <Link href={`/history/${item.id}`} prefetch={false} className="pc-item-card">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <div className="pc-item-card-name">{item.name}</div>

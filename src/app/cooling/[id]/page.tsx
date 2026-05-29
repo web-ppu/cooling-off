@@ -43,6 +43,7 @@ export default async function CoolingPage({
       <header className="flex items-center justify-between px-4 py-4 md:px-8">
         <Link
           href="/"
+          prefetch={false}
           className="text-sm text-zinc-500 hover:text-zinc-900"
         >
           ← 홈
