@@ -125,6 +125,16 @@ CREATE TABLE profiles (
   email      TEXT,
   name       TEXT,
   avatar_url TEXT,
+  -- 알림 권한 제안 카드 노출 상태 (계정 단위, notification-policy.md §3-5).
+  -- pending             : 아직 카드를 보여준 적 없음. 첫 등록 직후 노출
+  -- granted             : 사용자가 [푸시로 받기] 선택 + 브라우저 권한 허용
+  -- denied              : [괜찮아요] 선택 또는 브라우저 권한 거부
+  -- dismissed           : 카드의 X 버튼으로 닫음
+  -- ios_install_started : iOS Safari 미설치 사용자가 홈 화면 추가 안내 진행 (iOS 작업에서 사용)
+  notification_proposal_state TEXT NOT NULL DEFAULT 'pending'
+    CONSTRAINT profiles_notification_proposal_state_check
+    CHECK (notification_proposal_state IN
+      ('pending', 'granted', 'denied', 'dismissed', 'ios_install_started')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
