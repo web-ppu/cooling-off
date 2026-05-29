@@ -46,7 +46,8 @@ npm run dev
 docs/
 ├── pm/                         ← "뭘 왜 만드나"
 │   ├── prd.md                  ← 요구사항, 원칙, 메트릭, 릴리스 계획
-│   └── 기획-배경.md              ← 문제 배경과 제품 결정 근거
+│   ├── 기획-배경.md              ← 문제 배경과 제품 결정 근거
+│   └── notification-policy.md   ← 알림 채널·권한·iOS 안내·재알림 정책 (FR-8 상세)
 ├── design/                     ← "어떻게 보이고 동작하나"
 │   └── screen-spec.md           ← 화면별 레이아웃 + 인터랙션
 ├── engineering/                ← "어떻게 만드나"
