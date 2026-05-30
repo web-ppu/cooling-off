@@ -8,6 +8,16 @@ import {
   type Registration,
 } from "@/lib/chat/systemPrompt";
 
+/**
+ * Edge runtime — Vercel 의 Node.js serverless 보다 cold start 가 수십ms로 짧다.
+ * (#68 응답 지연 개선용)
+ *
+ * 사용 라이브러리는 모두 edge 호환:
+ * - next/server, ai (Vercel AI SDK), @ai-sdk/google
+ * - supabase 호출 없음 (이 라우트는 인증 미사용)
+ */
+export const runtime = "edge";
+
 const DEFAULT_GEMINI_MODEL = "gemini-3.1-flash-lite";
 
 /**
