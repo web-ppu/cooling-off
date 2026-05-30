@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import ChatScreen from "@/components/chat/ChatScreen";
 import type { Registration } from "@/lib/chat/systemPrompt";
 import { getCoolingDaysLabel } from "@/lib/cooling";
@@ -37,6 +38,32 @@ export default function ChatPage() {
         }}
       >
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          {/* 페이지 헤더 — 채팅 화면에서 홈으로 돌아갈 수 있는 진입로 (issue #127) */}
+          <header
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginBottom: 16,
+            }}
+          >
+            <Link
+              href="/"
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
+                color: "var(--ink)",
+                border: "2px solid var(--ink)",
+                background: "var(--surface)",
+                padding: "6px 12px",
+                textDecoration: "none",
+              }}
+            >
+              ← 홈
+            </Link>
+          </header>
           <ChatScreen registration={registration} />
         </div>
       </div>

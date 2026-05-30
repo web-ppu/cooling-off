@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { transitionExpiredItems } from "@/lib/items";
 import { formatKRW } from "@/lib/format";
 import { isAdmin } from "@/lib/admin";
@@ -89,6 +90,32 @@ export default async function ChatItemPage({
       }}
     >
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+        {/* 페이지 헤더 — 채팅 화면에서 홈으로 돌아갈 수 있는 진입로 (issue #127) */}
+        <header
+          style={{
+            display: "flex",
+            alignItems: "center",
+            marginBottom: 16,
+          }}
+        >
+          <Link
+            href="/"
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+              color: "var(--ink)",
+              border: "2px solid var(--ink)",
+              background: "var(--surface)",
+              padding: "6px 12px",
+              textDecoration: "none",
+            }}
+          >
+            ← 홈
+          </Link>
+        </header>
         <ChatScreen
           registration={registration}
           itemId={itemId}
