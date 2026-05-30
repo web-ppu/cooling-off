@@ -127,7 +127,9 @@ async function callGemini(
       system: systemPrompt,
       messages: messages.map((m) => ({ role: m.role, content: m.content })),
       temperature: 0.7,
-      maxOutputTokens: 500,
+      // #68: 응답 1~2 문장 강제 + 토큰 적게 → Gemini 응답 시간 단축.
+      // 팩트 요약 모드(<<DECIDE>>)도 5개 불릿이면 200 토큰 안에 충분히 들어감.
+      maxOutputTokens: 200,
       maxRetries: 2,
     });
 
