@@ -1,9 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import AppHeader from '@/components/app-header'
 import CoolingMeta from '@/components/cooling-meta'
+import NotificationCardRouter from '@/components/notification-card-router'
 import Link from 'next/link'
 import { formatKRW } from '@/lib/format'
 import { transitionExpiredItems } from '@/lib/items'
+import { getKstTodayStartUtcIso } from '@/lib/notification/time'
 import type { Item } from '@/lib/supabase/types'
 
 export const dynamic = 'force-dynamic'
@@ -41,6 +43,32 @@ export default async function Home() {
 
   const readyItems = items.filter((i) => i.status === 'ready')
   const coolingItems = items.filter((i) => i.status === 'cooling')
+
+  // ── 알림 권한 제안 카드 노출 평가 ────────────────────────────
+  // 정책 (docs/pm/notification-policy.md §3-1, §3-5, §3-7):
+  // - state='pending'           : 오늘(KST) 등록된 항목 ≥ 1 이면 노출
+  // - state='ios_install_started': iOS PWA 재진입 조건은 클라이언트에서 평가하므로
+  //                               서버는 무조건 라우터에게 전달 (라우터가 분기)
+  // - 그 외 상태                 : 노출 안 함
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('notification_proposal_state')
+    .eq('id', user.id)
+    .single()
+
+  const proposalState = profile?.notification_proposal_state ?? 'pending'
+
+  const todayStartUtcIso = getKstTodayStartUtcIso()
+  // 가장 최근 등록 항목의 cooling_ends_at 을 카드 본문에 사용 (option A)
+  const todayItems = items
+    .filter((i) => i.created_at >= todayStartUtcIso)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+
+  const showPendingCard =
+    proposalState === 'pending' && todayItems.length > 0
+  const showIosEnableCard = proposalState === 'ios_install_started'
+  const showNotificationCard = showPendingCard || showIosEnableCard
+  const notificationCoolingEndsAt = todayItems[0]?.cooling_ends_at
 
   return (
     <main className="flex min-h-screen flex-col">
@@ -80,6 +108,16 @@ export default async function Home() {
             <span>COOLING {coolingItems.length}</span>
           </div>
         </div>
+
+        {/* 알림 권한 제안 카드 — 플랫폼 분기는 NotificationCardRouter 가 담당 */}
+        {showNotificationCard && (
+          <NotificationCardRouter
+            proposalState={
+              showIosEnableCard ? 'ios_install_started' : 'pending'
+            }
+            coolingEndsAt={notificationCoolingEndsAt}
+          />
+        )}
 
         {/* 빈 상태 */}
         {items.length === 0 ? (
