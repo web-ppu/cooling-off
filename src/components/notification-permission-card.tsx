@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import {
   saveSubscription,
   updateProposalState,
@@ -33,8 +33,19 @@ export default function NotificationPermissionCard({ coolingEndsAt }: Props) {
   const supported = useIsPushSupported()
   const [isPending, startTransition] = useTransition()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    if (!supported) return
+    navigator.serviceWorker.ready
+      .then(reg => reg.pushManager.getSubscription())
+      .then(sub => setIsSubscribed(!!sub))
+      .catch(() => setIsSubscribed(false))
+  }, [supported])
 
   if (!supported) return null
+  if (isSubscribed === null) return null
+  if (isSubscribed) return null
 
   const formattedDate = formatKstShortDateTime(coolingEndsAt)
 

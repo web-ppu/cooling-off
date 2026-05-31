@@ -65,7 +65,7 @@ export default async function Home() {
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
 
   const showPendingCard =
-    proposalState === 'pending' && todayItems.length > 0
+    (proposalState === 'pending' || proposalState === 'granted') && todayItems.length > 0
   const showIosEnableCard = proposalState === 'ios_install_started'
   const showNotificationCard = showPendingCard || showIosEnableCard
   const notificationCoolingEndsAt = todayItems[0]?.cooling_ends_at
@@ -113,7 +113,8 @@ export default async function Home() {
         {showNotificationCard && (
           <NotificationCardRouter
             proposalState={
-              showIosEnableCard ? 'ios_install_started' : 'pending'
+              showIosEnableCard ? 'ios_install_started' :
+              proposalState === 'granted' ? 'granted' : 'pending'
             }
             coolingEndsAt={notificationCoolingEndsAt}
           />
