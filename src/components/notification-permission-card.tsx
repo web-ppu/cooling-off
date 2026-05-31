@@ -49,17 +49,18 @@ export default function NotificationPermissionCard({ coolingEndsAt }: Props) {
           return
         }
 
-        // 1) Service Worker 등록 — 이미 등록되어 있어도 idempotent
-        const registration = await navigator.serviceWorker.register('/sw.js')
-        await navigator.serviceWorker.ready
-
-        // 2) 브라우저 권한 팝업
+        // 1) 브라우저 권한 팝업 — 유저 제스처 컨텍스트가 살아있는 가장 빠른 시점에 호출
+        //    SW 등록을 먼저 await 하면 유저 제스처 토큰이 소멸해 Chrome 이 팝업을 띄우지 않음
         const permission = await Notification.requestPermission()
         if (permission !== 'granted') {
           // 거부 시 상태 저장 + 카드 사라짐
           await updateProposalState('denied')
           return
         }
+
+        // 2) Service Worker 등록 — 이미 등록되어 있어도 idempotent
+        const registration = await navigator.serviceWorker.register('/sw.js')
+        await navigator.serviceWorker.ready
 
         // 3) PushManager 구독
         const sub = await registration.pushManager.subscribe({
