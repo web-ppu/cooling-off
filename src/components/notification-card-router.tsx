@@ -16,7 +16,7 @@ type Props = {
    * 'ios_install_started' — iOS Safari 사용자가 설치 안내로 진입한 뒤. iOS PWA
    *                         재진입 시에만 알림 켜기 카드 노출 (§3-7)
    */
-  proposalState: 'pending' | 'ios_install_started'
+  proposalState: 'pending' | 'granted' | 'ios_install_started'
   /**
    * 'pending' 카드 본문에 표시할 결정 가능 시점.
    * 'ios_install_started' 케이스에서는 사용하지 않으므로 optional.
@@ -56,15 +56,17 @@ export default function NotificationCardRouter({
     return null
   }
 
-  // proposalState === 'pending'
+  // proposalState === 'pending' | 'granted'
   if (!coolingEndsAt) return null
 
   // iOS Safari 탭: Push API 미지원 → 홈 화면 추가 안내 카드
+  // granted 상태에서도 새 기기(iOS 미설치)라면 설치 안내가 필요하므로 동일하게 분기
   if (isIos && !isStandalone) {
     return <NotificationIosInstallCard coolingEndsAt={coolingEndsAt} />
   }
 
   // PC / Android / iOS PWA standalone: Push API 지원 환경에서 공통 카드
+  // granted 상태면 PermissionCard 내부에서 이 기기의 구독 여부를 추가 검사
   if (isPushSupported) {
     return <NotificationPermissionCard coolingEndsAt={coolingEndsAt} />
   }
