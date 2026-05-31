@@ -37,9 +37,18 @@ export default function NotificationPermissionCard({ coolingEndsAt }: Props) {
 
   useEffect(() => {
     if (!supported) return
-    navigator.serviceWorker.ready
-      .then(reg => reg.pushManager.getSubscription())
-      .then(sub => setIsSubscribed(!!sub))
+    // serviceWorker.ready 는 등록된 SW 가 없으면 영원히 resolve 되지 않음.
+    // getRegistrations() 로 먼저 확인해 SW 미등록 시 즉시 false 처리.
+    navigator.serviceWorker.getRegistrations()
+      .then(regs => {
+        if (regs.length === 0) {
+          setIsSubscribed(false)
+          return
+        }
+        return navigator.serviceWorker.ready
+          .then(reg => reg.pushManager.getSubscription())
+          .then(sub => setIsSubscribed(!!sub))
+      })
       .catch(() => setIsSubscribed(false))
   }, [supported])
 
