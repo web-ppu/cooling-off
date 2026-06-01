@@ -23,6 +23,9 @@ body {
   --accent-soft: #dde9ff;
   --warm-soft: #fff5b0;
   --danger: #d93025;
+  --success: #1f8a4c;
+  --line-danger: #d83a2c;
+  --line-success: #1f8a4c;
 }
 
 @layer components {
@@ -1186,6 +1189,377 @@ body {
 .ios-install-sheet-close:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* ───────── History (stat-grid · log-month · log-table · record-card · ...) ───────── */
+/* prototype/src/styles/styles.css 의 history 관련 클래스를 옮긴 것. issue #132 디자이너 작업물 정합. */
+
+/* History — stat-grid (TOTAL / PASSED·BOUGHT / SAVED) */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 32px;
+}
+@media (max-width: 720px) {
+  .stat-grid { grid-template-columns: 1fr; }
+}
+.stat-stamp {
+  background: var(--surface);
+  border: 2px solid var(--line-default);
+  padding: 22px 24px 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.stat-stamp.accent { background: var(--accent); }
+.stat-stamp::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  height: 6px;
+  background: var(--ink);
+}
+.stat-stamp.accent::before { background: var(--ink); }
+.stat-stamp-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+.stat-stamp.accent .stat-stamp-label { color: var(--ink); }
+.stat-stamp-value {
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.stat-stamp.accent .stat-stamp-value { font-size: 32px; }
+.stat-stamp-divider {
+  color: var(--ink-4);
+  margin: 0 8px;
+  font-weight: 600;
+}
+.stat-stamp-unit {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+.stat-stamp.accent .stat-stamp-unit { color: var(--ink); }
+
+/* History — empty state */
+.doc-empty {
+  text-align: center;
+  padding: 60px 20px;
+  border: 2px dashed var(--line-default);
+  background: var(--surface);
+}
+
+/* History — log months */
+.log-month { margin-top: 28px; }
+.log-month-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0;
+  padding: 10px 0;
+}
+.log-month-marker {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--ink);
+}
+.log-month-label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+.log-month-count {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  background: var(--accent);
+  padding: 4px 10px;
+  border: 2px solid var(--line-default);
+}
+.log-month-rule {
+  flex: 1;
+  height: 0;
+  border-top: 2px dashed var(--line-default);
+}
+.log-table {
+  border: 2px solid var(--line-default);
+  background: var(--surface);
+}
+.log-table-head {
+  display: grid;
+  grid-template-columns: 56px 1fr 140px 120px 80px;
+  gap: 16px;
+  padding: 10px 18px;
+  background: var(--ink);
+  color: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.log-row {
+  display: grid;
+  grid-template-columns: 56px 1fr 140px 120px 80px;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: none;
+  border-top: 2px solid var(--line-default);
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font-family: inherit;
+  text-decoration: none;
+  transition: background 60ms;
+}
+.log-row:first-of-type { border-top: none; }
+.log-row:hover { background: var(--accent-soft); }
+.log-row.bought { border-left: 6px solid var(--line-success); }
+.log-row.passed { border-left: 6px solid var(--line-danger); }
+.log-row-no {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-4);
+  font-weight: 600;
+}
+.log-row-name {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.log-row-price {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink-2);
+  text-align: right;
+}
+.log-row-date {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-3);
+}
+@media (max-width: 720px) {
+  .log-table-head { display: none; }
+  .log-row {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "name decision"
+      "price date";
+    gap: 6px 12px;
+  }
+  .log-row-no { display: none; }
+  .log-row-name { grid-area: name; }
+  .log-row .tag { grid-area: decision; }
+  .log-row-price { grid-area: price; text-align: left; }
+  .log-row-date { grid-area: date; text-align: right; }
+}
+
+/* Tag — bought / passed */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 0;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.tag.bought { background: var(--surface); color: var(--success); border: 2px solid var(--line-success); }
+.tag.passed { background: var(--surface); color: var(--danger); border: 2px solid var(--line-danger); }
+
+/* History detail — record-card (manual sheet) */
+.record-card {
+  background: var(--surface);
+  border: 2px solid var(--line-default);
+  margin-bottom: 24px;
+}
+.record-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  border-bottom: 2px solid var(--line-default);
+  background: var(--ink);
+  color: var(--surface);
+  flex-wrap: wrap;
+}
+.record-card-head .doc-tag { background: var(--accent); color: var(--ink); }
+.record-card-id {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--surface);
+  opacity: 0.85;
+}
+.record-card-verdict {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 6px;
+  border: 2px solid var(--surface);
+  background: var(--surface);
+  color: var(--ink);
+}
+.record-card-verdict.bought { background: var(--accent); border-color: var(--accent); }
+.record-card-verdict-mark {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 800;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  color: var(--surface);
+}
+.record-card-verdict-label {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.record-card-verdict-meta {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--ink-3);
+}
+.record-card-verdict.bought .record-card-verdict-meta { color: var(--ink); }
+
+.record-meta-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 16px;
+  padding: 12px 24px;
+  border-bottom: 2px solid var(--line-default);
+  align-items: baseline;
+}
+.record-meta-row:last-child { border-bottom: none; }
+.record-meta-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+.record-meta-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+/* History detail — record-grid (FACTS · LOG 2 columns) */
+.record-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 880px) {
+  .record-grid { grid-template-columns: 1fr; }
+}
+.record-section {
+  background: var(--surface);
+  border: 2px solid var(--line-default);
+}
+.record-section-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 2px solid var(--line-default);
+}
+.record-section-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+.record-facts-list { list-style: none; margin: 0; padding: 0; }
+.record-facts-list li {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 2px solid var(--line-default);
+  align-items: start;
+}
+.record-facts-list li:last-child { border-bottom: none; }
+.record-fact-num {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  border: 2px solid var(--line-default);
+  padding: 4px 8px;
+  background: var(--surface);
+  width: fit-content;
+  line-height: 1;
+}
+.record-fact-text {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink);
+  padding-top: 3px;
+}
+.record-log {
+  display: flex;
+  flex-direction: column;
+}
+.record-log-row {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 2px solid var(--line-default);
+  align-items: start;
+}
+.record-log-row:last-child { border-bottom: none; }
+.record-log-row.user { background: color-mix(in oklab, var(--accent) 30%, var(--surface)); }
+.record-log-mark {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--surface);
+  background: var(--ink);
+  padding: 3px 6px;
+  width: fit-content;
+  height: fit-content;
+  line-height: 1;
+}
+.record-log-row.user .record-log-mark { background: var(--ink); color: var(--accent); }
+.record-log-text {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink);
 }
 
 } /* end @layer components */

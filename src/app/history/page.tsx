@@ -8,6 +8,16 @@ export const dynamic = 'force-dynamic'
 
 type HistoryItem = Pick<Item, 'id' | 'name' | 'price' | 'decision' | 'decided_at'>
 
+/**
+ * /history — 결정 기록 목록 (issue #132 디자이너 작업물 정합).
+ *
+ * 디자인: prototype/PcHistoryScreen 패턴 그대로.
+ * - doc-header: ARCHIVE / LOG.001 / N ENTRIES + "결정 기록 / 아카이브." 큰 타이틀
+ * - stat-grid: TOTAL / PASSED·BOUGHT (빨강·초록) / SAVED (accent 강조)
+ * - log-month: ▸ 월별 그룹 + 점선 rule + N건 count
+ * - log-table: 검정 헤더 (NO/NAME/PRICE/DATE/DECISION) + 각 row
+ *   왼쪽에 6px 빨강/초록 세로 막대 + hover accent-soft 배경
+ */
 function groupByMonth(items: HistoryItem[]) {
   const groups = new Map<string, { label: string; items: HistoryItem[] }>()
 
@@ -44,102 +54,140 @@ export default async function HistoryPage() {
   const items: HistoryItem[] = data ?? []
   const groups = groupByMonth(items)
 
-  return (
-    <main className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between px-4 py-4 md:px-8">
-        <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-900">
-          ← 홈으로
-        </Link>
-        <span className="font-mono text-xs tracking-widest text-zinc-400">RECORD</span>
-      </header>
+  // 통계 — 안 삼 (passed) / 삼 (bought) / 안 산 금액 합계
+  const passed = items.filter((i) => i.decision === 'passed').length
+  const bought = items.filter((i) => i.decision === 'bought').length
+  const savedAmount = items
+    .filter((i) => i.decision === 'passed')
+    .reduce((sum, i) => sum + i.price, 0)
 
-      <div className="mx-auto w-full max-w-[1120px] flex-1 px-4 pb-16 pt-2 md:px-8">
+  return (
+    <main
+      style={{
+        background: 'var(--surface-2)',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <div
+        style={{
+          flex: 1,
+          width: '100%',
+          maxWidth: 1120,
+          margin: '0 auto',
+          padding: '24px 16px 64px',
+        }}
+      >
         {/* 에디토리얼 헤더 */}
         <div className="doc-header">
           <div className="doc-header-row">
-            <span className="doc-tag">RECORD</span>
-            <span className="doc-tag">HIST.001</span>
+            <span className="doc-tag">ARCHIVE</span>
+            <span className="doc-tag">LOG.001</span>
+            <span className="doc-tag doc-tag-accent">{items.length} ENTRIES</span>
           </div>
           <h1 className="doc-title">
-            결정의
+            결정 기록
             <br />
-            <span className="doc-title-em">궤적.</span>
+            <span className="doc-title-em">아카이브.</span>
           </h1>
           <div className="doc-meta-row">
             <span>FILE / decisions.log</span>
             <span>/</span>
-            <span>TOTAL {items.length}</span>
+            <span>SORTED BY DATE DESC</span>
           </div>
         </div>
 
-        {/* 결정 개수 */}
-        <p
-          className="mb-8 font-mono text-sm"
-          style={{ color: 'var(--ink-3)', letterSpacing: '0.1em' }}
-        >
-          지금까지 내린 결정 {items.length}개
-        </p>
+        {/* 통계 stat-grid */}
+        <div className="stat-grid">
+          <div className="stat-stamp">
+            <div className="stat-stamp-label">TOTAL</div>
+            <div className="stat-stamp-value">{items.length}</div>
+            <div className="stat-stamp-unit">DECISIONS</div>
+          </div>
+          <div className="stat-stamp">
+            <div className="stat-stamp-label">PASSED · BOUGHT</div>
+            <div className="stat-stamp-value">
+              <span style={{ color: 'var(--line-danger)' }}>{passed}</span>
+              <span className="stat-stamp-divider">/</span>
+              <span style={{ color: 'var(--line-success)' }}>{bought}</span>
+            </div>
+            <div className="stat-stamp-unit">안 삼 / 삼</div>
+          </div>
+          <div className="stat-stamp accent">
+            <div className="stat-stamp-label">SAVED</div>
+            <div className="stat-stamp-value">{formatKRW(savedAmount)}</div>
+            <div className="stat-stamp-unit">안 산 금액 합계</div>
+          </div>
+        </div>
 
-        {items.length === 0 ? (
+        {/* 비어있는 상태 */}
+        {items.length === 0 && (
           <div className="doc-empty">
-            <p className="mb-3 text-sm" style={{ color: 'var(--ink-3)' }}>
-              아직 기록이 없어요.
+            <span className="doc-tag" style={{ marginBottom: 12, display: 'inline-block' }}>
+              EMPTY
+            </span>
+            <p style={{ margin: '12px 0 4px', fontSize: 14, color: 'var(--ink-3)' }}>
+              아직 결정한 기록이 없습니다.
             </p>
-            <p style={{ color: 'var(--ink-4)', fontSize: 13 }}>
+            <p style={{ margin: 0, fontSize: 13, color: 'var(--ink-4)' }}>
               AI 채팅에서 [삼] 또는 [안 삼]을 선택하면 여기에 표시됩니다.
             </p>
           </div>
-        ) : (
-          <div className="flex flex-col gap-10">
-            {groups.map((group) => (
-              <section key={group.label}>
-                <div className="section-row-head">
-                  <span className="section-row-marker">▸</span>
-                  <span className="section-row-label">{group.label}</span>
-                  <span className="section-row-count">{group.items.length}건</span>
-                  <span className="section-row-rule" />
-                </div>
-                <div className="flex flex-col gap-3">
-                  {group.items.map((item) => (
-                    <HistoryCard key={item.id} item={item} />
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
         )}
+
+        {/* 월별 그룹 + log-table */}
+        {groups.map((group) => (
+          <div key={group.label} className="log-month">
+            <div className="log-month-head">
+              <span className="log-month-marker">▸</span>
+              <span className="log-month-label">{group.label}</span>
+              <span className="log-month-count">{group.items.length} 건</span>
+              <span className="log-month-rule" />
+            </div>
+            <div className="log-table">
+              <div className="log-table-head">
+                <span>NO</span>
+                <span>NAME</span>
+                <span>PRICE</span>
+                <span>DATE</span>
+                <span>DECISION</span>
+              </div>
+              {group.items.map((item, i) => (
+                <HistoryRow key={item.id} item={item} index={i} />
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </main>
   )
 }
 
-function HistoryCard({ item }: { item: HistoryItem }) {
+/**
+ * log-row 패턴.
+ * - 왼쪽에 6px 빨강(passed)/초록(bought) 세로 막대 (border-left)
+ * - 컬럼: NO / NAME / PRICE / DATE / DECISION 태그
+ * - 모바일에서 2줄로 자연 wrap (globals.css 의 @media 720px)
+ */
+function HistoryRow({ item, index }: { item: HistoryItem; index: number }) {
   const isBought = item.decision === 'bought'
+  const decisionClass = isBought ? 'bought' : 'passed'
   const decisionLabel = isBought ? '삼' : '안 삼'
   const date = item.decided_at
     ? new Date(item.decided_at).toLocaleDateString('ko-KR', {
-        month: 'long',
-        day: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
       })
     : ''
 
   return (
-    <Link href={`/history/${item.id}`} className="pc-item-card">
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <div className="pc-item-card-name">{item.name}</div>
-          <span
-            className="history-decision-chip"
-            style={isBought ? { background: 'var(--ink)', color: 'var(--surface)' } : undefined}
-          >
-            {decisionLabel}
-          </span>
-        </div>
-        <div className="pc-item-card-meta">
-          {formatKRW(item.price)} · {date}
-        </div>
-      </div>
-      <span style={{ color: 'var(--ink-4)', fontSize: 18 }}>→</span>
+    <Link href={`/history/${item.id}`} className={`log-row ${decisionClass}`}>
+      <span className="log-row-no">{String(index + 1).padStart(2, '0')}</span>
+      <span className="log-row-name">{item.name}</span>
+      <span className="log-row-price">{formatKRW(item.price)}</span>
+      <span className="log-row-date">{date}</span>
+      <span className={`tag ${decisionClass}`}>{decisionLabel}</span>
     </Link>
   )
 }
