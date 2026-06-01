@@ -117,40 +117,132 @@ function LoginInner() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col">
-      <header className="px-6 py-4">
-        <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-900">
-          ← 홈으로
+    <main
+      style={{
+        background: 'var(--surface-2)',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <header style={{ padding: '20px 24px' }}>
+        <Link
+          href="/"
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 12,
+            fontWeight: 600,
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase',
+            color: 'var(--ink)',
+            textDecoration: 'none',
+            borderBottom: '2px solid var(--ink)',
+            paddingBottom: 2,
+          }}
+        >
+          ← 홈
         </Link>
       </header>
 
-      <div className="flex flex-1 flex-col items-center justify-center px-6">
-        <div className="w-full max-w-sm flex flex-col gap-8">
-          <div className="flex flex-col gap-2 text-center">
-            <h1 className="text-xl font-semibold text-zinc-900">로그인하고 시작하기</h1>
-            <p className="text-sm leading-6 text-zinc-500">
-              등록한 물건과 결정 기록은
-              <br />
-              로그인한 계정에 저장됩니다.
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px',
+        }}
+      >
+        <div style={{ width: '100%', maxWidth: 440, display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* 페이지 헤더 — doc-header 패턴 */}
+          <div className="doc-header">
+            <div className="doc-header-row">
+              <span className="doc-tag">AUTH</span>
+              <span className="doc-tag doc-tag-accent">START</span>
+            </div>
+            <h1 className="doc-title">
+              로그인하고 <span className="doc-title-em">시작.</span>
+            </h1>
+            <p
+              style={{
+                fontSize: 14,
+                color: 'var(--ink-3)',
+                margin: '20px 0 0',
+                lineHeight: 1.55,
+              }}
+            >
+              등록한 물건과 결정 기록은 로그인한 계정에 저장됩니다.
             </p>
           </div>
 
           {authError && (
             <div
               role="alert"
-              className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-center text-sm text-red-700"
+              style={{
+                border: '2px solid var(--danger)',
+                background: 'var(--surface)',
+                padding: '12px 14px',
+                fontSize: 13,
+                fontWeight: 600,
+                color: 'var(--danger)',
+                textAlign: 'center',
+              }}
             >
               {authError}
             </div>
           )}
 
-          <button
-            onClick={handleLogin}
-            className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-full border border-zinc-200 bg-white px-6 py-3 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-50"
+          {/* CTA 카드 — surface 배경 + 2px ink 보더 */}
+          <div
+            style={{
+              background: 'var(--surface)',
+              border: '2px solid var(--line-default)',
+              padding: 24,
+            }}
           >
-            <GoogleIcon />
-            {authError ? '다시 시도' : 'Google로 로그인하기'}
-          </button>
+            <button
+              type="button"
+              onClick={handleLogin}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 10,
+                width: '100%',
+                background: 'var(--ink)',
+                color: 'var(--surface)',
+                border: '2px solid var(--ink)',
+                padding: '14px 20px',
+                fontSize: 15,
+                fontWeight: 700,
+                letterSpacing: '-0.005em',
+                cursor: 'pointer',
+                appearance: 'none',
+                fontFamily: 'inherit',
+              }}
+            >
+              <GoogleIcon />
+              {authError ? '다시 시도' : 'Google로 로그인하기'}
+            </button>
+            <p
+              style={{
+                margin: '16px 0 0',
+                fontSize: 12,
+                color: 'var(--ink-3)',
+                textAlign: 'center',
+                lineHeight: 1.5,
+              }}
+            >
+              로그인하면{' '}
+              <span style={{ textDecoration: 'underline', textUnderlineOffset: 2 }}>이용약관</span>
+              과{' '}
+              <span style={{ textDecoration: 'underline', textUnderlineOffset: 2 }}>
+                개인정보 처리방침
+              </span>
+              에 동의하게 됩니다.
+            </p>
+          </div>
         </div>
       </div>
     </main>
@@ -159,14 +251,47 @@ function LoginInner() {
 
 function LoginShell() {
   return (
-    <main className="flex min-h-screen flex-col">
-      <header className="px-6 py-4">
-        <span className="text-sm text-zinc-300">← 홈으로</span>
+    <main
+      style={{
+        background: 'var(--surface-2)',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <header style={{ padding: '20px 24px' }}>
+        <span
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 12,
+            fontWeight: 600,
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase',
+            color: 'var(--ink-4)',
+          }}
+        >
+          ← 홈
+        </span>
       </header>
-      <div className="flex flex-1 flex-col items-center justify-center px-6">
-        <div className="w-full max-w-sm flex flex-col gap-8">
-          <div className="flex flex-col gap-2 text-center">
-            <h1 className="text-xl font-semibold text-zinc-900">로그인하고 시작하기</h1>
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px',
+        }}
+      >
+        <div style={{ width: '100%', maxWidth: 440 }}>
+          <div className="doc-header">
+            <div className="doc-header-row">
+              <span className="doc-tag">AUTH</span>
+              <span className="doc-tag doc-tag-accent">START</span>
+            </div>
+            <h1 className="doc-title">
+              로그인하고 <span className="doc-title-em">시작.</span>
+            </h1>
           </div>
         </div>
       </div>
