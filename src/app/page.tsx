@@ -249,35 +249,113 @@ function CoolingCard({
   )
 }
 
+/**
+ * 비로그인 홈 — brutalist 디자인 (prototype/PcNonAuthHome 패턴).
+ *
+ * 디자인:
+ * - 메인 카피: ink 색 큰 글씨 (22px / weight 700 / letter-spacing -0.035em)
+ * - 부가 설명: ink-3 작은 글씨
+ * - CTA 버튼: brutalist 사각 (2px ink 보더 + ink 배경 + surface 글자) + Google 아이콘
+ * - About 링크: ink-3 밑줄
+ *
+ * Tailwind zinc 톤 제거 → globals.css 의 brutalist 토큰만 사용.
+ */
 function NonAuthHome() {
   return (
-    <main className="flex min-h-screen flex-col">
+    <main
+      style={{
+        background: "var(--surface-2)",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <AppHeader />
 
-      <div className="flex flex-1 flex-col items-center justify-center gap-10 px-6 text-center">
-        <div className="flex flex-col gap-2">
-          <p className="text-base text-zinc-700">
-            사고 싶은 마음을 바로 결제로 넘기지 않도록
-          </p>
-          <p className="text-base text-zinc-700">잠시 식혀 보세요.</p>
-          <p className="mt-1 text-sm text-zinc-400">
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "24px",
+          textAlign: "center",
+        }}
+      >
+        <div style={{ maxWidth: 480, width: "100%" }}>
+          <div
+            style={{
+              fontSize: 22,
+              fontWeight: 700,
+              letterSpacing: "-0.035em",
+              lineHeight: 1.55,
+              margin: "0 0 12px",
+              color: "var(--ink)",
+            }}
+          >
+            <div>사고 싶은 마음을 바로 결제로</div>
+            <div>넘기지 않도록 잠시 식혀 보세요.</div>
+          </div>
+          <p
+            style={{
+              fontSize: 15,
+              color: "var(--ink-3)",
+              margin: "0 0 40px",
+              lineHeight: 1.5,
+            }}
+          >
             충동구매와 결제 사이에 시간과 AI 채팅을 둡니다.
           </p>
-        </div>
 
-        <div className="flex w-full max-w-xs flex-col items-center gap-4">
           <Link
             href="/login"
-            className="w-full cursor-pointer rounded-full bg-zinc-900 px-8 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-zinc-700"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              width: "100%",
+              maxWidth: 320,
+              background: "var(--ink)",
+              color: "var(--surface)",
+              border: "2px solid var(--ink)",
+              padding: "14px 20px",
+              fontSize: 15,
+              fontWeight: 700,
+              letterSpacing: "-0.005em",
+              textDecoration: "none",
+              cursor: "pointer",
+            }}
           >
-            로그인하고 시작하기
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden
+            >
+              <path d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4c-.2 1.2-.9 2.3-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3z" />
+              <path d="M12 22c2.7 0 5-.9 6.6-2.5l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6C4.7 19.7 8.1 22 12 22z" />
+              <path d="M6.4 13.9c-.2-.6-.3-1.2-.3-1.9s.1-1.3.3-1.9V7.5H3.1C2.4 8.9 2 10.4 2 12s.4 3.1 1.1 4.5l3.3-2.6z" />
+              <path d="M12 6c1.5 0 2.8.5 3.8 1.5l2.8-2.8C17 3.1 14.7 2 12 2 8.1 2 4.7 4.3 3.1 7.5l3.3 2.6C7.2 7.8 9.4 6 12 6z" />
+            </svg>
+            Google로 로그인하기
           </Link>
-          <Link
-            href="/about"
-            className="cursor-pointer text-sm text-zinc-400 underline underline-offset-4"
-          >
-            쿨링오프가 뭔가요?
-          </Link>
+
+          <div style={{ marginTop: 18 }}>
+            <Link
+              href="/about"
+              style={{
+                fontSize: 14,
+                color: "var(--ink-3)",
+                textDecoration: "underline",
+                textUnderlineOffset: 3,
+              }}
+            >
+              쿨링오프가 뭔가요?
+            </Link>
+          </div>
         </div>
       </div>
     </main>
