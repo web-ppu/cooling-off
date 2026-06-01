@@ -25,25 +25,52 @@ export default function DeleteHistoryButton({ itemId }: { itemId: string }) {
   }
 
   return (
-    <div className="flex flex-col items-end gap-1">
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
       <button
+        type="button"
         onClick={handleDelete}
         disabled={isPending}
-        className="cursor-pointer text-sm text-zinc-400 hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+        style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: 12,
+          fontWeight: 600,
+          letterSpacing: '0.04em',
+          textTransform: 'uppercase',
+          color: 'var(--ink)',
+          background: 'var(--surface)',
+          border: '2px solid var(--ink)',
+          padding: '6px 14px',
+          cursor: isPending ? 'not-allowed' : 'pointer',
+          opacity: isPending ? 0.4 : 1,
+          appearance: 'none',
+        }}
       >
         {isPending ? '삭제 중…' : '삭제'}
       </button>
       {error && (
         <div
           role="alert"
-          className="text-xs"
-          style={{ color: 'var(--danger)' }}
+          style={{
+            fontSize: 12,
+            color: 'var(--danger)',
+            fontFamily: 'var(--font-mono)',
+          }}
         >
           {error}
           <button
             type="button"
             onClick={handleDelete}
-            className="ml-2 cursor-pointer underline underline-offset-2"
+            style={{
+              marginLeft: 8,
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--danger)',
+              cursor: 'pointer',
+              textDecoration: 'underline',
+              textUnderlineOffset: 2,
+              fontFamily: 'inherit',
+              fontSize: 'inherit',
+            }}
           >
             다시 시도
           </button>

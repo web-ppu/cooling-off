@@ -145,9 +145,9 @@ export default async function HistoryDetailPage({
           </div>
         </div>
 
-        {/* record-grid — FACTS + LOG 2 컬럼 */}
-        <div className="record-grid">
-          {facts.length > 0 && (
+        {/* FACTS + LOG — facts 있으면 2 컬럼 그리드, 없으면 LOG 만 단독 (full width) */}
+        {facts.length > 0 ? (
+          <div className="record-grid">
             <section className="record-section">
               <div className="record-section-head">
                 <span className="doc-tag">FACTS</span>
@@ -166,37 +166,61 @@ export default async function HistoryDetailPage({
                 ))}
               </ol>
             </section>
-          )}
-
-          <section className="record-section">
-            <div className="record-section-head">
-              <span className="doc-tag">LOG</span>
-              <span className="record-section-sub">
-                당시 대화 · {chatMessages.length}턴
-              </span>
-            </div>
-            {chatMessages.length === 0 ? (
-              <div style={{ padding: '20px', fontSize: 13, color: 'var(--ink-3)', textAlign: 'center' }}>
-                대화 기록이 없습니다.
-              </div>
-            ) : (
-              <div className="record-log">
-                {chatMessages.map((msg, i) => (
-                  <div
-                    key={i}
-                    className={`record-log-row ${msg.role === 'user' ? 'user' : 'assistant'}`}
-                  >
-                    <span className="record-log-mark">
-                      {msg.role === 'user' ? 'U' : 'AI'}
-                    </span>
-                    <span className="record-log-text">{msg.content}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-        </div>
+            <LogSection chatMessages={chatMessages} />
+          </div>
+        ) : (
+          <LogSection chatMessages={chatMessages} />
+        )}
       </div>
     </main>
+  )
+}
+
+/**
+ * 당시 대화 LOG 섹션 — facts 유무와 무관하게 동일 렌더.
+ *
+ * - role='user' → record-log-row.user (accent 30% 배경) + U 마크
+ * - role='assistant' → 흰 배경 + AI 마크
+ */
+function LogSection({
+  chatMessages,
+}: {
+  chatMessages: Pick<ChatMessage, 'role' | 'content' | 'turn_number'>[]
+}) {
+  return (
+    <section className="record-section">
+      <div className="record-section-head">
+        <span className="doc-tag">LOG</span>
+        <span className="record-section-sub">
+          당시 대화 · {chatMessages.length}턴
+        </span>
+      </div>
+      {chatMessages.length === 0 ? (
+        <div
+          style={{
+            padding: '20px',
+            fontSize: 13,
+            color: 'var(--ink-3)',
+            textAlign: 'center',
+          }}
+        >
+          대화 기록이 없습니다.
+        </div>
+      ) : (
+        <div className="record-log">
+          {chatMessages.map((msg, i) => (
+            <div
+              key={i}
+              className={`record-log-row ${msg.role === 'user' ? 'user' : 'assistant'}`}
+            >
+              <span className="record-log-mark">
+                {msg.role === 'user' ? 'U' : 'AI'}
+              </span>
+              <span className="record-log-text">{msg.content}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   )
 }
