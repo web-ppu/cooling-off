@@ -145,16 +145,17 @@ export default async function HistoryDetailPage({
           </div>
         </div>
 
-        {/* FACTS + LOG — facts 있으면 2 컬럼 그리드, 없으면 LOG 만 단독 (full width) */}
-        {facts.length > 0 ? (
-          <div className="record-grid">
-            <section className="record-section">
-              <div className="record-section-head">
-                <span className="doc-tag">FACTS</span>
-                <span className="record-section-sub">
-                  팩트 요약 · {facts.length}건
-                </span>
-              </div>
+        {/* FACTS + LOG — 항상 2 컬럼 그리드 (디자이너 시안 정합).
+            facts 가 없는 경우에도 FACTS 섹션 표시 + 빈 상태 안내. */}
+        <div className="record-grid">
+          <section className="record-section">
+            <div className="record-section-head">
+              <span className="doc-tag">FACTS</span>
+              <span className="record-section-sub">
+                팩트 요약 · {facts.length}건
+              </span>
+            </div>
+            {facts.length > 0 ? (
               <ol className="record-facts-list">
                 {facts.map((f, i) => (
                   <li key={i}>
@@ -165,12 +166,14 @@ export default async function HistoryDetailPage({
                   </li>
                 ))}
               </ol>
-            </section>
-            <LogSection chatMessages={chatMessages} />
-          </div>
-        ) : (
+            ) : (
+              <div className="record-facts-empty">
+                팩트 요약이 기록되지 않았습니다.
+              </div>
+            )}
+          </section>
           <LogSection chatMessages={chatMessages} />
-        )}
+        </div>
       </div>
     </main>
   )
@@ -196,16 +199,7 @@ function LogSection({
         </span>
       </div>
       {chatMessages.length === 0 ? (
-        <div
-          style={{
-            padding: '20px',
-            fontSize: 13,
-            color: 'var(--ink-3)',
-            textAlign: 'center',
-          }}
-        >
-          대화 기록이 없습니다.
-        </div>
+        <div className="record-log-empty">대화 기록이 없습니다.</div>
       ) : (
         <div className="record-log">
           {chatMessages.map((msg, i) => (

@@ -1483,16 +1483,23 @@ body {
 @media (max-width: 880px) {
   .record-grid { grid-template-columns: 1fr; }
 }
+/* History detail — record-section 내부 (헤더 + 각 항목 모두 독립 사각 박스) */
 .record-section {
   background: var(--surface);
   border: 2px solid var(--line-default);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .record-section-head {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 20px;
-  border-bottom: 2px solid var(--line-default);
+  padding: 8px 14px;
+  border: 2px solid var(--line-default);
+  background: var(--surface);
+  width: fit-content;
 }
 .record-section-sub {
   font-family: var(--font-mono);
@@ -1501,16 +1508,24 @@ body {
   color: var(--ink-3);
   text-transform: uppercase;
 }
-.record-facts-list { list-style: none; margin: 0; padding: 0; }
+/* FACTS — 각 항목 별도 사각 박스 + gap */
+.record-facts-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 .record-facts-list li {
   display: grid;
   grid-template-columns: 44px 1fr;
   gap: 14px;
-  padding: 14px 20px;
-  border-bottom: 2px solid var(--line-default);
-  align-items: start;
+  padding: 14px 18px;
+  border: 2px solid var(--line-default);
+  background: var(--surface);
+  align-items: center;
 }
-.record-facts-list li:last-child { border-bottom: none; }
 .record-fact-num {
   font-family: var(--font-mono);
   font-size: 14px;
@@ -1527,22 +1542,34 @@ body {
   font-size: 14px;
   line-height: 1.55;
   color: var(--ink);
-  padding-top: 3px;
 }
+/* FACTS 빈 상태 — 사각 박스 안 안내 메시지 */
+.record-facts-empty {
+  border: 2px dashed var(--line-default);
+  background: var(--surface);
+  padding: 24px 18px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+/* LOG — 각 메시지 별도 사각 박스 + gap (FACTS 와 동일 패턴) */
 .record-log {
   display: flex;
   flex-direction: column;
+  gap: 10px;
 }
 .record-log-row {
   display: grid;
   grid-template-columns: 36px 1fr;
   gap: 12px;
-  padding: 12px 20px;
-  border-bottom: 2px solid var(--line-default);
-  align-items: start;
+  padding: 12px 18px;
+  border: 2px solid var(--line-default);
+  background: var(--surface);
+  align-items: center;
 }
-.record-log-row:last-child { border-bottom: none; }
-.record-log-row.user { background: color-mix(in oklab, var(--accent) 30%, var(--surface)); }
+.record-log-row.user {
+  background: color-mix(in oklab, var(--accent) 30%, var(--surface));
+}
 .record-log-mark {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -1555,11 +1582,22 @@ body {
   height: fit-content;
   line-height: 1;
 }
-.record-log-row.user .record-log-mark { background: var(--ink); color: var(--accent); }
+.record-log-row.user .record-log-mark {
+  background: var(--ink);
+  color: var(--accent);
+}
 .record-log-text {
   font-size: 14px;
   line-height: 1.55;
   color: var(--ink);
+}
+.record-log-empty {
+  border: 2px dashed var(--line-default);
+  background: var(--surface);
+  padding: 24px 18px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-3);
 }
 
 } /* end @layer components */
