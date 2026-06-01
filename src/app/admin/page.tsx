@@ -12,6 +12,9 @@ export const dynamic = "force-dynamic";
  * 화이트리스트(`ADMIN_EMAILS` 환경변수)에 등록된 사용자만 접근 가능.
  * 비admin 은 홈으로 리다이렉트.
  *
+ * 디자인: prototype/styles 의 brutalist mood — doc-header + section-row-head +
+ * pc-item-card 패턴을 register/history 페이지와 동일하게 사용.
+ *
  * 제공 기능:
  * - 본인이 등록한 item 목록(soft-deleted 제외) 표시.
  * - 각 item 의 status 와 무관하게 "AI 채팅으로 진입" 버튼 제공.
@@ -39,60 +42,138 @@ export default async function AdminPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <main className="mx-auto flex min-h-screen min-h-dvh max-w-3xl flex-col px-4 py-8 sm:px-6">
-      <header className="mb-6 flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
-              ADMIN
+    <main
+      style={{
+        background: "var(--surface-2)",
+        minHeight: "100vh",
+        padding: "24px 16px",
+      }}
+    >
+      <div style={{ maxWidth: 960, margin: "0 auto" }}>
+        {/* ── 페이지 헤더 (doc-header 패턴) ── */}
+        <div className="doc-header">
+          <div className="doc-header-row">
+            <span className="doc-tag">ADMIN</span>
+            <span className="doc-tag">TEST.001</span>
+            <span className="doc-tag doc-tag-accent">QA</span>
+            <span style={{ marginLeft: "auto" }}>
+              <Link
+                href="/"
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                  color: "var(--ink)",
+                  textDecoration: "none",
+                  borderBottom: "2px solid var(--ink)",
+                  paddingBottom: 2,
+                }}
+              >
+                ← 홈
+              </Link>
             </span>
-            <h1 className="text-xl font-semibold text-zinc-900">테스트 도구</h1>
           </div>
-          <p className="mt-1 text-xs text-zinc-500">
-            화이트리스트(ADMIN_EMAILS) 멤버 전용 · 정상 사용자 정책 영향 없음
-          </p>
-        </div>
-        <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-900">
-          ← 홈
-        </Link>
-      </header>
-
-      <section className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-zinc-900">
-            내 등록 물건 — status 무관 채팅 진입
-          </h2>
-          <span className="text-xs text-zinc-400">{items?.length ?? 0}건</span>
+          <h1 className="doc-title">
+            테스트 <span className="doc-title-em">도구.</span>
+          </h1>
+          <div className="doc-meta-row">
+            <span>FILE / admin.tools</span>
+            <span>/</span>
+            <span>ACCESS · ADMIN_EMAILS</span>
+            <span>/</span>
+            <span>POLICY · NEUTRAL</span>
+          </div>
         </div>
 
-        {!items || items.length === 0 ? (
-          <div className="rounded-md border border-dashed border-zinc-200 bg-zinc-50 px-4 py-6 text-center text-sm text-zinc-500">
-            등록된 물건이 없어요. 먼저{" "}
-            <Link
-              href="/register"
-              className="font-medium text-zinc-700 underline underline-offset-2"
+        {/* ── 내 등록 물건 섹션 ── */}
+        <section style={{ marginBottom: 24 }}>
+          <div className="section-row-head">
+            <span className="section-row-marker">▸</span>
+            <span className="section-row-label">내 등록 물건 — STATUS 무관 채팅 진입</span>
+            <span className="section-row-count">{items?.length ?? 0}건</span>
+            <span className="section-row-rule" />
+          </div>
+
+          {!items || items.length === 0 ? (
+            <div
+              style={{
+                background: "var(--surface)",
+                border: "2px dashed var(--line-default)",
+                padding: "32px 24px",
+                textAlign: "center",
+                fontSize: 14,
+                color: "var(--ink-3)",
+              }}
             >
-              등록
-            </Link>
-            해 주세요.
-          </div>
-        ) : (
-          <ul className="space-y-2">
-            {items.map((item) => (
-              <AdminItemRow key={item.id} item={item} />
-            ))}
-          </ul>
-        )}
-      </section>
+              등록된 물건이 없어요. 먼저{" "}
+              <Link
+                href="/register"
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  color: "var(--ink)",
+                  borderBottom: "2px solid var(--ink)",
+                  textDecoration: "none",
+                  paddingBottom: 2,
+                }}
+              >
+                등록
+              </Link>
+              해 주세요.
+            </div>
+          ) : (
+            <ul
+              style={{
+                listStyle: "none",
+                padding: 0,
+                margin: 0,
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+              }}
+            >
+              {items.map((item) => (
+                <AdminItemRow key={item.id} item={item} />
+              ))}
+            </ul>
+          )}
+        </section>
 
-      <section className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900">
-        <strong className="font-semibold">⚠ 주의</strong>
-        <ul className="mt-2 list-disc space-y-1 pl-4">
-          <li>이 도구는 테스트/QA 전용입니다. 시연·실 사용에서는 정상 흐름을 따르세요.</li>
-          <li>cooling 중인 item 으로 채팅 진입해도 cooling_ends_at 등 DB 데이터는 수정되지 않습니다.</li>
-          <li>채팅 후 [안 삼]/[삼] 선택 시 일반 흐름과 동일하게 items 가 decided 로 전환됩니다.</li>
-        </ul>
-      </section>
+        {/* ── 주의 박스 — brutalist 노란 강조 (warm-soft) ── */}
+        <aside
+          style={{
+            background: "var(--warm-soft, #fff5b0)",
+            border: "2px solid var(--line-default)",
+            padding: "16px 20px",
+            fontSize: 13,
+            color: "var(--ink)",
+            lineHeight: 1.55,
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              marginBottom: 8,
+              color: "var(--ink)",
+            }}
+          >
+            ⚠ 주의 — NOTICE
+          </div>
+          <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 4 }}>
+            <li>이 도구는 테스트/QA 전용입니다. 시연·실 사용에서는 정상 흐름을 따르세요.</li>
+            <li>cooling 중인 item 으로 채팅 진입해도 cooling_ends_at 등 DB 데이터는 수정되지 않습니다.</li>
+            <li>채팅 후 [안 삼]/[삼] 선택 시 일반 흐름과 동일하게 items 가 decided 로 전환됩니다.</li>
+          </ul>
+        </aside>
+      </div>
     </main>
   );
 }
@@ -107,63 +188,133 @@ type AdminItem = {
   decision: "bought" | "passed" | null;
 };
 
+/**
+ * 각 item 카드 — pc-item-card 패턴을 admin 용으로 변형.
+ * 좌측: 물건 이름 + 상태 태그 + 가격·결정 가능 시점
+ * 우측: 채팅 진입 버튼 또는 결정 완료 라벨
+ *
+ * 모바일(640px 이하)에서는 wrap 으로 자연스럽게 2줄 분배.
+ */
 function AdminItemRow({ item }: { item: AdminItem }) {
   const canEnterChat = item.status !== "decided";
   const statusLabel = getStatusLabel(item.status);
 
   return (
-    <li className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3">
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="truncate text-sm font-medium text-zinc-900">
+    <li
+      style={{
+        background: "var(--surface)",
+        border: "2px solid var(--line-default)",
+        padding: "14px 18px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 14,
+        flexWrap: "wrap",
+      }}
+    >
+      <div style={{ minWidth: 0, flex: "1 1 240px", display: "flex", flexDirection: "column", gap: 4 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span
+            style={{
+              fontSize: 15,
+              fontWeight: 700,
+              color: "var(--ink)",
+              letterSpacing: "-0.01em",
+            }}
+          >
             {item.name}
           </span>
           <span
-            className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${statusLabel.classes}`}
+            className="doc-tag"
+            style={{
+              background: statusLabel.bg,
+              color: statusLabel.fg,
+              borderColor: statusLabel.bg,
+            }}
           >
             {statusLabel.text}
           </span>
         </div>
-        <div className="mt-0.5 text-xs text-zinc-500">
+        <div
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 11,
+            color: "var(--ink-3)",
+            letterSpacing: "0.02em",
+          }}
+        >
           {formatKRW(item.price)} · 결정 가능 {formatReadyAt(item.cooling_ends_at)}
         </div>
       </div>
 
-      {canEnterChat ? (
-        <Link
-          href={`/chat/${item.id}`}
-          className="shrink-0 rounded-full bg-zinc-900 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-zinc-700"
-        >
-          🔧 채팅 진입
-        </Link>
-      ) : (
-        <span className="shrink-0 text-xs text-zinc-400">
-          {item.decision === "bought" ? "삼" : "안 삼"} · 결정 완료
-        </span>
-      )}
+      <div style={{ flexShrink: 0 }}>
+        {canEnterChat ? (
+          <Link
+            href={`/chat/${item.id}`}
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              background: "var(--ink)",
+              color: "var(--surface)",
+              border: "2px solid var(--ink)",
+              padding: "8px 14px",
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            🔧 채팅 진입
+          </Link>
+        ) : (
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 11,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              color: "var(--ink-3)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {item.decision === "bought" ? "삼" : "안 삼"} · 결정 완료
+          </span>
+        )}
+      </div>
     </li>
   );
 }
 
+/**
+ * status 별 brutalist 톤 라벨.
+ * - cooling: accent-soft 파란
+ * - ready: success 초록
+ * - decided: ink-4 회색
+ */
 function getStatusLabel(status: AdminItem["status"]): {
   text: string;
-  classes: string;
+  bg: string;
+  fg: string;
 } {
   switch (status) {
     case "cooling":
       return {
         text: "냉각 중",
-        classes: "bg-sky-100 text-sky-800",
+        bg: "var(--accent-soft, #dde9ff)",
+        fg: "var(--ink)",
       };
     case "ready":
       return {
         text: "결정 대기",
-        classes: "bg-emerald-100 text-emerald-800",
+        bg: "var(--accent, #78a8ff)",
+        fg: "var(--ink)",
       };
     case "decided":
       return {
         text: "결정 완료",
-        classes: "bg-zinc-100 text-zinc-600",
+        bg: "var(--surface-2)",
+        fg: "var(--ink-3)",
       };
   }
 }
