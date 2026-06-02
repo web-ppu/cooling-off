@@ -1875,8 +1875,9 @@ body {
   border: 2px solid var(--line-default);
   transform: rotate(-2deg);
 }
-/* compact: stat-row 만 채워질 때 padding 축소 + stat-row 가로 풀폭 */
-.m-doc-header.compact { padding: 14px 16px 0; margin-bottom: 16px; }
+/* compact: stat-row 만 채워질 때 padding 축소 + stat-row 가로 풀폭.
+   tape strip 과 stat-row 사이 여백을 위해 padding-top 20 (이전 14). */
+.m-doc-header.compact { padding: 20px 16px 0; margin-bottom: 16px; }
 .m-doc-header.compact .m-stats-row {
   margin-top: 0;
   border-top: 2px solid var(--line-default);
@@ -1893,20 +1894,19 @@ body {
   background: var(--surface);
 }
 .m-stat {
-  padding: 12px 10px;
+  padding: 16px 14px;
   border-right: 2px solid var(--line-default);
 }
 .m-stat:last-child { border-right: none; }
 .m-stat-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.06em;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--ink-3);
-  text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
 }
 .m-stat-value {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.1;
@@ -1914,10 +1914,10 @@ body {
   white-space: nowrap;
 }
 .m-stat-value span {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--ink-3);
-  margin-left: 3px;
+  margin-left: 4px;
 }
 
 /* 섹션 헤더 (§ READY / § COOL) */

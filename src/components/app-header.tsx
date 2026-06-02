@@ -21,23 +21,23 @@ export default async function AppHeader({ user: userProp }: Props) {
   if (user) {
     return (
       <header className="sticky top-0 z-30 border-b-2 border-[var(--line-default)] bg-white/90 backdrop-blur-sm">
-        {/* 모바일 */}
-        <div className="flex items-center justify-between px-4 py-3 md:hidden">
+        {/* 모바일 — 시안 정합: 박스 padding 6/14, 글자 굵게 */}
+        <div className="flex items-center justify-between px-4 py-4 md:hidden">
           <Link
             href="/"
-            className="flex items-center gap-1.5 text-base font-extrabold tracking-tight"
+            className="flex items-center gap-2 text-lg font-extrabold tracking-tight"
           >
-            <SnowflakeLogo size={18} />
+            <SnowflakeLogo size={20} />
             <span>쿨링오프</span>
           </Link>
           {/* 시안 정합: [기록] [ABOUT] brutalist 박스 (2px ink 보더) */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <Link
               href="/history"
-              className="cursor-pointer text-sm font-semibold text-[var(--ink)]"
+              className="cursor-pointer text-sm font-bold text-[var(--ink)]"
               style={{
                 border: '2px solid var(--ink)',
-                padding: '4px 10px',
+                padding: '6px 14px',
                 background: 'var(--surface)',
               }}
             >
@@ -45,10 +45,10 @@ export default async function AppHeader({ user: userProp }: Props) {
             </Link>
             <Link
               href="/about"
-              className="cursor-pointer text-sm font-semibold uppercase text-[var(--ink)]"
+              className="cursor-pointer text-sm font-bold uppercase text-[var(--ink)]"
               style={{
                 border: '2px solid var(--ink)',
-                padding: '4px 10px',
+                padding: '6px 14px',
                 background: 'var(--surface)',
                 fontFamily: 'var(--font-mono)',
                 letterSpacing: '0.04em',
