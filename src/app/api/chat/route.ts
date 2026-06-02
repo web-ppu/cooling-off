@@ -105,10 +105,13 @@ export async function POST(request: NextRequest) {
  * - 환경변수 누락
  * - 4xx 클라이언트 오류 (auth·bad request)
  *
- * Prompt caching (implicit, #131):
- *  - 시스템 프롬프트 본문이 모든 사용자에게 동일한 prefix → Gemini 가 자동으로
- *    캐시 적중시킴 (변수 치환은 SYSTEM_PROMPT_TEMPLATE 맨 끝의 [등록 정보] 블록에만 있음).
- *  - 캐시 적중 시 입력 토큰 비용/지연 모두 감소. 적중률 모니터링은 아래 logging 참고.
+ * Prompt caching (implicit, #131) — 모니터링 단계.
+ *  - 현재는 SYSTEM_PROMPT_TEMPLATE 의 본문 줄 86 ([본론 이탈 처리]) 에 변수 치환이 있어
+ *    사용자별로 본문 prefix 가 달라짐 → cache miss 가 다수.
+ *  - 대신 응답마다 cacheReadTokens 를 로깅해서 실제 적중률을 측정한다. 같은 사용자가
+ *    같은 item 으로 대화를 이어가는 케이스 (registration 동일) 에서는 prefix 가 일치해
+ *    적중 가능.
+ *  - 후속 작업 후보: 본문에서 변수를 빼고 [등록 정보] 섹션으로 분리 → 적중률 극대화.
  *  - explicit caching (ai.caches.create) 은 TTL 관리 복잡성 대비 효과 미미해 미적용.
  */
 async function callGemini(
