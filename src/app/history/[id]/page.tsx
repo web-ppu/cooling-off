@@ -100,15 +100,8 @@ export default async function HistoryDetailPage({
       }}
     >
       <AppHeader user={user} />
-      <div
-        style={{
-          flex: 1,
-          width: '100%',
-          maxWidth: 1120,
-          margin: '0 auto',
-          padding: '24px 16px 64px',
-        }}
-      >
+      {/* 컨테이너 폭/패딩: 홈·등록 페이지와 통일 (mx-auto max-w-[1120px] px-4 md:px-8) */}
+      <div className="mx-auto w-full max-w-[1120px] flex-1 px-4 pb-24 pt-7 md:px-8">
         {/* 페이지 헤더: ← 기록 + 삭제 */}
         <header
           style={{
