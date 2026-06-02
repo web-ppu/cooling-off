@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { isAdmin } from "@/lib/admin";
 import { formatKRW, formatReadyAt } from "@/lib/format";
+import FastForwardButton from "@/components/admin/fast-forward-button";
 
 export const dynamic = "force-dynamic";
 
@@ -169,7 +170,8 @@ export default async function AdminPage() {
           </div>
           <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 4 }}>
             <li>이 도구는 테스트/QA 전용입니다. 시연·실 사용에서는 정상 흐름을 따르세요.</li>
-            <li>cooling 중인 item 으로 채팅 진입해도 cooling_ends_at 등 DB 데이터는 수정되지 않습니다.</li>
+            <li><strong>⏩ 냉각 즉시 종료 (A)</strong>: 정상 cycle 안에서 시간만 점프 — status=ready, cooling_ends_at=지금, cooling_notified_at=null reset → 다음 cron tick 에서 push 알람 후보로 등록됨.</li>
+            <li><strong>🔧 채팅 진입 (C)</strong>: status 무관 비상 우회 — DB 무수정. cooling 중인 item 도 채팅에 직접 들어갈 수 있지만 push 알람은 발화하지 않습니다.</li>
             <li>채팅 후 [안 삼]/[삼] 선택 시 일반 흐름과 동일하게 items 가 decided 로 전환됩니다.</li>
           </ul>
         </aside>
@@ -247,26 +249,43 @@ function AdminItemRow({ item }: { item: AdminItem }) {
         </div>
       </div>
 
-      <div style={{ flexShrink: 0 }}>
+      <div
+        style={{
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          flexWrap: "wrap",
+          justifyContent: "flex-end",
+        }}
+      >
         {canEnterChat ? (
-          <Link
-            href={`/chat/${item.id}`}
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-              background: "var(--ink)",
-              color: "var(--surface)",
-              border: "2px solid var(--ink)",
-              padding: "8px 14px",
-              textDecoration: "none",
-              whiteSpace: "nowrap",
-            }}
-          >
-            🔧 채팅 진입
-          </Link>
+          <>
+            {/* (A) 냉각 중인 경우만 — 정상 cycle 안에서 시간 점프
+                   (cooling_ends_at = now, status = ready, cooling_notified_at = null) */}
+            {item.status === "cooling" && (
+              <FastForwardButton itemId={item.id} itemName={item.name} />
+            )}
+            {/* (C) status 무관 채팅 직진 — 데이터 무손상 비상 우회 */}
+            <Link
+              href={`/chat/${item.id}`}
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                background: "var(--ink)",
+                color: "var(--surface)",
+                border: "2px solid var(--ink)",
+                padding: "8px 14px",
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              🔧 채팅 진입
+            </Link>
+          </>
         ) : (
           <span
             style={{
