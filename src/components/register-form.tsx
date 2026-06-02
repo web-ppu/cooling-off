@@ -179,16 +179,27 @@ export default function RegisterForm() {
               SIGN · _________________
             </span>
             <div className="doc-form-foot-actions flex gap-2.5">
+              {/* 디자이너 시안 정합: prototype .btn padding 12/18, font 14.5 */}
               <a
                 href="/"
-                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium border-2 border-[var(--line-default)] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors"
+                className="inline-flex items-center justify-center border-2 border-[var(--line-default)] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors"
+                style={{
+                  padding: '12px 18px',
+                  fontSize: '14.5px',
+                  fontWeight: 500,
+                }}
               >
                 취소
               </a>
               <button
                 type="submit"
                 disabled={!valid || isPending}
-                className="inline-flex items-center justify-center px-5 py-2 text-sm font-semibold bg-[var(--ink)] text-white border-2 border-[var(--line-default)] hover:bg-[var(--ink-2)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center bg-[var(--ink)] text-white border-2 border-[var(--ink)] hover:bg-[var(--ink-2)] transition-colors disabled:opacity-45 disabled:cursor-not-allowed"
+                style={{
+                  padding: '12px 18px',
+                  fontSize: '14.5px',
+                  fontWeight: 500,
+                }}
               >
                 {isPending ? '등록 중…' : '냉각 시작 →'}
               </button>
@@ -228,7 +239,7 @@ export default function RegisterForm() {
         </div>
         <div className="cooling-info-table">
           <div className="cooling-info-table-head">
-            <span>NO</span>
+            <span>BAND</span>
             <span>RANGE</span>
             <span>WAIT</span>
           </div>
