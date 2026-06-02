@@ -691,10 +691,10 @@ body {
 
 .bubble {
   max-width: 80%;
-  padding: 11px 14px;
+  padding: 14px 18px;
   border-radius: 0;
   font-size: 15px;
-  line-height: 1.45;
+  line-height: 1.5;
   white-space: pre-wrap;
 }
 /* 시안 정합: AI 버블 — 흰 배경 + 2px ink 보더 + 우하단 검정 그림자 */
@@ -703,7 +703,8 @@ body {
   background: var(--surface);
   color: var(--ink);
   border: 2px solid var(--ink);
-  box-shadow: 4px 4px 0 var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  margin-bottom: 6px;
 }
 .bubble.user {
   align-self: flex-end;
@@ -715,11 +716,11 @@ body {
   align-self: center;
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   color: var(--ink-3);
   background: var(--surface-2);
   border: 2px solid var(--line-default);
-  padding: 6px 12px;
+  padding: 8px 16px;
   text-align: center;
 }
 .bubble.loading {
@@ -2313,27 +2314,35 @@ body {
   text-transform: uppercase;
 }
 
-/* 모바일 채팅 상단 메타 — 더 컴팩트 (시안 사이즈 정합) */
+/* 모바일 채팅 상단 메타 — 시안 픽셀 정합 */
 .m-chat-meta {
-  padding: 10px 16px 12px;
-  border-bottom: 2px solid var(--line-default);
+  padding: 16px 20px 18px;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
   background: var(--surface);
   flex-shrink: 0;
 }
 .m-chat-meta-tags {
   display: flex;
-  gap: 6px;
-  margin-bottom: 6px;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+/* m-chat-meta 안의 doc-tag 만 ink(두꺼운 검정) 보더 + 큰 padding (시안 정합) */
+.m-chat-meta .doc-tag {
+  border-color: var(--ink);
+  padding: 6px 14px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
 }
 .m-chat-meta-name {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 .m-chat-meta-price {
-  font-size: 11.5px;
+  font-size: 12.5px;
   color: var(--ink-3);
-  margin-top: 2px;
+  margin-top: 4px;
   font-family: var(--font-mono);
   letter-spacing: 0.04em;
 }
