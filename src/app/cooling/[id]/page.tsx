@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { formatCoolingEndsAt, formatKRW } from '@/lib/format'
 import { transitionExpiredItems } from '@/lib/items'
 import CoolingDetailTimer from '@/components/cooling-detail-timer'
+import MobileCoolingDetailTimer from '@/components/mobile-cooling-detail-timer'
 import DeleteCoolingButton from '@/components/delete-cooling-button'
 import AppHeader from '@/components/app-header'
 import SnowBackground from '@/components/snow-background'
@@ -28,7 +29,7 @@ export default async function CoolingPage({
 
   const { data: item } = await supabase
     .from('items')
-    .select('id, name, price, cooling_ends_at, status, user_id')
+    .select('id, name, price, cooling_ends_at, created_at, status, user_id')
     .eq('id', id)
     .is('deleted_at', null)
     .single()
@@ -74,41 +75,66 @@ export default async function CoolingPage({
           <DeleteCoolingButton itemId={id} />
         </div>
 
-        <div className="cooling-card">
-          {/* 헤더 */}
-          <div className="cooling-card-head">
-            <span className="doc-tag">COOLING</span>
-            <span className="cooling-card-id">
-              REC.{id.slice(0, 6).toUpperCase()}
-            </span>
-            <span className="cooling-card-status">IN PROGRESS</span>
-          </div>
-
-          {/* 메타 */}
-          <div className="cooling-card-body">
-            <div className="cooling-meta-row">
-              <span className="cooling-meta-label">ITEM</span>
-              <span className="cooling-meta-value">{item.name}</span>
-            </div>
-            <div className="cooling-meta-row">
-              <span className="cooling-meta-label">PRICE</span>
-              <span className="cooling-meta-value">{formatKRW(item.price)}</span>
-            </div>
-
-            {/* 타이머 */}
-            <CoolingDetailTimer coolingEndsAt={item.cooling_ends_at} />
-
-            <div className="cooling-meta-row">
-              <span className="cooling-meta-label">READY AT</span>
-              <span className="cooling-meta-value">
-                {formatCoolingEndsAt(item.cooling_ends_at)}
+        {/* ── 데스크탑 (md+) — PcCoolingScreen 패턴 ── */}
+        <div className="hidden md:block">
+          <div className="cooling-card">
+            <div className="cooling-card-head">
+              <span className="doc-tag">COOLING</span>
+              <span className="cooling-card-id">
+                REC.{id.slice(0, 6).toUpperCase()}
               </span>
+              <span className="cooling-card-status">IN PROGRESS</span>
+            </div>
+
+            <div className="cooling-card-body">
+              <div className="cooling-meta-row">
+                <span className="cooling-meta-label">ITEM</span>
+                <span className="cooling-meta-value">{item.name}</span>
+              </div>
+              <div className="cooling-meta-row">
+                <span className="cooling-meta-label">PRICE</span>
+                <span className="cooling-meta-value">{formatKRW(item.price)}</span>
+              </div>
+
+              <CoolingDetailTimer coolingEndsAt={item.cooling_ends_at} />
+
+              <div className="cooling-meta-row">
+                <span className="cooling-meta-label">READY AT</span>
+                <span className="cooling-meta-value">
+                  {formatCoolingEndsAt(item.cooling_ends_at)}
+                </span>
+              </div>
+            </div>
+
+            <div className="cooling-card-foot">
+              ※ 지금은 기다리는 시간입니다. 결정 가능 시점이 되면 알려드릴게요.
             </div>
           </div>
+        </div>
 
-          {/* 푸터 */}
-          <div className="cooling-card-foot">
-            ※ 지금은 기다리는 시간입니다. 결정 가능 시점이 되면 알려드릴게요.
+        {/* ── 모바일 (<md) — MobileCoolingScreen 패턴 ── */}
+        <div className="md:hidden">
+          {/* m-cooling-doc — 좌상단 tape strip + 태그 + 큰 이름 */}
+          <div className="m-cooling-doc">
+            <div className="m-cooling-tags">
+              <span className="doc-tag" style={{ background: 'var(--accent)' }}>
+                COOLING
+              </span>
+              <span className="doc-tag">{formatKRW(item.price)}</span>
+            </div>
+            <h1 className="m-cooling-name">{item.name}</h1>
+          </div>
+
+          {/* m-cooling-timer-card — D·H·M·S + 프로그레스 + 진행률·완료 예정 */}
+          <MobileCoolingDetailTimer
+            coolingEndsAt={item.cooling_ends_at}
+            createdAt={item.created_at}
+          />
+
+          {/* m-cooling-note — 점선 박스 + NOTE 태그 + 안내 */}
+          <div className="m-cooling-note">
+            <span className="doc-tag">NOTE</span>
+            <p>지금은 기다리는 시간입니다. 결정 가능 시점이 되면 알려드릴게요.</p>
           </div>
         </div>
       </div>
