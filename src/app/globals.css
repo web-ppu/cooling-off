@@ -195,19 +195,21 @@ body {
 
 
 /* ── doc-header ─────────────────────────────────────────────── */
+/* prototype/styles.css 의 값과 정확히 일치 (디자이너 시안 정합). */
 .doc-header {
   background: var(--surface);
   border: 2px solid var(--line-default);
-  padding: 32px 36px 28px;
+  padding: 36px 40px 32px;
   position: relative;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 .doc-header::before {
+  /* tape strip — 좌상단 살짝 비스듬한 accent 사각 */
   content: "";
   position: absolute;
-  top: -9px;
-  left: 28px;
-  width: 52px;
+  top: -8px;
+  left: 32px;
+  width: 60px;
   height: 16px;
   background: var(--accent);
   border: 2px solid var(--line-default);
@@ -219,7 +221,7 @@ body {
 .doc-header-row {
   display: flex;
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
 }
 .doc-tag {
@@ -237,7 +239,7 @@ body {
 }
 .doc-tag-accent { background: var(--accent); }
 .doc-title {
-  font-size: 48px;
+  font-size: 56px;
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.0;
@@ -245,26 +247,27 @@ body {
   text-transform: uppercase;
 }
 @media (max-width: 640px) {
-  .doc-title { font-size: 32px; }
+  .doc-title { font-size: 36px; }
 }
 .doc-title-em {
+  position: relative;
   display: inline-block;
   padding: 0 8px;
   background: var(--accent);
   border: 2px solid var(--line-default);
-  margin-top: 4px;
+  margin-top: 6px;
 }
 .doc-meta-row {
   display: flex;
   gap: 12px;
-  margin-top: 20px;
+  margin-top: 24px;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.12em;
   color: var(--ink-3);
   text-transform: uppercase;
   border-top: 2px dashed var(--line-default);
-  padding-top: 14px;
+  padding-top: 16px;
   flex-wrap: wrap;
 }
 
@@ -311,11 +314,11 @@ body {
 .pc-item-card {
   background: var(--surface);
   border: 2px solid var(--line-default);
-  padding: 16px 18px;
+  padding: 18px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 16px;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
   text-decoration: none;
@@ -334,7 +337,7 @@ body {
   border-color: var(--line-default);
 }
 .pc-item-card-name {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   letter-spacing: -0.01em;
   overflow: hidden;
@@ -342,9 +345,9 @@ body {
   white-space: nowrap;
 }
 .pc-item-card-meta {
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--ink-3);
-  margin-top: 5px;
+  margin-top: 4px;
   font-variant-numeric: tabular-nums;
 }
 
