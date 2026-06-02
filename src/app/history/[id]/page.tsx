@@ -5,6 +5,7 @@ import { formatKRW } from '@/lib/format'
 import type { Item, ChatMessage } from '@/lib/supabase/types'
 import DeleteHistoryButton from '@/components/delete-history-button'
 import AppHeader from '@/components/app-header'
+import { summarizeFacts } from '@/lib/chat/summarize-facts'
 
 export const dynamic = 'force-dynamic'
 
@@ -78,14 +79,32 @@ export default async function HistoryDetailPage({
   const recId = id.slice(0, 6).toUpperCase()
 
   // 팩트 요약 결정:
-  // - DB 의 fact_summary 가 있으면 그대로 사용 (AI 가 [결정하기] 시 생성한 정식 요약).
-  // - 없으면 사용자가 직접 적은 정보 — 등록 시 적은 이유 + 채팅 중 사용자 발화 —
-  //   에서 의미 있는 항목을 read time 으로 추출.
-  // AI 호출 없음 (RPD 소비 0). 단순 휴리스틱.
-  const hasAiFacts = !!item.fact_summary && item.fact_summary.length > 0
-  const facts: string[] = hasAiFacts
-    ? item.fact_summary!
-    : deriveFactsFromSelfInput(item.reason, chatMessages)
+  // 1) DB 의 fact_summary 가 있으면 그대로 사용 (AI 가 [결정하기] 시 생성한 정식 요약).
+  // 2) 없으면 등록 정보(이유) + 대화 기록을 AI 가 종합해 시안 톤 "주제: 사실" 형식으로
+  //    생성한 뒤 DB 에 저장. 다음 진입부터는 (1) 경로로 빠르게 표시.
+  // 3) AI 호출 실패 시에만 휴리스틱 fallback (raw 발화 표시).
+  let facts: string[] = item.fact_summary ?? []
+  if (facts.length === 0) {
+    const generated = await summarizeFacts({
+      productName: item.name,
+      price: item.price,
+      reason: item.reason ?? null,
+      messages: chatMessages,
+    })
+    if (generated.length > 0) {
+      facts = generated
+      // 비동기 DB 업데이트 (fire-and-forget). 실패해도 화면은 정상 표시.
+      void supabase
+        .from('items')
+        .update({ fact_summary: generated })
+        .eq('id', id)
+        .eq('user_id', user.id)
+    } else {
+      // 마지막 fallback — raw 사용자 발화 (긴 텍스트 그대로). 사용자가 다시 진입하면 또
+      // 시도하지만, AI 가 응답하지 않는 한 이 화면이 노출됨.
+      facts = deriveFactsFromSelfInput(item.reason, chatMessages)
+    }
+  }
   // sub 라벨은 출처와 무관하게 "팩트 요약 · N건" 으로 통일 (디자이너 시안 정합).
   const factsSubLabel = `팩트 요약 · ${facts.length}건`
 
