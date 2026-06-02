@@ -4,12 +4,20 @@ import Link from 'next/link'
 import { formatKRW } from '@/lib/format'
 import type { Item, ChatMessage } from '@/lib/supabase/types'
 import DeleteHistoryButton from '@/components/delete-history-button'
+import AppHeader from '@/components/app-header'
 
 export const dynamic = 'force-dynamic'
 
 type HistoryDetail = Pick<
   Item,
-  'id' | 'name' | 'price' | 'decision' | 'decided_at' | 'fact_summary' | 'user_id'
+  | 'id'
+  | 'name'
+  | 'price'
+  | 'decision'
+  | 'decided_at'
+  | 'fact_summary'
+  | 'user_id'
+  | 'reason'
 >
 
 /**
@@ -37,7 +45,7 @@ export default async function HistoryDetailPage({
 
   const { data: item } = await supabase
     .from('items')
-    .select('id, name, price, decision, decided_at, fact_summary, user_id')
+    .select('id, name, price, decision, decided_at, fact_summary, user_id, reason')
     .eq('id', id)
     .eq('status', 'decided')
     .is('deleted_at', null)
@@ -69,7 +77,18 @@ export default async function HistoryDetailPage({
     : ''
   const recId = id.slice(0, 6).toUpperCase()
 
-  const facts = item.fact_summary ?? []
+  // 팩트 요약 결정:
+  // - DB 의 fact_summary 가 있으면 그대로 사용 (AI 가 [결정하기] 시 생성한 정식 요약).
+  // - 없으면 사용자가 직접 적은 정보 — 등록 시 적은 이유 + 채팅 중 사용자 발화 —
+  //   에서 의미 있는 항목을 read time 으로 추출.
+  // AI 호출 없음 (RPD 소비 0). 단순 휴리스틱.
+  const hasAiFacts = !!item.fact_summary && item.fact_summary.length > 0
+  const facts: string[] = hasAiFacts
+    ? item.fact_summary!
+    : deriveFactsFromSelfInput(item.reason, chatMessages)
+  const factsSubLabel = hasAiFacts
+    ? `AI 정리 · ${facts.length}건`
+    : `내가 적은 내용 · ${facts.length}건`
 
   return (
     <main
@@ -80,6 +99,7 @@ export default async function HistoryDetailPage({
         flexDirection: 'column',
       }}
     >
+      <AppHeader user={user} />
       <div
         style={{
           flex: 1,
@@ -151,9 +171,7 @@ export default async function HistoryDetailPage({
           <section className="record-section">
             <div className="record-section-head">
               <span className="doc-tag">FACTS</span>
-              <span className="record-section-sub">
-                팩트 요약 · {facts.length}건
-              </span>
+              <span className="record-section-sub">{factsSubLabel}</span>
             </div>
             {facts.length > 0 ? (
               <ol className="record-facts-list">
@@ -177,6 +195,47 @@ export default async function HistoryDetailPage({
       </div>
     </main>
   )
+}
+
+/**
+ * 사용자 본인 입력(등록 시 이유 + 채팅 중 발화)에서 휴리스틱으로 팩트 항목을 뽑는다.
+ *
+ * AI 호출 없음 (RPD 0 소비). fact_summary 가 DB 에 저장되지 않은 결정 기록에서
+ * "팩트 요약이 비었습니다" 같은 빈 박스 대신, 사용자가 직접 적어둔 정보를
+ * 시안 톤에 맞는 라벨링된 fact 형태로 보여주기 위함.
+ *
+ * 규칙:
+ *  1. 등록 시 적은 이유(item.reason) 가 있으면 첫 항목 — "처음 적은 이유"
+ *  2. 채팅 중 user 메시지 중 의미 있는 것만 — "내가 답한 내용 #n"
+ *     - 8자 미만은 제외 (단답 "응/ㅇㅇ/몰라" 류)
+ *     - <<DECIDE>> 같은 트리거 메시지 제외
+ *  3. 최대 6 개로 제한
+ */
+function deriveFactsFromSelfInput(
+  reason: string | null | undefined,
+  chatMessages: Pick<ChatMessage, 'role' | 'content'>[]
+): string[] {
+  const facts: string[] = []
+
+  const trimmedReason = reason?.trim()
+  if (trimmedReason) {
+    facts.push(`처음 적은 이유 — ${trimmedReason}`)
+  }
+
+  const meaningfulUserMessages = chatMessages
+    .filter((m) => m.role === 'user')
+    .map((m) => m.content.trim())
+    .filter((t) => {
+      if (t.length < 8) return false
+      if (t.startsWith('<<') && t.endsWith('>>')) return false
+      return true
+    })
+
+  meaningfulUserMessages.forEach((value) => {
+    facts.push(`내가 답한 내용 — ${value}`)
+  })
+
+  return facts.slice(0, 6)
 }
 
 /**

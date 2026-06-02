@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatKRW } from '@/lib/format'
 import type { Item } from '@/lib/supabase/types'
+import AppHeader from '@/components/app-header'
 
 export const dynamic = 'force-dynamic'
 
@@ -70,6 +71,7 @@ export default async function HistoryPage() {
         flexDirection: 'column',
       }}
     >
+      <AppHeader user={user} />
       <div
         style={{
           flex: 1,
