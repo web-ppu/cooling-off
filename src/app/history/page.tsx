@@ -74,6 +74,8 @@ export default async function HistoryPage() {
       <AppHeader user={user} />
       {/* 컨테이너 폭/패딩: 홈·등록 페이지와 통일 (mx-auto max-w-[1120px] px-4 md:px-8) */}
       <div className="mx-auto w-full max-w-[1120px] flex-1 px-4 pb-24 pt-7 md:px-8">
+        {/* ─── 데스크탑 (md+) ─── */}
+        <div className="hidden md:block">
         {/* 에디토리얼 헤더 */}
         <div className="doc-header">
           <div className="doc-header-row">
@@ -154,8 +156,119 @@ export default async function HistoryPage() {
             </div>
           </div>
         ))}
+        </div>
+
+        {/* ─── 모바일 (<md) — prototype/MobileScreens HistoryScreen 정합 ─── */}
+        <div className="md:hidden">
+          {/* m-history-header — 좌상단 tape strip + 태그 + 큰 타이틀 + 메타 */}
+          <div className="m-history-header">
+            <div className="m-doc-tags">
+              <span className="doc-tag">ARCHIVE</span>
+              <span className="doc-tag">LOG.001</span>
+              <span className="doc-tag" style={{ background: 'var(--accent)' }}>
+                {items.length} ENTRIES
+              </span>
+            </div>
+            <h1 className="m-doc-title">
+              결정 기록
+              <br />
+              <span className="doc-title-em">아카이브.</span>
+            </h1>
+            <div className="m-doc-meta">
+              <span>FILE / decisions.log</span>
+              <span>SORTED BY DATE DESC</span>
+            </div>
+          </div>
+
+          {/* m-history-stats — TOTAL / PASSED·BOUGHT */}
+          <div className="m-history-stats">
+            <div className="m-history-stat-stamp">
+              <div className="m-history-stat-label">TOTAL</div>
+              <div className="m-history-stat-value">{items.length}</div>
+              <div className="m-history-stat-unit">DECISIONS</div>
+            </div>
+            <div className="m-history-stat-stamp">
+              <div className="m-history-stat-label">PASSED · BOUGHT</div>
+              <div className="m-history-stat-value">
+                <span className="m-history-stat-passed">{passed}</span>
+                <span className="m-history-stat-divider">/</span>
+                <span className="m-history-stat-bought">{bought}</span>
+              </div>
+              <div className="m-history-stat-unit">안 삼 / 삼</div>
+            </div>
+          </div>
+
+          {/* 빈 상태 */}
+          {items.length === 0 && (
+            <div className="m-empty">
+              <div className="m-empty-tag">EMPTY · 0 RECORDS</div>
+              <p>아직 결정한 기록이 없습니다.</p>
+            </div>
+          )}
+
+          {/* 월별 그룹 + m-history-log-table */}
+          {groups.map((group) => (
+            <div key={group.label} className="m-history-month-block">
+              <div className="m-history-month-head">
+                <span className="m-history-month-marker">▸</span>
+                <span className="m-history-month-label">{group.label}</span>
+                <span className="m-history-month-count">
+                  {group.items.length} 건
+                </span>
+                <span className="m-history-month-rule" />
+              </div>
+              <div className="m-history-log-table">
+                {group.items.map((item, i) => (
+                  <MobileHistoryRow key={item.id} item={item} index={i} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </main>
+  )
+}
+
+/**
+ * 모바일 카드 형 행 (prototype/MobileScreens HistoryScreen 정합).
+ *
+ * 좌측 NO + 가운데 이름·가격·날짜 + 우측 [안 삼/삼] 태그.
+ * passed 행은 옅은 accent 톤 배경 + bought 행은 흰 배경 (CSS .m-history-log-row.passed).
+ */
+function MobileHistoryRow({
+  item,
+  index,
+}: {
+  item: HistoryItem
+  index: number
+}) {
+  const isBought = item.decision === 'bought'
+  const decisionClass = isBought ? 'bought' : 'passed'
+  const decisionLabel = isBought ? '삼' : '안 삼'
+  const date = item.decided_at
+    ? new Date(item.decided_at).toLocaleDateString('ko-KR', {
+        month: '2-digit',
+        day: '2-digit',
+      })
+    : ''
+  return (
+    <Link
+      href={`/history/${item.id}`}
+      className={`m-history-log-row ${decisionClass}`}
+    >
+      <span className="m-history-log-no">
+        {String(index + 1).padStart(2, '0')}
+      </span>
+      <div className="m-history-log-main">
+        <div className="m-history-log-name">{item.name}</div>
+        <div className="m-history-log-meta">
+          <span className="m-history-log-price">{formatKRW(item.price)}</span>
+          <span className="m-history-log-date">{date}</span>
+        </div>
+      </div>
+      <span className={`m-history-log-tag ${decisionClass}`}>{decisionLabel}</span>
+    </Link>
   )
 }
 
