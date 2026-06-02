@@ -626,32 +626,35 @@ function FactSummarySection({
   );
 }
 
-/** [안 삼] / [삼] 선택 후 placeholder. */
+/**
+ * [안 삼] / [삼] 선택 후 placeholder — 시안 DecisionResult splash 정합.
+ *
+ * m-splash-card: 검정 보더 + accent 우하단 그림자 + 가운데 정렬.
+ * saveDecision 의 redirect 가 일어나기 직전 짧게 노출.
+ */
 function FinalDecisionPlaceholder({
   decision,
 }: {
   decision: "안 삼" | "삼";
 }) {
+  const passed = decision === "안 삼";
   return (
     <div
       role="status"
-      className="fact-card"
-      style={{ textAlign: "center" }}
+      style={{ display: "flex", justifyContent: "center", padding: "12px 0" }}
     >
-      <div
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: 12,
-          letterSpacing: "0.06em",
-          textTransform: "uppercase",
-          color: "var(--ink-3)",
-          marginBottom: 6,
-        }}
-      >
-        결정 완료
-      </div>
-      <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)" }}>
-        [{decision}] 으로 결정했어요.
+      <div className="m-splash-card">
+        <div className="m-splash-tags">
+          <span
+            className="doc-tag"
+            style={{ background: "var(--accent)" }}
+          >
+            DECIDED
+          </span>
+          <span className="doc-tag">{passed ? "PASSED" : "BOUGHT"}</span>
+        </div>
+        <h2>{passed ? "안 사기로 결정" : "사기로 결정"}</h2>
+        <p>기록에 저장됐습니다.</p>
       </div>
     </div>
   );
