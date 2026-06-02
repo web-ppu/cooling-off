@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { formatCoolingEndsAt, formatKRW } from '@/lib/format'
 import { transitionExpiredItems } from '@/lib/items'
 import CoolingDetailTimer from '@/components/cooling-detail-timer'
@@ -53,25 +52,9 @@ export default async function CoolingPage({
         className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16 pt-4 md:px-8 md:pt-7"
         style={{ position: 'relative', zIndex: 1 }}
       >
-        {/* ← 홈 + 삭제 헤더 */}
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <Link
-            href="/"
-            className="inline-flex items-center border-2"
-            style={{
-              background: 'var(--surface)',
-              color: 'var(--ink)',
-              borderColor: 'var(--ink)',
-              padding: '6px 14px',
-              fontSize: 13,
-              fontWeight: 600,
-              fontFamily: 'var(--font-mono)',
-              letterSpacing: '0.04em',
-              textDecoration: 'none',
-            }}
-          >
-            ← 홈
-          </Link>
+        {/* 우상단 삭제만 (시안 정합 — ← 홈 박스 없음).
+            홈 이동은 AppHeader 의 ❄ 쿨링오프 로고 클릭으로. */}
+        <div className="mb-4 flex items-center justify-end">
           <DeleteCoolingButton itemId={id} />
         </div>
 

@@ -399,14 +399,34 @@ export default function ChatScreen({
             <div className="bubble system">
               AI가 현재 대화에서 나온 사실만 사용합니다
             </div>
-            {messages.map((m, idx) => (
-              <div
-                key={idx}
-                className={`bubble ${m.role === "assistant" ? "ai" : "user"}`}
-              >
-                {m.content}
-              </div>
-            ))}
+            {messages.map((m, idx) => {
+              const isLast = idx === messages.length - 1;
+              const promptUser =
+                isLast &&
+                m.role === "assistant" &&
+                !isLoading &&
+                !lastFailedSend &&
+                !isDecided &&
+                !isAtTurnLimit;
+              return (
+                <div key={idx}>
+                  <div
+                    className={`bubble ${m.role === "assistant" ? "ai" : "user"}`}
+                  >
+                    {m.content}
+                  </div>
+                  {/* 시안 ChatScreen — AI 마지막 발화 다음에 system "아래 입력창에 답해 보세요" */}
+                  {promptUser && (
+                    <div
+                      className="bubble system"
+                      style={{ fontSize: 11.5 }}
+                    >
+                      아래 입력창에 답해 보세요
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             {isLoading && (
               <div
                 className="bubble loading"
