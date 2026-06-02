@@ -104,6 +104,15 @@ export async function POST(request: NextRequest) {
  * - 안전 필터 차단 (finishReason: "content-filter")
  * - 환경변수 누락
  * - 4xx 클라이언트 오류 (auth·bad request)
+ *
+ * Prompt caching (implicit, #131) — 모니터링 단계.
+ *  - 현재는 SYSTEM_PROMPT_TEMPLATE 의 본문 줄 86 ([본론 이탈 처리]) 에 변수 치환이 있어
+ *    사용자별로 본문 prefix 가 달라짐 → cache miss 가 다수.
+ *  - 대신 응답마다 cacheReadTokens 를 로깅해서 실제 적중률을 측정한다. 같은 사용자가
+ *    같은 item 으로 대화를 이어가는 케이스 (registration 동일) 에서는 prefix 가 일치해
+ *    적중 가능.
+ *  - 후속 작업 후보: 본문에서 변수를 빼고 [등록 정보] 섹션으로 분리 → 적중률 극대화.
+ *  - explicit caching (ai.caches.create) 은 TTL 관리 복잡성 대비 효과 미미해 미적용.
  */
 async function callGemini(
   systemPrompt: string,
@@ -122,7 +131,7 @@ async function callGemini(
   const RETRY_DELAY_MS = 500;
 
   for (let attempt = 0; attempt <= MAX_EMPTY_RETRIES; attempt++) {
-    const { text, finishReason } = await generateText({
+    const { text, finishReason, providerMetadata, usage } = await generateText({
       model,
       system: systemPrompt,
       messages: messages.map((m) => ({ role: m.role, content: m.content })),
@@ -132,6 +141,12 @@ async function callGemini(
       maxOutputTokens: 200,
       maxRetries: 2,
     });
+
+    // Prompt caching 적중 모니터링.
+    // providerMetadata.google.usageMetadata.cachedContentTokenCount 가
+    // 입력 토큰 중 캐시 적중분.  AI SDK 의 usage.inputTokenDetails.cacheReadTokens
+    // 도 동일 정보를 제공한다 (provider-agnostic 형태).
+    logCacheHit({ providerMetadata, usage });
 
     if (finishReason === "content-filter") {
       throw new Error("응답이 안전 필터에 의해 차단되었습니다.");
@@ -148,6 +163,32 @@ async function callGemini(
   }
 
   throw new Error("Gemini 응답이 비어있습니다.");
+}
+
+/**
+ * Prompt caching 적중률 로깅 — Vercel function logs 에서 검색 가능한 키워드 "[chat-cache]" 사용.
+ *
+ * 처음 호출은 cacheReadTokens 가 0 이고, 같은 sys-prompt prefix 로 후속 호출이 오면 양수 값이 찍힌다.
+ */
+function logCacheHit({
+  providerMetadata,
+  usage,
+}: {
+  providerMetadata?: Record<string, unknown>;
+  usage?: { inputTokens?: number; inputTokenDetails?: { cacheReadTokens?: number } };
+}) {
+  // provider-agnostic 경로 먼저
+  const cacheReadTokens = usage?.inputTokenDetails?.cacheReadTokens;
+  const inputTokens = usage?.inputTokens;
+  // provider-specific (Google) 보조
+  const googleMeta = (providerMetadata as { google?: { usageMetadata?: { cachedContentTokenCount?: number } } } | undefined)?.google?.usageMetadata;
+  const googleCached = googleMeta?.cachedContentTokenCount;
+
+  const cached = cacheReadTokens ?? googleCached ?? 0;
+  const ratio = inputTokens && inputTokens > 0 ? (cached / inputTokens) * 100 : 0;
+  console.log(
+    `[chat-cache] input=${inputTokens ?? "?"} cached=${cached} ratio=${ratio.toFixed(1)}%`
+  );
 }
 
 /**
