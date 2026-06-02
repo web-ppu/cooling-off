@@ -1855,10 +1855,39 @@ body {
 
 /* ───────── 모바일 홈 (prototype/mobile.css → m-* 패턴) ───────── */
 /* 사용 위치: src/app/page.tsx 의 md:hidden 분기 (모바일 전용). */
+
+/* doc-header 컨테이너 — 좌상단 비스듬한 accent tape strip + ink 보더 */
+.m-doc-header {
+  background: var(--surface);
+  border: 2px solid var(--line-default);
+  padding: 18px 18px 16px;
+  margin: 4px 0 18px;
+  position: relative;
+}
+.m-doc-header::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 14px;
+  width: 56px;
+  height: 14px;
+  background: var(--accent);
+  border: 2px solid var(--line-default);
+  transform: rotate(-2deg);
+}
+/* compact: stat-row 만 채워질 때 padding 축소 + stat-row 가로 풀폭 */
+.m-doc-header.compact { padding: 14px 16px 0; margin-bottom: 16px; }
+.m-doc-header.compact .m-stats-row {
+  margin-top: 0;
+  border-top: 2px solid var(--line-default);
+  border-bottom: none;
+  margin-left: -16px;
+  margin-right: -16px;
+}
+
 .m-stats-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  margin: 4px 0 20px;
   border-top: 2px solid var(--line-default);
   border-bottom: 2px solid var(--line-default);
   background: var(--surface);

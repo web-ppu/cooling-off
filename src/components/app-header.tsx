@@ -56,7 +56,7 @@ export default async function AppHeader({ user: userProp }: Props) {
             >
               About
             </Link>
-            <LogoutButton />
+            {/* 모바일에서는 로그아웃 hidden — 시안 정합. 로그아웃은 데스크탑/About 페이지에서 가능. */}
           </div>
         </div>
 
