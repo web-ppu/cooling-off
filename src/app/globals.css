@@ -1655,6 +1655,20 @@ body {
   align-items: flex-start;
 }
 .about-sec-body { padding: 32px 40px; }
+/* 모바일: 좌측 큰 번호를 위로 올리고 본문 padding 축소 */
+@media (max-width: 720px) {
+  .about-sec {
+    grid-template-columns: 1fr;
+    border-bottom: 2px solid var(--line-default);
+  }
+  .about-sec-num {
+    border-right: none;
+    border-bottom: 2px solid var(--line-default);
+    padding: 16px 20px;
+    font-size: 32px;
+  }
+  .about-sec-body { padding: 20px 20px 24px; }
+}
 .about-sec-label {
   font-family: var(--font-mono);
   font-size: 10.5px;
@@ -1780,6 +1794,14 @@ body {
   font-weight: 700;
 }
 .about-table tr.row-em td:first-child { color: var(--ink); }
+/* 모바일: 표 padding/폰트 축소해 좁은 화면에서도 가로 안 넘치게 */
+@media (max-width: 720px) {
+  .about-table { font-size: 12px; }
+  .about-table th,
+  .about-table td { padding: 10px 10px; }
+  .about-table th:first-child,
+  .about-table td:first-child { width: 40px; }
+}
 
 /* Section 04 — Notes */
 .about-notes {
