@@ -2044,6 +2044,31 @@ body {
 }
 .m-item-card .cooling-progress span { background: var(--ink); }
 
+/* 모바일 채팅 상단 메타 (prototype/mobile.css m-chat-meta) */
+.m-chat-meta {
+  padding: 12px 20px 14px;
+  border-bottom: 2px solid var(--line-default);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.m-chat-meta-tags {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.m-chat-meta-name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.m-chat-meta-price {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
 /* Empty 상태 */
 .m-empty {
   border: 2px dashed var(--line-default);
