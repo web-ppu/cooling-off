@@ -86,9 +86,8 @@ export default async function HistoryDetailPage({
   const facts: string[] = hasAiFacts
     ? item.fact_summary!
     : deriveFactsFromSelfInput(item.reason, chatMessages)
-  const factsSubLabel = hasAiFacts
-    ? `AI 정리 · ${facts.length}건`
-    : `내가 적은 내용 · ${facts.length}건`
+  // sub 라벨은 출처와 무관하게 "팩트 요약 · N건" 으로 통일 (디자이너 시안 정합).
+  const factsSubLabel = `팩트 요약 · ${facts.length}건`
 
   return (
     <main
@@ -211,6 +210,7 @@ function deriveFactsFromSelfInput(
   const facts: string[] = []
 
   // 시안 톤(prototype/data.js): "주제: 사실" 형식. AI fact_summary 가 없는 경우의 fallback.
+  // 휴리스틱이라 "현재 마우스" 같은 의미 추출 라벨은 불가능 — 출처 표기 라벨로 대체.
   const trimmedReason = reason?.trim()
   if (trimmedReason) {
     facts.push(`처음 적은 이유: ${trimmedReason}`)
@@ -226,7 +226,7 @@ function deriveFactsFromSelfInput(
     })
 
   meaningfulUserMessages.forEach((value, i) => {
-    facts.push(`내 답변 ${String(i + 1).padStart(2, '0')}: ${value}`)
+    facts.push(`대화 ${i + 1}: ${value}`)
   })
 
   return facts.slice(0, 6)
