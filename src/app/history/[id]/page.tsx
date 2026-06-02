@@ -210,9 +210,10 @@ function deriveFactsFromSelfInput(
 ): string[] {
   const facts: string[] = []
 
+  // 시안 톤(prototype/data.js): "주제: 사실" 형식. AI fact_summary 가 없는 경우의 fallback.
   const trimmedReason = reason?.trim()
   if (trimmedReason) {
-    facts.push(`처음 적은 이유 — ${trimmedReason}`)
+    facts.push(`처음 적은 이유: ${trimmedReason}`)
   }
 
   const meaningfulUserMessages = chatMessages
@@ -224,8 +225,8 @@ function deriveFactsFromSelfInput(
       return true
     })
 
-  meaningfulUserMessages.forEach((value) => {
-    facts.push(`내가 답한 내용 — ${value}`)
+  meaningfulUserMessages.forEach((value, i) => {
+    facts.push(`내 답변 ${String(i + 1).padStart(2, '0')}: ${value}`)
   })
 
   return facts.slice(0, 6)
