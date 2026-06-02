@@ -30,18 +30,31 @@ export default async function AppHeader({ user: userProp }: Props) {
             <SnowflakeLogo size={18} />
             <span>쿨링오프</span>
           </Link>
-          <div className="flex items-center gap-1">
+          {/* 시안 정합: [기록] [ABOUT] brutalist 박스 (2px ink 보더) */}
+          <div className="flex items-center gap-1.5">
             <Link
               href="/history"
-              className="cursor-pointer rounded px-2 py-1 text-sm text-zinc-500 hover:text-zinc-900"
+              className="cursor-pointer text-sm font-semibold text-[var(--ink)]"
+              style={{
+                border: '2px solid var(--ink)',
+                padding: '4px 10px',
+                background: 'var(--surface)',
+              }}
             >
               기록
             </Link>
             <Link
               href="/about"
-              className="cursor-pointer rounded px-2 py-1 text-sm text-zinc-400 hover:text-zinc-700"
+              className="cursor-pointer text-sm font-semibold uppercase text-[var(--ink)]"
+              style={{
+                border: '2px solid var(--ink)',
+                padding: '4px 10px',
+                background: 'var(--surface)',
+                fontFamily: 'var(--font-mono)',
+                letterSpacing: '0.04em',
+              }}
             >
-              ?
+              About
             </Link>
             <LogoutButton />
           </div>
