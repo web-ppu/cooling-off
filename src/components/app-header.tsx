@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import LogoutButton from './logout-button'
 import NavLinks from './nav-links'
+import SnowflakeLogo from './snowflake-logo'
 import type { User } from '@supabase/supabase-js'
 
 interface Props {
@@ -26,7 +27,7 @@ export default async function AppHeader({ user: userProp }: Props) {
             href="/"
             className="flex items-center gap-1.5 text-base font-extrabold tracking-tight"
           >
-            <span className="brand-ice">❄</span>
+            <SnowflakeLogo size={18} />
             <span>쿨링오프</span>
           </Link>
           <div className="flex items-center gap-1">
@@ -52,7 +53,7 @@ export default async function AppHeader({ user: userProp }: Props) {
             href="/"
             className="flex items-center gap-2 text-lg font-extrabold tracking-tight"
           >
-            <span className="brand-ice">❄</span>
+            <SnowflakeLogo size={18} />
             <span>쿨링오프</span>
           </Link>
           <NavLinks />
@@ -68,7 +69,7 @@ export default async function AppHeader({ user: userProp }: Props) {
   return (
     <header className="flex items-center justify-between px-4 py-4 md:px-8">
       <span className="flex items-center gap-1.5 text-base font-extrabold tracking-tight">
-        <span className="brand-ice">❄</span>
+        <SnowflakeLogo size={18} />
         <span>쿨링오프</span>
       </span>
       <div className="flex items-center gap-4">
