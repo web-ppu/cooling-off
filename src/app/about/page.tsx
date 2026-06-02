@@ -1,7 +1,8 @@
-import Link from 'next/link'
+import AppHeader from '@/components/app-header'
 
 /**
  * /about — 서비스 소개 페이지 (brutalist 디자인).
+ * 헤더는 공통 AppHeader 로 통일 (sticky top nav).
  *
  * 디자인: prototype/PcAboutScreen 패턴 — doc-header + section-row-head + 사각 카드.
  *
@@ -20,43 +21,7 @@ export default function AboutPage() {
         flexDirection: 'column',
       }}
     >
-      <header
-        style={{
-          padding: '20px 24px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Link
-          href="/"
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 12,
-            fontWeight: 600,
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-            color: 'var(--ink)',
-            textDecoration: 'none',
-            borderBottom: '2px solid var(--ink)',
-            paddingBottom: 2,
-          }}
-        >
-          ← 홈
-        </Link>
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            fontWeight: 600,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            color: 'var(--ink-3)',
-          }}
-        >
-          ABOUT
-        </span>
-      </header>
+      <AppHeader />
 
       <div
         style={{

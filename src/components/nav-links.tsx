@@ -16,8 +16,10 @@ const LINKS: NavLink[] = [
 ]
 
 /**
- * 데스크탑 헤더 네비게이션 — prototype 의 `.pc-nav-link`/`.active` 패턴 적용.
- * 현재 경로와 일치하는 링크에 옅은 배경을 깔아 시각 신호를 준다.
+ * 데스크탑 헤더 네비게이션 — brutalist 톤.
+ *
+ * 활성 상태: accent 배경 (파란) + 검정 글씨 + 2px 보더 — 디자이너 시안 정합.
+ * 비활성 상태: 평문, hover 시 옅은 회색 배경.
  */
 export default function NavLinks() {
   const pathname = usePathname()
@@ -27,13 +29,20 @@ export default function NavLinks() {
       {LINKS.map(({ href, label }) => {
         // '/' 는 정확 매치만, 그 외는 prefix 매치 (예: /register/foo 도 등록 활성)
         const active = href === '/' ? pathname === '/' : pathname?.startsWith(href)
-        const base =
-          'cursor-pointer px-3 py-2 text-sm transition-colors'
-        const state = active
-          ? 'font-semibold text-[var(--ink)] bg-[var(--surface-2)]'
-          : 'font-medium text-[var(--ink-3)] hover:bg-[var(--surface-2)] hover:text-[var(--ink)]'
         return (
-          <Link key={href} href={href} className={`${base} ${state}`}>
+          <Link
+            key={href}
+            href={href}
+            className="cursor-pointer text-sm transition-colors"
+            style={{
+              padding: '6px 12px',
+              fontWeight: active ? 700 : 500,
+              color: 'var(--ink)',
+              background: active ? 'var(--accent)' : 'transparent',
+              border: active ? '2px solid var(--ink)' : '2px solid transparent',
+              letterSpacing: '-0.01em',
+            }}
+          >
             {label}
           </Link>
         )

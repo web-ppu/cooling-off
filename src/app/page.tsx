@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import AppHeader from '@/components/app-header'
+import SnowBackground from '@/components/snow-background'
+import GoogleLoginButton from '@/components/google-login-button'
 import CoolingMeta from '@/components/cooling-meta'
 import NotificationCardRouter from '@/components/notification-card-router'
 import Link from 'next/link'
@@ -264,13 +266,16 @@ function NonAuthHome() {
   return (
     <main
       style={{
-        background: "var(--surface-2)",
+        background: "var(--surface)",
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <AppHeader />
+      {/* 배경 눈송이 — fixed inset, zIndex 0, pointer-events none */}
+      <SnowBackground />
 
       <div
         style={{
@@ -281,6 +286,8 @@ function NonAuthHome() {
           justifyContent: "center",
           padding: "24px",
           textAlign: "center",
+          position: "relative",
+          zIndex: 1,
         }}
       >
         <div style={{ maxWidth: 480, width: "100%" }}>
@@ -308,40 +315,8 @@ function NonAuthHome() {
             충동구매와 결제 사이에 시간과 AI 채팅을 둡니다.
           </p>
 
-          <Link
-            href="/login"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 10,
-              width: "100%",
-              maxWidth: 320,
-              background: "var(--ink)",
-              color: "var(--surface)",
-              border: "2px solid var(--ink)",
-              padding: "14px 20px",
-              fontSize: 15,
-              fontWeight: 700,
-              letterSpacing: "-0.005em",
-              textDecoration: "none",
-              cursor: "pointer",
-            }}
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden
-            >
-              <path d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4c-.2 1.2-.9 2.3-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3z" />
-              <path d="M12 22c2.7 0 5-.9 6.6-2.5l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6C4.7 19.7 8.1 22 12 22z" />
-              <path d="M6.4 13.9c-.2-.6-.3-1.2-.3-1.9s.1-1.3.3-1.9V7.5H3.1C2.4 8.9 2 10.4 2 12s.4 3.1 1.1 4.5l3.3-2.6z" />
-              <path d="M12 6c1.5 0 2.8.5 3.8 1.5l2.8-2.8C17 3.1 14.7 2 12 2 8.1 2 4.7 4.3 3.1 7.5l3.3 2.6C7.2 7.8 9.4 6 12 6z" />
-            </svg>
-            Google로 로그인하기
-          </Link>
+          {/* CTA — accent 파란 + 컬러 Google 로고. 단일 클릭으로 OAuth 시작. */}
+          <GoogleLoginButton />
 
           <div style={{ marginTop: 18 }}>
             <Link
