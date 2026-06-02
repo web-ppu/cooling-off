@@ -191,14 +191,19 @@ export default function RegisterForm() {
               >
                 취소
               </a>
+              {/* 디자이너 시안 정합 — accent 파란 배경 + 검정 보더 + 검정 글씨.
+                  disabled 상태에서는 opacity 만 떨어지므로 시안의 옅은 회색 톤과 비슷. */}
               <button
                 type="submit"
                 disabled={!valid || isPending}
-                className="inline-flex items-center justify-center bg-[var(--ink)] text-white border-2 border-[var(--ink)] hover:bg-[var(--ink-2)] transition-colors disabled:opacity-45 disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center border-2 transition-colors disabled:opacity-45 disabled:cursor-not-allowed"
                 style={{
+                  background: 'var(--accent)',
+                  color: 'var(--ink)',
+                  borderColor: 'var(--ink)',
                   padding: '12px 18px',
                   fontSize: '14.5px',
-                  fontWeight: 500,
+                  fontWeight: 600,
                 }}
               >
                 {isPending ? '등록 중…' : '냉각 시작 →'}
