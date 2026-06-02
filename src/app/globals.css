@@ -113,6 +113,15 @@ body {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.25; }
 }
+
+/* 비로그인 hero 배경 눈송이 (components/snow-background.tsx) */
+@keyframes snowfall {
+  0%   { transform: translateY(-30px) translateX(0px) rotate(0deg); opacity: 0; }
+  8%   { opacity: 1; }
+  50%  { transform: translateY(50vh) translateX(12px) rotate(180deg); }
+  92%  { opacity: 0.7; }
+  100% { transform: translateY(108vh) translateX(-8px) rotate(360deg); opacity: 0; }
+}
 .cooling-card-body { display: flex; flex-direction: column; }
 .cooling-card-foot {
   padding: 14px 24px;

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import AppHeader from '@/components/app-header'
+import SnowBackground from '@/components/snow-background'
 import CoolingMeta from '@/components/cooling-meta'
 import NotificationCardRouter from '@/components/notification-card-router'
 import Link from 'next/link'
@@ -264,13 +265,16 @@ function NonAuthHome() {
   return (
     <main
       style={{
-        background: "var(--surface-2)",
+        background: "var(--surface)",
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <AppHeader />
+      {/* 배경 눈송이 — fixed inset, zIndex 0, pointer-events none */}
+      <SnowBackground />
 
       <div
         style={{
@@ -281,6 +285,8 @@ function NonAuthHome() {
           justifyContent: "center",
           padding: "24px",
           textAlign: "center",
+          position: "relative",
+          zIndex: 1,
         }}
       >
         <div style={{ maxWidth: 480, width: "100%" }}>
@@ -308,6 +314,7 @@ function NonAuthHome() {
             충동구매와 결제 사이에 시간과 AI 채팅을 둡니다.
           </p>
 
+          {/* CTA — accent 파란 배경 + 2px ink 보더 (사진 시안 정합) */}
           <Link
             href="/login"
             style={{
@@ -316,14 +323,15 @@ function NonAuthHome() {
               justifyContent: "center",
               gap: 10,
               width: "100%",
-              maxWidth: 320,
-              background: "var(--ink)",
-              color: "var(--surface)",
+              background: "var(--accent)",
+              color: "var(--ink)",
               border: "2px solid var(--ink)",
-              padding: "14px 20px",
+              padding: "16px 20px",
               fontSize: 15,
               fontWeight: 700,
-              letterSpacing: "-0.005em",
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+              fontFamily: "var(--font-mono)",
               textDecoration: "none",
               cursor: "pointer",
             }}

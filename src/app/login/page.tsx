@@ -4,6 +4,7 @@ import { Suspense, useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import SnowBackground from '@/components/snow-background'
 
 declare global {
   interface Window {
@@ -119,30 +120,16 @@ function LoginInner() {
   return (
     <main
       style={{
-        background: 'var(--surface-2)',
+        background: 'var(--surface)',
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
-      <header style={{ padding: '20px 24px' }}>
-        <Link
-          href="/"
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 12,
-            fontWeight: 600,
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-            color: 'var(--ink)',
-            textDecoration: 'none',
-            borderBottom: '2px solid var(--ink)',
-            paddingBottom: 2,
-          }}
-        >
-          ← 홈
-        </Link>
-      </header>
+      {/* 배경 눈송이 */}
+      <SnowBackground />
 
       <div
         style={{
@@ -152,29 +139,36 @@ function LoginInner() {
           alignItems: 'center',
           justifyContent: 'center',
           padding: '24px',
+          textAlign: 'center',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
-        <div style={{ width: '100%', maxWidth: 440, display: 'flex', flexDirection: 'column', gap: 24 }}>
-          {/* 페이지 헤더 — doc-header 패턴 */}
-          <div className="doc-header">
-            <div className="doc-header-row">
-              <span className="doc-tag">AUTH</span>
-              <span className="doc-tag doc-tag-accent">START</span>
-            </div>
-            <h1 className="doc-title">
-              로그인하고 <span className="doc-title-em">시작.</span>
-            </h1>
-            <p
-              style={{
-                fontSize: 14,
-                color: 'var(--ink-3)',
-                margin: '20px 0 0',
-                lineHeight: 1.55,
-              }}
-            >
-              등록한 물건과 결정 기록은 로그인한 계정에 저장됩니다.
-            </p>
+        <div style={{ width: '100%', maxWidth: 480 }}>
+          {/* hero 카피 (비로그인 홈과 동일) */}
+          <div
+            style={{
+              fontSize: 22,
+              fontWeight: 700,
+              letterSpacing: '-0.035em',
+              lineHeight: 1.55,
+              margin: '0 0 12px',
+              color: 'var(--ink)',
+            }}
+          >
+            <div>사고 싶은 마음을 바로 결제로</div>
+            <div>넘기지 않도록 잠시 식혀 보세요.</div>
           </div>
+          <p
+            style={{
+              fontSize: 15,
+              color: 'var(--ink-3)',
+              margin: '0 0 32px',
+              lineHeight: 1.5,
+            }}
+          >
+            충동구매와 결제 사이에 시간과 AI 채팅을 둡니다.
+          </p>
 
           {authError && (
             <div
@@ -187,61 +181,52 @@ function LoginInner() {
                 fontWeight: 600,
                 color: 'var(--danger)',
                 textAlign: 'center',
+                marginBottom: 16,
               }}
             >
               {authError}
             </div>
           )}
 
-          {/* CTA 카드 — surface 배경 + 2px ink 보더 */}
-          <div
+          {/* CTA — accent 파란 + 2px ink 보더 + mono uppercase */}
+          <button
+            type="button"
+            onClick={handleLogin}
             style={{
-              background: 'var(--surface)',
-              border: '2px solid var(--line-default)',
-              padding: 24,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10,
+              width: '100%',
+              background: 'var(--accent)',
+              color: 'var(--ink)',
+              border: '2px solid var(--ink)',
+              padding: '16px 20px',
+              fontSize: 15,
+              fontWeight: 700,
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              fontFamily: 'var(--font-mono)',
+              cursor: 'pointer',
+              appearance: 'none',
             }}
           >
-            <button
-              type="button"
-              onClick={handleLogin}
+            <GoogleIcon />
+            {authError ? '다시 시도' : 'Google로 로그인하기'}
+          </button>
+
+          <div style={{ marginTop: 18 }}>
+            <Link
+              href="/about"
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 10,
-                width: '100%',
-                background: 'var(--ink)',
-                color: 'var(--surface)',
-                border: '2px solid var(--ink)',
-                padding: '14px 20px',
-                fontSize: 15,
-                fontWeight: 700,
-                letterSpacing: '-0.005em',
-                cursor: 'pointer',
-                appearance: 'none',
-                fontFamily: 'inherit',
-              }}
-            >
-              <GoogleIcon />
-              {authError ? '다시 시도' : 'Google로 로그인하기'}
-            </button>
-            <p
-              style={{
-                margin: '16px 0 0',
-                fontSize: 12,
+                fontSize: 14,
                 color: 'var(--ink-3)',
-                textAlign: 'center',
-                lineHeight: 1.5,
+                textDecoration: 'underline',
+                textUnderlineOffset: 3,
               }}
             >
-              로그인하면{' '}
-              <span style={{ textDecoration: 'underline', textUnderlineOffset: 2 }}>이용약관</span>
-              과{' '}
-              <span style={{ textDecoration: 'underline', textUnderlineOffset: 2 }}>
-                개인정보 처리방침
-              </span>
-              에 동의하게 됩니다.
-            </p>
+              쿨링오프가 뭔가요?
+            </Link>
           </div>
         </div>
       </div>
@@ -250,29 +235,19 @@ function LoginInner() {
 }
 
 function LoginShell() {
+  // Suspense fallback — useSearchParams 가 hydration 되기 전 잠깐 노출.
+  // 본 페이지와 동일한 hero 카피만 보여주고 인터랙티브 요소는 비활성.
   return (
     <main
       style={{
-        background: 'var(--surface-2)',
+        background: 'var(--surface)',
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
-      <header style={{ padding: '20px 24px' }}>
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 12,
-            fontWeight: 600,
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-            color: 'var(--ink-4)',
-          }}
-        >
-          ← 홈
-        </span>
-      </header>
       <div
         style={{
           flex: 1,
@@ -281,17 +256,21 @@ function LoginShell() {
           alignItems: 'center',
           justifyContent: 'center',
           padding: '24px',
+          textAlign: 'center',
         }}
       >
-        <div style={{ width: '100%', maxWidth: 440 }}>
-          <div className="doc-header">
-            <div className="doc-header-row">
-              <span className="doc-tag">AUTH</span>
-              <span className="doc-tag doc-tag-accent">START</span>
-            </div>
-            <h1 className="doc-title">
-              로그인하고 <span className="doc-title-em">시작.</span>
-            </h1>
+        <div style={{ width: '100%', maxWidth: 480 }}>
+          <div
+            style={{
+              fontSize: 22,
+              fontWeight: 700,
+              letterSpacing: '-0.035em',
+              lineHeight: 1.55,
+              color: 'var(--ink-4)',
+            }}
+          >
+            <div>사고 싶은 마음을 바로 결제로</div>
+            <div>넘기지 않도록 잠시 식혀 보세요.</div>
           </div>
         </div>
       </div>
