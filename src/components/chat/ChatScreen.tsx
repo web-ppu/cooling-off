@@ -333,8 +333,8 @@ export default function ChatScreen({
 
   return (
     <div className="pc-chat-frame">
-      {/* ── 왼쪽 사이드바 ── */}
-      <aside className="pc-chat-meta">
+      {/* ── 데스크탑 사이드바 (md+) — 시안 PcChatScreen 정합 ── */}
+      <aside className="pc-chat-meta hidden md:flex">
         <div>
           <div className="meta-label">물건</div>
           <div className="item-name">{registration.productName}</div>
@@ -377,6 +377,20 @@ export default function ChatScreen({
           </p>
         </div>
       </aside>
+
+      {/* ── 모바일 상단 m-chat-meta (md 미만) — 시안 MobileChatScreen 정합 ── */}
+      <div className="m-chat-meta md:hidden">
+        <div className="m-chat-meta-tags">
+          <span className="doc-tag" style={{ background: "var(--accent)" }}>
+            CHAT
+          </span>
+          <span className="doc-tag">
+            TURN {turnCount}/{MAX_TURNS}
+          </span>
+        </div>
+        <div className="m-chat-meta-name">{registration.productName}</div>
+        <div className="m-chat-meta-price">{registration.price}</div>
+      </div>
 
       {/* ── 오른쪽 메인 ── */}
       <section className="pc-chat-main">
