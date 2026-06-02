@@ -58,7 +58,7 @@ export default function GoogleLoginButton({
           background: 'var(--accent)',
           color: 'var(--ink)',
           border: '2px solid var(--ink)',
-          padding: '12px 20px',
+          padding: '8px 20px',
           fontSize: 15,
           fontWeight: 700,
           letterSpacing: '0.04em',
