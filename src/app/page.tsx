@@ -3,6 +3,7 @@ import AppHeader from '@/components/app-header'
 import SnowBackground from '@/components/snow-background'
 import GoogleLoginButton from '@/components/google-login-button'
 import CoolingMeta from '@/components/cooling-meta'
+import MobileHome from '@/components/mobile-home'
 import NotificationCardRouter from '@/components/notification-card-router'
 import Link from 'next/link'
 import { formatKRW } from '@/lib/format'
@@ -81,7 +82,28 @@ export default async function Home() {
     <main className="flex min-h-screen flex-col">
       <AppHeader user={user} />
 
-      <div className="mx-auto w-full max-w-[1120px] flex-1 px-4 pb-24 pt-7 md:px-8">
+      {/* 모바일 전용 — m-stats-row + § READY/COOL 섹션 (prototype/HomeScreen 정합) */}
+      <div className="flex-1 md:hidden">
+        {/* 알림 카드는 모바일에서도 동일하게 보여줌 */}
+        {showNotificationCard && (
+          <div className="px-4 pt-4">
+            <NotificationCardRouter
+              proposalState={
+                showIosEnableCard
+                  ? 'ios_install_started'
+                  : proposalState === 'granted'
+                    ? 'granted'
+                    : 'pending'
+              }
+              coolingEndsAt={notificationCoolingEndsAt}
+            />
+          </div>
+        )}
+        <MobileHome readyItems={readyItems} coolingItems={coolingItems} />
+      </div>
+
+      {/* 데스크탑 전용 컨테이너 — 기존 doc-header + 2컬럼 grid */}
+      <div className="mx-auto hidden w-full max-w-[1120px] flex-1 px-4 pb-24 pt-7 md:block md:px-8">
         {/* 에디토리얼 헤더 */}
         <div className="doc-header">
           <div className="doc-header-row">
