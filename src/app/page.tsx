@@ -45,6 +45,11 @@ export default async function Home() {
 
   const readyItems = items.filter((i) => i.status === 'ready')
   const coolingItems = items.filter((i) => i.status === 'cooling')
+  // 활성 item 총액 — doc-meta-row 의 VALUE 표시용 (디자이너 시안)
+  const totalActiveValue = [...readyItems, ...coolingItems].reduce(
+    (sum, i) => sum + i.price,
+    0
+  )
 
   // ── 알림 권한 제안 카드 노출 평가 ────────────────────────────
   // 정책 (docs/pm/notification-policy.md §3-1, §3-5, §3-7):
@@ -94,10 +99,15 @@ export default async function Home() {
               <br />
               <span className="doc-title-em">{items.length}건.</span>
             </h1>
-            {/* PC 전용 등록 버튼 */}
+            {/* PC 전용 등록 버튼 — accent 파란 + 검정 보더 + 검정 글씨 (디자이너 시안 정합) */}
             <Link
               href="/register"
-              className="hidden items-center gap-2 border-2 border-[var(--line-default)] bg-[var(--ink)] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[var(--ink-2)] md:inline-flex"
+              className="hidden items-center gap-2 border-2 px-5 py-3 text-sm font-semibold transition-colors md:inline-flex"
+              style={{
+                background: 'var(--accent)',
+                color: 'var(--ink)',
+                borderColor: 'var(--ink)',
+              }}
             >
               + 사고 싶은 물건 등록
             </Link>
@@ -108,6 +118,12 @@ export default async function Home() {
             <span>READY {readyItems.length}</span>
             <span>/</span>
             <span>COOLING {coolingItems.length}</span>
+            {totalActiveValue > 0 && (
+              <>
+                <span>/</span>
+                <span>VALUE {formatKRW(totalActiveValue)}</span>
+              </>
+            )}
           </div>
         </div>
 
@@ -136,7 +152,12 @@ export default async function Home() {
             </h3>
             <Link
               href="/register"
-              className="inline-flex border-2 border-[var(--line-default)] bg-[var(--ink)] px-6 py-3 text-sm font-semibold text-white"
+              className="inline-flex border-2 px-6 py-3 text-sm font-semibold"
+              style={{
+                background: 'var(--accent)',
+                color: 'var(--ink)',
+                borderColor: 'var(--ink)',
+              }}
             >
               지금 등록하기
             </Link>
@@ -197,7 +218,12 @@ export default async function Home() {
         <div className="mx-auto max-w-2xl">
           <Link
             href="/register"
-            className="flex w-full cursor-pointer items-center justify-center border-2 border-[var(--line-default)] bg-[var(--ink)] py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--ink-2)]"
+            className="flex w-full cursor-pointer items-center justify-center border-2 py-3.5 text-sm font-semibold transition-colors"
+            style={{
+              background: 'var(--accent)',
+              color: 'var(--ink)',
+              borderColor: 'var(--ink)',
+            }}
           >
             + 사고 싶은 물건 등록
           </Link>
