@@ -1,10 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { formatCoolingEndsAt } from '@/lib/format'
+import { formatCoolingEndsAt, formatKRW } from '@/lib/format'
 import { transitionExpiredItems } from '@/lib/items'
 import CoolingDetailTimer from '@/components/cooling-detail-timer'
 import DeleteCoolingButton from '@/components/delete-cooling-button'
+import AppHeader from '@/components/app-header'
+import SnowBackground from '@/components/snow-background'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +28,7 @@ export default async function CoolingPage({
 
   const { data: item } = await supabase
     .from('items')
-    .select('id, name, cooling_ends_at, status, user_id')
+    .select('id, name, price, cooling_ends_at, status, user_id')
     .eq('id', id)
     .is('deleted_at', null)
     .single()
@@ -39,18 +41,39 @@ export default async function CoolingPage({
   if (item.status === 'decided') redirect('/')
 
   return (
-    <main className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between px-4 py-4 md:px-8">
-        <Link
-          href="/"
-          className="text-sm text-zinc-500 hover:text-zinc-900"
-        >
-          ← 홈
-        </Link>
-        <DeleteCoolingButton itemId={id} />
-      </header>
+    <main
+      className="flex min-h-screen flex-col"
+      style={{ position: 'relative', overflow: 'hidden', background: 'var(--surface-2)' }}
+    >
+      <AppHeader user={user} />
+      <SnowBackground />
 
-      <div className="mx-auto w-full max-w-xl flex-1 px-4 pb-16 pt-2 md:px-8">
+      <div
+        className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16 pt-4 md:px-8 md:pt-7"
+        style={{ position: 'relative', zIndex: 1 }}
+      >
+        {/* ← 홈 + 삭제 헤더 */}
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <Link
+            href="/"
+            className="inline-flex items-center border-2"
+            style={{
+              background: 'var(--surface)',
+              color: 'var(--ink)',
+              borderColor: 'var(--ink)',
+              padding: '6px 14px',
+              fontSize: 13,
+              fontWeight: 600,
+              fontFamily: 'var(--font-mono)',
+              letterSpacing: '0.04em',
+              textDecoration: 'none',
+            }}
+          >
+            ← 홈
+          </Link>
+          <DeleteCoolingButton itemId={id} />
+        </div>
+
         <div className="cooling-card">
           {/* 헤더 */}
           <div className="cooling-card-head">
@@ -66,6 +89,10 @@ export default async function CoolingPage({
             <div className="cooling-meta-row">
               <span className="cooling-meta-label">ITEM</span>
               <span className="cooling-meta-value">{item.name}</span>
+            </div>
+            <div className="cooling-meta-row">
+              <span className="cooling-meta-label">PRICE</span>
+              <span className="cooling-meta-value">{formatKRW(item.price)}</span>
             </div>
 
             {/* 타이머 */}
