@@ -2044,6 +2044,268 @@ body {
 }
 .m-item-card .cooling-progress span { background: var(--ink); }
 
+/* ───────── 모바일 — 냉각 대기 (m-cooling-*) ───────── */
+.m-cooling-doc {
+  background: var(--surface);
+  border: 2px solid var(--line-default);
+  padding: 18px;
+  margin: 4px 0 16px;
+  position: relative;
+}
+.m-cooling-doc::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 14px;
+  width: 56px;
+  height: 14px;
+  background: var(--accent);
+  border: 2px solid var(--line-default);
+  transform: rotate(-2deg);
+}
+.m-cooling-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.m-cooling-name {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  margin: 0;
+}
+.m-cooling-timer-card {
+  border: 2px solid var(--ink);
+  background: var(--surface);
+  padding: 24px 20px;
+  margin-bottom: 16px;
+  box-shadow: 4px 4px 0 var(--accent);
+}
+.m-cooling-timer-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+.m-cooling-timer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-top: 6px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.m-cooling-timer > span { display: inline-flex; align-items: baseline; gap: 2px; }
+.m-cooling-timer-unit {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-3);
+  letter-spacing: 0;
+}
+.m-cooling-timer-card .cooling-progress {
+  height: 8px;
+  background: var(--surface-2);
+  border: 2px solid var(--line-default);
+}
+.m-cooling-timer-card .cooling-progress span { background: var(--ink); }
+.m-cooling-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+.m-cooling-note {
+  border: 2px dashed var(--line-default);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.m-cooling-note .doc-tag { align-self: flex-start; }
+.m-cooling-note p { margin: 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.55; }
+
+/* ───────── 모바일 — 등록 가이드 카드 (m-guide-*) ───────── */
+.m-guide-card {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 2px solid var(--ink);
+  background: color-mix(in oklab, var(--accent) 30%, var(--surface));
+  align-items: flex-start;
+}
+.m-guide-body { flex: 1; }
+.m-guide-row {
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.m-guide-arrow { color: var(--ink-3); font-weight: 600; }
+.m-guide-row strong {
+  background: var(--ink);
+  color: var(--surface);
+  padding: 2px 8px;
+  font-size: 14px;
+}
+.m-guide-sub { font-size: 12.5px; color: var(--ink-3); margin-top: 4px; line-height: 1.5; }
+
+/* ───────── 모바일 — Splash (등록 후/결정 후) ───────── */
+.m-splash-card {
+  border: 2px solid var(--ink);
+  background: var(--surface);
+  padding: 24px 24px 22px;
+  text-align: center;
+  box-shadow: 6px 6px 0 var(--accent);
+  max-width: 280px;
+}
+.m-splash-tags { display: flex; gap: 6px; justify-content: center; margin-bottom: 14px; }
+.m-splash-card h2 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin: 0;
+  text-transform: uppercase;
+}
+.m-splash-time {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-top: 10px;
+  background: var(--accent);
+  display: inline-block;
+  padding: 4px 12px;
+  border: 2px solid var(--ink);
+}
+.m-splash-card p {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ───────── 모바일 — Fact 카드 (요약 화면) ───────── */
+.m-fact-card {
+  border: 2px solid var(--ink);
+  background: var(--surface);
+  padding: 18px;
+  margin: 16px 0 24px;
+  box-shadow: 4px 4px 0 var(--accent);
+}
+.m-fact-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--line-default);
+}
+.m-fact-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+.m-fact-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.m-fact-card li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  font-size: 14.5px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+.m-fact-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-3);
+  flex-shrink: 0;
+  background: var(--surface-2);
+  padding: 2px 5px;
+  letter-spacing: 0.04em;
+}
+.m-fact-foot {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 2px solid var(--line-default);
+  font-size: 12px;
+  color: var(--ink-3);
+  text-align: center;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ───────── 모바일 — 결정 버튼 행 (요약 화면 하단) ───────── */
+.decision-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 24px; }
+.decision-btn {
+  padding: 18px 12px;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  border: 2px solid var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  font-family: inherit;
+  text-transform: uppercase;
+  transition: all 0.12s ease;
+}
+.decision-btn:hover { background: var(--ink); color: var(--surface); }
+.decision-btn.passed:hover { background: var(--accent); color: var(--ink); }
+.decision-btn.bought:hover { background: var(--ink); color: var(--surface); }
+
+/* ───────── 모바일 — m-doc-header tags/title/meta (재사용) ───────── */
+.m-doc-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.m-doc-title {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 0;
+}
+.m-doc-meta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 2px solid var(--line-default);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+.m-doc-section { margin-top: 18px; }
+.m-doc-section-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
 /* 모바일 채팅 상단 메타 (prototype/mobile.css m-chat-meta) */
 .m-chat-meta {
   padding: 12px 20px 14px;
