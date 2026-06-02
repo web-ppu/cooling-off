@@ -83,17 +83,17 @@ export default async function ChatItemPage({
 
   return (
     <div
+      className="px-0 py-0 md:px-4 md:py-6"
       style={{
         background: "var(--surface-2)",
         minHeight: "100vh",
-        padding: "24px 16px",
       }}
     >
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-        {/* 페이지 헤더 — 채팅 화면에서 홈으로 돌아갈 수 있는 진입로 (issue #127) */}
+        {/* 데스크탑 전용 ← 홈 박스 (md+). 모바일에선 시안 정합으로 hidden. */}
         <header
+          className="hidden md:flex"
           style={{
-            display: "flex",
             alignItems: "center",
             marginBottom: 16,
           }}
