@@ -590,10 +590,13 @@ body {
   min-height: 480px;
 }
 @media (max-width: 880px) {
+  /* 시안 정합: 모바일에선 frame 둘레 보더 제거 + 풀폭 */
   .pc-chat-frame {
     grid-template-columns: 1fr;
     height: auto;
     min-height: calc(100dvh - 64px);
+    border: none;
+    overflow: visible;
   }
 }
 
@@ -694,26 +697,29 @@ body {
   line-height: 1.45;
   white-space: pre-wrap;
 }
+/* 시안 정합: AI 버블 — 흰 배경 + 2px ink 보더 + 우하단 검정 그림자 */
 .bubble.ai {
   align-self: flex-start;
-  background: var(--surface-2);
+  background: var(--surface);
   color: var(--ink);
-  border-bottom-left-radius: 6px;
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
 }
 .bubble.user {
   align-self: flex-end;
   background: var(--ink);
   color: var(--surface);
-  border-bottom-right-radius: 6px;
 }
+/* 시안 정합: system 안내 — 옅은 회색 배경 + 보더 박스 (가운데) */
 .bubble.system {
   align-self: center;
   font-family: var(--font-mono);
   font-size: 12px;
   letter-spacing: 0.02em;
   color: var(--ink-3);
-  background: transparent;
-  padding: 4px 8px;
+  background: var(--surface-2);
+  border: 2px solid var(--line-default);
+  padding: 6px 12px;
   text-align: center;
 }
 .bubble.loading {
@@ -783,11 +789,12 @@ body {
   color: var(--ink-4);
   cursor: not-allowed;
 }
+/* 시안 정합: 전송 버튼 — accent 파란 배경 + 2px ink 보더 + ink 글자 */
 .chat-send {
   appearance: none;
   border: 2px solid var(--ink);
-  background: var(--ink);
-  color: var(--surface);
+  background: var(--accent);
+  color: var(--ink);
   width: 44px;
   min-height: 44px;
   border-radius: 0;
@@ -799,7 +806,7 @@ body {
   transition: background 0.1s;
 }
 .chat-send:hover:not(:disabled) {
-  background: var(--ink-2);
+  background: var(--accent-soft);
 }
 .chat-send:disabled {
   background: var(--surface-2);
