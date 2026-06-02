@@ -82,7 +82,9 @@ export async function saveDecision(input: SaveDecisionInput) {
   }
 
   revalidatePath("/");
-  redirect("/");
+  // redirect 는 클라이언트가 1.8초 splash (m-splash-card) 노출 후 직접 수행.
+  // 시안의 DecisionResult / PcDecisionResult 흐름 정합.
+  return { success: true as const };
 }
 
 /**

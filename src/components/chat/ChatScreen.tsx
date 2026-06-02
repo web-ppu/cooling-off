@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   FIRST_AI_MESSAGE,
   type ChatMessage,
@@ -83,6 +84,7 @@ export default function ChatScreen({
 
   const scrollAnchorRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const router = useRouter();
 
   const turnCount = useMemo(
     () => messages.filter((m) => m.role === "user").length,
@@ -303,20 +305,18 @@ export default function ChatScreen({
     try {
       // chat_messages 는 이미 appendChatTurn 으로 누적되어 있으므로 여기서는
       // items 결정 상태만 갱신한다.
+      // saveDecision 은 redirect 를 제거했으니 success 후 클라이언트가
+      // 1.8초 m-splash-card 노출 후 router.push("/") 로 이동.
       await saveDecision({
         itemId,
         decision: dbDecision,
         factSummary,
       });
+      // 시안 DecisionResult 흐름 — 1.8초 splash 후 홈으로.
+      window.setTimeout(() => {
+        router.push("/");
+      }, 1800);
     } catch (error) {
-      // Next.js 의 redirect() 는 NEXT_REDIRECT 에러를 throw 해서 동작한다.
-      // 이 catch 가 그걸 일반 에러로 잡으면 사용자에게는 redirect 가 실패한
-      // 것처럼 보인다 (실제로는 DB 저장 + 리다이렉트 모두 성공). Next.js 가
-      // 처리하도록 재-throw 한다.
-      if (isNextRedirectError(error)) {
-        throw error;
-      }
-
       console.error("[saveDecision] failed", error);
       const message =
         error instanceof Error
