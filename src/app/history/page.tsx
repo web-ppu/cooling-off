@@ -160,6 +160,46 @@ export default async function HistoryPage() {
 
         {/* ─── 모바일 (<md) — prototype/MobileScreens HistoryScreen 정합 ─── */}
         <div className="md:hidden">
+          {/* 시안 정합: 페이지 위 작은 < + History 헤더 */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+              padding: '4px 0 16px',
+              borderBottom: '2px solid var(--line-default)',
+              marginBottom: 16,
+            }}
+          >
+            <Link
+              href="/"
+              aria-label="홈으로"
+              style={{
+                position: 'absolute',
+                left: 0,
+                fontSize: 22,
+                lineHeight: 1,
+                color: 'var(--ink)',
+                textDecoration: 'none',
+                padding: '4px 8px',
+              }}
+            >
+              ‹
+            </Link>
+            <span
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 13,
+                fontWeight: 700,
+                letterSpacing: '0.04em',
+                color: 'var(--ink)',
+              }}
+            >
+              History
+            </span>
+          </div>
+
           {/* m-history-header — 좌상단 tape strip + 태그 + 큰 타이틀 + 메타 */}
           <div className="m-history-header">
             <div className="m-doc-tags">
