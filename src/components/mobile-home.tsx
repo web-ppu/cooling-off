@@ -35,27 +35,29 @@ export default function MobileHome({
 
   return (
     <div className="px-4 pb-28 pt-4">
-      {/* 통계 행 */}
-      <div className="m-stats-row">
-        <div className="m-stat">
-          <div className="m-stat-label">전체</div>
-          <div className="m-stat-value">
-            {allItems.length}
-            <span>개</span>
+      {/* doc-header.compact — 좌상단 tape strip + 안에 stat-row */}
+      <div className="m-doc-header compact">
+        <div className="m-stats-row">
+          <div className="m-stat">
+            <div className="m-stat-label">전체</div>
+            <div className="m-stat-value">
+              {allItems.length}
+              <span>개</span>
+            </div>
           </div>
-        </div>
-        <div className="m-stat">
-          <div className="m-stat-label">합계</div>
-          <div className="m-stat-value">
-            {totalManwon}
-            <span>만원</span>
+          <div className="m-stat">
+            <div className="m-stat-label">합계</div>
+            <div className="m-stat-value">
+              {totalManwon}
+              <span>만원</span>
+            </div>
           </div>
-        </div>
-        <div className="m-stat">
-          <div className="m-stat-label">대기</div>
-          <div className="m-stat-value">
-            {readyItems.length}
-            <span>개</span>
+          <div className="m-stat">
+            <div className="m-stat-label">대기</div>
+            <div className="m-stat-value">
+              {readyItems.length}
+              <span>개</span>
+            </div>
           </div>
         </div>
       </div>

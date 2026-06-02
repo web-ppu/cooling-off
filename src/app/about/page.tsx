@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import AppHeader from '@/components/app-header'
+import LogoutButton from '@/components/logout-button'
 
 /**
  * /about — 서비스 소개 페이지 (brutalist 디자인).
@@ -166,8 +167,17 @@ export default function AboutPage() {
           <div className="about-footer">— END OF DOCUMENT —</div>
         </div>
 
-        {/* 하단 ← 돌아가기 — 시안에 좌측 정렬 박스 */}
-        <div style={{ marginTop: 24 }}>
+        {/* 하단 — 좌측 ← 돌아가기, 우측 로그아웃 (모바일 nav 에서 로그아웃을 제거했기 때문) */}
+        <div
+          style={{
+            marginTop: 24,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 12,
+          }}
+        >
           <Link
             href="/"
             className="inline-flex items-center justify-center border-2"
@@ -185,6 +195,7 @@ export default function AboutPage() {
           >
             ← 돌아가기
           </Link>
+          <LogoutButton />
         </div>
       </div>
     </main>
