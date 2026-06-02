@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { registerItem } from '@/app/register/actions'
 import { getCoolingDaysLabel, COOLING_TIERS } from '@/lib/cooling'
 import { formatKRW } from '@/lib/format'
 
 export default function RegisterForm() {
+  const router = useRouter()
   const [name, setName] = useState('')
   const [price, setPrice] = useState('')
   const [url, setUrl] = useState('')
@@ -13,6 +15,12 @@ export default function RegisterForm() {
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [serverError, setServerError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  /**
+   * 등록 완료 splash 노출용. true 가 되면 RegisterForm 자리에 m-splash-card 표시,
+   * 1.8초 후 router.push('/').
+   * 시안 CoolingStartSplash / PcCoolingStartSplash 흐름 정합.
+   */
+  const [showStartSplash, setShowStartSplash] = useState(false)
 
   const priceNum = parseInt(price.replace(/[^\d]/g, '') || '0', 10)
   const priceDisplay = price === '' ? '' : priceNum.toLocaleString('ko-KR')
@@ -67,13 +75,44 @@ export default function RegisterForm() {
         const result = await registerItem(formData)
         if (result && !result.success) {
           setServerError(result.error)
+          return
         }
+        // 시안 CoolingStartSplash 흐름 — 1.8초 splash 후 홈으로.
+        setShowStartSplash(true)
+        window.setTimeout(() => {
+          router.push('/')
+        }, 1800)
       } catch (err) {
-        // 네트워크 단절, 서버 액션 자체 실패 등 — Next.js redirect()는 여기 도달하지 않음
         console.error('[register]', err)
         setServerError('연결이 불안정합니다. 잠시 후 다시 시도해 주세요.')
       }
     })
+  }
+
+  // 등록 완료 splash — 모든 폼/사이드바 대체 (시안 PcCoolingStartSplash / CoolingStartSplash).
+  if (showStartSplash) {
+    return (
+      <div
+        role="status"
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          padding: '40px 0',
+        }}
+      >
+        <div className="m-splash-card">
+          <div className="m-splash-tags">
+            <span className="doc-tag" style={{ background: 'var(--accent)' }}>
+              COOLING
+            </span>
+            <span className="doc-tag">STARTED</span>
+          </div>
+          <h2>냉각 시작</h2>
+          <div className="m-splash-time">{cooling ?? '— —'} 후</div>
+          <p>다시 만나요.</p>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -51,5 +51,7 @@ export async function registerItem(formData: FormData): Promise<RegisterResult> 
     return { success: false, error: '저장 중 오류가 발생했습니다. 다시 시도해 주세요.' }
   }
 
-  redirect('/')
+  // redirect 는 클라이언트가 m-splash-card 1.8초 노출 후 직접 수행.
+  // 시안의 CoolingStartSplash / PcCoolingStartSplash 흐름 정합.
+  return { success: true as const }
 }
