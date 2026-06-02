@@ -568,27 +568,55 @@ function FactSummarySection({
 }) {
   const trimmed = summary?.trim() ?? "";
   const hasSummary = trimmed.length > 0 && trimmed !== "요약할 사실 없음.";
+  // AI 가 줄바꿈으로 나열한 사실들을 항목 배열로. 시스템 프롬프트의 [팩트 요약]
+  // 형식 가이드("{주제}: {간결한 사실}" 한 줄당 한 항목, #131 PR #168) 와 정합.
+  const facts: string[] = hasSummary
+    ? trimmed
+        .split("\n")
+        .map((s) => s.replace(/^[-·•·]\s*/, "").trim())
+        .filter((s) => s.length > 0)
+    : [];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {hasSummary && (
-        <div className="fact-card">
-          <h4>대화에서 정리된 사실</h4>
-          <div className="body">{trimmed}</div>
+      {/* m-fact-card — 시안 SummaryScreen 패턴 (검정 보더 + accent 우하단 그림자) */}
+      {facts.length > 0 && (
+        <div className="m-fact-card">
+          <div className="m-fact-head">
+            <span
+              className="doc-tag"
+              style={{ background: "var(--accent)" }}
+            >
+              FACTS
+            </span>
+            <span className="m-fact-sub">팩트 요약 · {facts.length}건</span>
+          </div>
+          <ul>
+            {facts.map((f, i) => (
+              <li key={i}>
+                <span className="m-fact-num">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="m-fact-foot">판단은 넣지 않았어요. 결정은 직접 하세요.</p>
         </div>
       )}
 
-      <div className="decide-row">
+      {/* decision-row — 2 컬럼 큰 버튼 (모바일 SummaryScreen 정합) */}
+      <div className="decision-row">
         <button
           type="button"
-          className="decide-btn"
+          className="decision-btn passed"
           onClick={() => void onDecision("안 삼")}
         >
           안 삼
         </button>
         <button
           type="button"
-          className="decide-btn primary"
+          className="decision-btn bought"
           onClick={() => void onDecision("삼")}
         >
           삼
