@@ -2306,9 +2306,9 @@ body {
   text-transform: uppercase;
 }
 
-/* 모바일 채팅 상단 메타 (prototype/mobile.css m-chat-meta) */
+/* 모바일 채팅 상단 메타 — 더 컴팩트 (시안 사이즈 정합) */
 .m-chat-meta {
-  padding: 12px 20px 14px;
+  padding: 10px 16px 12px;
   border-bottom: 2px solid var(--line-default);
   background: var(--surface);
   flex-shrink: 0;
@@ -2316,15 +2316,15 @@ body {
 .m-chat-meta-tags {
   display: flex;
   gap: 6px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .m-chat-meta-name {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 .m-chat-meta-price {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--ink-3);
   margin-top: 2px;
   font-family: var(--font-mono);
