@@ -125,11 +125,14 @@ export default async function Home() {
             <div className="hidden items-center gap-2 md:inline-flex">
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2 border-2 px-5 py-3 text-sm font-semibold transition-colors"
+                className="inline-flex items-center gap-2 border-2 transition-colors"
                 style={{
                   background: 'var(--accent)',
                   color: 'var(--ink)',
                   borderColor: 'var(--ink)',
+                  padding: '12px 18px',
+                  fontSize: '14.5px',
+                  fontWeight: 600,
                 }}
               >
                 + 사고 싶은 물건 등록
