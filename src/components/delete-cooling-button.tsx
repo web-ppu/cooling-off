@@ -26,10 +26,24 @@ export default function DeleteCoolingButton({ itemId }: { itemId: string }) {
 
   return (
     <div className="flex flex-col items-end gap-1">
+      {/* 시안 정합: 보더 박스 삭제 버튼 (기록 상세와 동일 톤) */}
       <button
         onClick={handleDelete}
         disabled={isPending}
-        className="cursor-pointer text-sm text-zinc-400 hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+        style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: 12,
+          fontWeight: 600,
+          letterSpacing: '0.04em',
+          textTransform: 'uppercase',
+          color: 'var(--ink)',
+          background: 'var(--surface)',
+          border: '2px solid var(--ink)',
+          padding: '6px 14px',
+          cursor: isPending ? 'not-allowed' : 'pointer',
+          opacity: isPending ? 0.4 : 1,
+          appearance: 'none',
+        }}
       >
         {isPending ? '삭제 중…' : '삭제'}
       </button>

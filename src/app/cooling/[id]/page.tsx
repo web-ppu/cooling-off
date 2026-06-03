@@ -1,15 +1,21 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { formatCoolingEndsAt, formatKRW } from '@/lib/format'
+import Link from 'next/link'
+import { formatKRW } from '@/lib/format'
+import { getCoolingDaysLabel } from '@/lib/cooling'
 import { transitionExpiredItems } from '@/lib/items'
-import CoolingDetailTimer from '@/components/cooling-detail-timer'
 import MobileCoolingDetailTimer from '@/components/mobile-cooling-detail-timer'
 import DeleteCoolingButton from '@/components/delete-cooling-button'
-import AppHeader from '@/components/app-header'
 import SnowBackground from '@/components/snow-background'
 
 export const dynamic = 'force-dynamic'
 
+/**
+ * /cooling/[id] — 냉각 중 상품 상세. 시안 prototype/MobileScreens CoolingScreen 정합.
+ *
+ * 전체화면: 헤더(뒤로 + 삭제) + m-cooling-doc(COOLING · 냉각기간 · 가격 태그 + 이름) +
+ * REMAINING 타이머 카드 + NOTE 점선 박스. 배경 눈송이.
+ */
 export default async function CoolingPage({
   params,
 }: {
@@ -43,82 +49,85 @@ export default async function CoolingPage({
   return (
     <main
       className="flex min-h-screen flex-col"
-      style={{ position: 'relative', overflow: 'hidden', background: 'var(--surface-2)' }}
+      style={{ position: 'relative', overflow: 'hidden', background: 'var(--surface)' }}
     >
-      <AppHeader user={user} />
+      {/* 상단 바 — 시안 HeaderBar: 좌측 뒤로 + 우측 삭제 */}
+      <header
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '14px 20px',
+          borderBottom: '2px solid var(--line-default)',
+          background: 'var(--surface)',
+          position: 'relative',
+          zIndex: 2,
+        }}
+      >
+        <Link
+          href="/"
+          aria-label="홈으로"
+          style={{
+            width: 36,
+            height: 36,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--ink-3)',
+            textDecoration: 'none',
+          }}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.25"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M15 6l-6 6 6 6" />
+          </svg>
+        </Link>
+        <DeleteCoolingButton itemId={id} />
+      </header>
+
       <SnowBackground />
 
       <div
-        className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16 pt-4 md:px-8 md:pt-7"
-        style={{ position: 'relative', zIndex: 1 }}
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          flex: 1,
+          width: '100%',
+          maxWidth: 520,
+          margin: '0 auto',
+          padding: '16px 20px 40px',
+        }}
       >
-        {/* 우상단 삭제만 (시안 정합 — ← 홈 박스 없음).
-            홈 이동은 AppHeader 의 ❄ 쿨링오프 로고 클릭으로. */}
-        <div className="mb-4 flex items-center justify-end">
-          <DeleteCoolingButton itemId={id} />
+        {/* m-cooling-doc — 좌상단 tape strip + 태그(COOLING · 냉각기간 · 가격) + 큰 이름 */}
+        <div className="m-cooling-doc">
+          <div className="m-cooling-tags">
+            <span className="doc-tag" style={{ background: 'var(--accent)' }}>
+              COOLING
+            </span>
+            <span className="doc-tag">{getCoolingDaysLabel(item.price)}</span>
+            <span className="doc-tag">{formatKRW(item.price)}</span>
+          </div>
+          <h1 className="m-cooling-name">{item.name}</h1>
         </div>
 
-        {/* ── 데스크탑 (md+) — PcCoolingScreen 패턴 ── */}
-        <div className="hidden md:block">
-          <div className="cooling-card">
-            <div className="cooling-card-head">
-              <span className="doc-tag">COOLING</span>
-              <span className="cooling-card-id">
-                REC.{id.slice(0, 6).toUpperCase()}
-              </span>
-              <span className="cooling-card-status">IN PROGRESS</span>
-            </div>
+        {/* REMAINING 타이머 카드 — D·H·M·S + 프로그레스 + 진행률·완료 예정 */}
+        <MobileCoolingDetailTimer
+          coolingEndsAt={item.cooling_ends_at}
+          createdAt={item.created_at}
+        />
 
-            <div className="cooling-card-body">
-              <div className="cooling-meta-row">
-                <span className="cooling-meta-label">ITEM</span>
-                <span className="cooling-meta-value">{item.name}</span>
-              </div>
-              <div className="cooling-meta-row">
-                <span className="cooling-meta-label">PRICE</span>
-                <span className="cooling-meta-value">{formatKRW(item.price)}</span>
-              </div>
-
-              <CoolingDetailTimer coolingEndsAt={item.cooling_ends_at} />
-
-              <div className="cooling-meta-row">
-                <span className="cooling-meta-label">READY AT</span>
-                <span className="cooling-meta-value">
-                  {formatCoolingEndsAt(item.cooling_ends_at)}
-                </span>
-              </div>
-            </div>
-
-            <div className="cooling-card-foot">
-              ※ 지금은 기다리는 시간입니다. 결정 가능 시점이 되면 알려드릴게요.
-            </div>
-          </div>
-        </div>
-
-        {/* ── 모바일 (<md) — MobileCoolingScreen 패턴 ── */}
-        <div className="md:hidden">
-          {/* m-cooling-doc — 좌상단 tape strip + 태그 + 큰 이름 */}
-          <div className="m-cooling-doc">
-            <div className="m-cooling-tags">
-              <span className="doc-tag" style={{ background: 'var(--accent)' }}>
-                COOLING
-              </span>
-              <span className="doc-tag">{formatKRW(item.price)}</span>
-            </div>
-            <h1 className="m-cooling-name">{item.name}</h1>
-          </div>
-
-          {/* m-cooling-timer-card — D·H·M·S + 프로그레스 + 진행률·완료 예정 */}
-          <MobileCoolingDetailTimer
-            coolingEndsAt={item.cooling_ends_at}
-            createdAt={item.created_at}
-          />
-
-          {/* m-cooling-note — 점선 박스 + NOTE 태그 + 안내 */}
-          <div className="m-cooling-note">
-            <span className="doc-tag">NOTE</span>
-            <p>지금은 기다리는 시간입니다. 결정 가능 시점이 되면 알려드릴게요.</p>
-          </div>
+        {/* NOTE 점선 박스 + 안내 */}
+        <div className="m-cooling-note">
+          <span className="doc-tag">NOTE</span>
+          <p>지금은 기다리는 시간입니다. 결정 가능 시점이 되면 알려드릴게요.</p>
         </div>
       </div>
     </main>

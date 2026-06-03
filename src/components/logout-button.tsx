@@ -9,6 +9,9 @@ export default function LogoutButton() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
+    // 로그아웃 후 로그인 페이지로 이동. (공개 페이지(/about 등)에서는 refresh 만으로는
+    // 같은 페이지에 머물러 "작동 안 함" 처럼 보였음.)
+    router.push('/login')
     router.refresh()
   }
 
