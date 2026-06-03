@@ -691,9 +691,9 @@ body {
 
 .bubble {
   max-width: 80%;
-  padding: 14px 18px;
+  padding: 10px 14px;
   border-radius: 0;
-  font-size: 15px;
+  font-size: 13.5px;
   line-height: 1.5;
   white-space: pre-wrap;
 }
@@ -2309,13 +2309,11 @@ body {
 }
 .m-doc-section { margin-top: 18px; }
 .m-doc-section-tag {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
   color: var(--ink);
-  margin-bottom: 8px;
-  text-transform: uppercase;
+  margin-bottom: 12px;
 }
 
 /* 모바일 채팅 상단 메타 — 시안 픽셀 정합 */
