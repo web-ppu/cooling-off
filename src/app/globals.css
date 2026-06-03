@@ -706,10 +706,14 @@ body {
   box-shadow: 5px 5px 0 var(--ink);
   margin-bottom: 6px;
 }
+/* 시안 정합: User bubble — accent 파란 + 2px ink 보더 + 우하단 검정 그림자 */
 .bubble.user {
   align-self: flex-end;
-  background: var(--ink);
-  color: var(--surface);
+  background: var(--accent);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  margin-bottom: 6px;
 }
 /* 시안 정합: system 안내 — 옅은 회색 배경 + 보더 박스 (가운데) */
 .bubble.system {
