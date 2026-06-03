@@ -64,7 +64,7 @@ export default async function AppHeader({ user: userProp }: Props) {
         <div className="hidden h-16 items-center gap-6 px-8 md:flex">
           <Link
             href="/"
-            className="flex items-center gap-2 text-lg font-extrabold tracking-tight"
+            className="flex items-center gap-2 text-lg font-bold tracking-[-0.005em]"
           >
             <SnowflakeLogo size={22} />
             <span>쿨링오프</span>
