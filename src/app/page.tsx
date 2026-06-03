@@ -121,6 +121,7 @@ export default async function Home() {
               <br />
               <span className="doc-title-em">{items.length}건.</span>
             </h1>
+<<<<<<< Updated upstream
             {/* PC 전용 등록 버튼 — accent 파란 + 검정 보더 + 검정 글씨 (디자이너 시안 정합) */}
             <Link
               href="/register"
@@ -133,6 +134,23 @@ export default async function Home() {
             >
               + 사고 싶은 물건 등록
             </Link>
+=======
+            {/* PC 전용 등록 버튼 */}
+            <div className="hidden items-center gap-2 md:inline-flex">
+              <Link
+                href="/capture"
+                className="inline-flex items-center gap-2 border-2 border-[var(--line-default)] bg-white px-4 py-3 text-sm font-semibold text-[var(--ink)] transition-colors hover:bg-[var(--surface-2)]"
+              >
+                링크로 담기
+              </Link>
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 border-2 border-[var(--line-default)] bg-[var(--ink)] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[var(--ink-2)]"
+              >
+                + 사고 싶은 물건 등록
+              </Link>
+            </div>
+>>>>>>> Stashed changes
           </div>
           <div className="doc-meta-row">
             <span>FILE / cooling.live</span>

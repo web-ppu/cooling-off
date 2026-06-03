@@ -65,7 +65,8 @@ function LoginInner() {
             setAuthError('로그인에 실패했습니다. 다시 시도해 주세요.')
             return
           }
-          router.push('/')
+          const nextParam = searchParams.get('next')
+          router.push(nextParam && nextParam.startsWith('/') ? nextParam : '/')
         },
         auto_select: true,
       })
@@ -97,6 +98,35 @@ function LoginInner() {
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+<<<<<<< Updated upstream
+=======
+  const handleLogin = async () => {
+    window.google?.accounts.id.cancel()
+    setAuthError(null)
+    try {
+      const supabase = createClient()
+      const nextParam = searchParams.get('next')
+      const callbackUrl = new URL(`${window.location.origin}/auth/callback`)
+      if (nextParam && nextParam.startsWith('/')) {
+        callbackUrl.searchParams.set('next', nextParam)
+      }
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: callbackUrl.toString(),
+        },
+      })
+      if (error) {
+        console.error('[login]', error)
+        setAuthError('로그인에 실패했습니다. 다시 시도해 주세요.')
+      }
+    } catch (err) {
+      console.error('[login]', err)
+      setAuthError('연결이 불안정합니다. 잠시 후 다시 시도해 주세요.')
+    }
+  }
+
+>>>>>>> Stashed changes
   return (
     <main
       style={{
