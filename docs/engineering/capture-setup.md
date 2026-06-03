@@ -3,7 +3,7 @@
 캡처 기능 코드는 배포되어 있지만, 아래 3가지는 **코드 밖 설정/검증**이라 사람이 직접 해야 한다.
 순서대로 따라 하면 된다.
 
-전제: 아래 예시 도메인은 `https://cooling.live` 로 적는다. 실제로는
+전제: 아래 예시 도메인은 `https://cooling-off-main.vercel.app` 로 적는다. 실제로는
 `NEXT_PUBLIC_APP_URL` 에 설정한 프로덕션 도메인으로 바꿔서 읽으면 된다.
 
 ---
@@ -33,7 +33,7 @@ iPhone은 PWA `share_target` 을 지원하지 않으므로, **iOS 단축어**로
    3번 텍스트 액션에 넣을 내용:
 
    ```
-   https://cooling.live/capture?source=ios-shortcut&url=[인코딩된 텍스트]
+   https://cooling-off-main.vercel.app/capture?source=ios-shortcut&url=[인코딩된 텍스트]
    ```
 
    - `[인코딩된 텍스트]` 는 직접 타이핑하는 게 아니라, 2번 **텍스트 인코딩**의
@@ -46,7 +46,7 @@ iPhone은 PWA `share_target` 을 지원하지 않으므로, **iOS 단축어**로
 
 1. Safari나 쇼핑 앱(쿠팡/네이버/무신사)에서 상품 페이지를 연다.
 2. **공유** 버튼 → 액션 목록에서 방금 만든 `쿨링오프에 담기` 선택.
-3. Safari가 `https://cooling.live/capture?source=ios-shortcut&url=...` 를 연다.
+3. Safari가 `https://cooling-off-main.vercel.app/capture?source=ios-shortcut&url=...` 를 연다.
 4. 비로그인 상태면 로그인 화면으로 갔다가 **로그인 후 다시 같은 캡처 URL로 복귀**하는지
    확인한다(이번에 고친 `next` 복귀 경로).
 5. 캡처 화면에서 상품명·가격이 자동으로 채워지는지(지원 사이트), 또는 URL만
@@ -83,10 +83,10 @@ Android Chrome(및 Chromium 계열)에서는 **PWA를 홈 화면에 설치**하�
 
 ### 2-A. 설치
 
-1. Android Chrome에서 `https://cooling.live` 접속(로컬 검증 시엔 HTTPS 필요 — 아래 참고).
+1. Android Chrome에서 `https://cooling-off-main.vercel.app` 접속(로컬 검증 시엔 HTTPS 필요 — 아래 참고).
 2. 주소창 메뉴(⋮) → **앱 설치** 또는 **홈 화면에 추가**.
    - 메뉴가 안 보이면 manifest가 제대로 서빙되는지 확인:
-     `https://cooling.live/manifest.webmanifest` 가 200으로 열려야 한다.
+     `https://cooling-off-main.vercel.app/manifest.webmanifest` 가 200으로 열려야 한다.
 3. 홈 화면 아이콘으로 한 번 실행해 standalone(주소창 없는) 모드로 뜨는지 확인.
 
 ### 2-B. 공유 타깃 검증
@@ -136,5 +136,5 @@ Android Chrome(및 Chromium 계열)에서는 **PWA를 홈 화면에 설치**하�
 즉 단축어는 최소한 아래만 열면 된다:
 
 ```
-https://cooling.live/capture?source=ios-shortcut&url=<URL-encoded 상품링크>
+https://cooling-off-main.vercel.app/capture?source=ios-shortcut&url=<URL-encoded 상품링크>
 ```
