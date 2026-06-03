@@ -93,7 +93,7 @@ export default async function CoolingPage({
         <DeleteCoolingButton itemId={id} />
       </header>
 
-      <SnowBackground />
+      <SnowBackground mobile />
 
       <div
         style={{
