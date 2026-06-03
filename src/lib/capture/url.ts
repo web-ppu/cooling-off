@@ -83,7 +83,11 @@ export function isPrivateHost(host: string): boolean {
     if (v6 === '::1' || v6 === '::') return true
     if (/^fe[89ab][0-9a-f]:/i.test(v6)) return true // link-local
     if (/^f[cd][0-9a-f]{2}:/i.test(v6)) return true // ULA
-    if (/^::ffff:/i.test(v6)) return true // IPv4-mapped
+    // IPv4-mapped(::ffff:1.2.3.4) 은 매핑된 IPv4 로 사설망 여부를 재평가한다.
+    // public IPv4(::ffff:8.8.8.8)까지 무조건 막지 않도록.
+    const mapped = v6.match(/^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/i)
+    if (mapped) return isPrivateHost(mapped[1])
+    if (/^::ffff:/i.test(v6)) return true // 16진 표기 매핑 등은 보수적으로 차단
     return false
   }
 

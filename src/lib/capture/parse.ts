@@ -62,7 +62,7 @@ export async function parsePreview(rawUrl: string): Promise<ParseResult> {
   }
 
   const html = await safeFetchHtml(normalized.url)
-  if (html === 'fetch_failed' || html === 'too_large') {
+  if (html === 'fetch_failed') {
     // 지원 사이트라도 쿠팡(403)·네이버(429)처럼 봇 차단되면 본문을 못 읽는다.
     // 이건 오류가 아니라 "URL은 살리고 이름·가격만 직접 입력" 폴백이다 (PRD §7 partial/total-fail).
     // blocked_host·invalid_url 만 진짜 에러로 남긴다.
@@ -102,6 +102,19 @@ export async function parsePreview(rawUrl: string): Promise<ParseResult> {
 /**
  * 호스트 이름의 DNS 결과가 public IP인지 확인.
  * URL 단계에서는 호스트 문자열만 보지만, 실제 SSRF는 resolve 후 결정된다.
+ *
+ * SSRF 방어는 다층으로 구성된다:
+ *  1) normalizeUrl: http/https 만 허용 + 호스트 문자열 사설/예약 차단(isPrivateHost)
+ *  2) 여기(resolve 검증): DNS 결과의 모든 IP가 public 인지 확인
+ *  3) safeFetchHtml: 리다이렉트 타깃마다 1·2 를 재검증
+ *  4) allowlist: 애초에 fetch 대상은 쿠팡/네이버/무신사뿐(그 외는 fetch 안 함)
+ *
+ * 잔여 한계(DNS rebinding/TOCTOU): 2번 검증과 fetch 의 실제 connect 사이에
+ * IP가 바뀌는 경우는 완전히 닫지 못한다. connect 시점 IP 핀닝은 글로벌 fetch +
+ * https(SNI 유지)에서 undici 커스텀 dispatcher 가 필요한데, Node 내장 fetch 와
+ * 별도 설치 undici 의 dispatcher 가 호환되지 않아 연결이 깨져 도입을 보류했다.
+ * 실질 위험은 4번 allowlist 로 크게 제한된다(공격자가 쿠팡/네이버/무신사 도메인의
+ * DNS 를 장악해야 성립). 추후 런타임이 dispatcher 핀닝을 안정 지원하면 닫을 것.
  */
 async function isPublicResolvable(host: string): Promise<boolean> {
   // 이미 IP literal인 경우 url.isPrivateHost가 처리하므로 통과시킨다.
@@ -118,7 +131,7 @@ async function isPublicResolvable(host: string): Promise<boolean> {
 async function safeFetchHtml(
   url: string,
   redirectsLeft = MAX_REDIRECTS
-): Promise<string | 'fetch_failed' | 'too_large'> {
+): Promise<string | 'fetch_failed'> {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
   try {
@@ -150,12 +163,14 @@ async function safeFetchHtml(
     const decoder = new TextDecoder('utf-8')
     let received = 0
     let html = ''
+    // MAX_BYTES 초과분은 오류가 아니라 잘라서 본다(OG/가격은 보통 앞부분에 있다).
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
       received += value.byteLength
       if (received > MAX_BYTES) {
-        html += decoder.decode(value.slice(0, Math.max(0, MAX_BYTES - (received - value.byteLength))))
+        const allow = Math.max(0, MAX_BYTES - (received - value.byteLength))
+        html += decoder.decode(value.subarray(0, allow), { stream: true })
         try {
           await reader.cancel()
         } catch {
@@ -165,6 +180,7 @@ async function safeFetchHtml(
       }
       html += decoder.decode(value, { stream: true })
     }
+    html += decoder.decode() // 스트림 flush — 마지막 멀티바이트 문자 보존
     return html
   } catch {
     return 'fetch_failed'
