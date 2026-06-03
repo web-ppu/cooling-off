@@ -25,7 +25,7 @@ export default function NavLinks() {
   const pathname = usePathname()
 
   return (
-    <nav className="ml-4 flex items-center gap-1">
+    <nav className="ml-6 flex items-center gap-1">
       {LINKS.map(({ href, label }) => {
         // '/' 는 정확 매치만, 그 외는 prefix 매치 (예: /register/foo 도 등록 활성)
         const active = href === '/' ? pathname === '/' : pathname?.startsWith(href)
@@ -35,9 +35,9 @@ export default function NavLinks() {
             href={href}
             className="cursor-pointer text-sm transition-colors"
             style={{
-              padding: '6px 12px',
-              fontWeight: active ? 700 : 500,
-              color: 'var(--ink)',
+              padding: '8px 14px',
+              fontWeight: active ? 600 : 500,
+              color: active ? 'var(--ink)' : 'var(--ink-3)',
               background: active ? 'var(--accent)' : 'transparent',
               border: active ? '2px solid var(--ink)' : '2px solid transparent',
               letterSpacing: '-0.01em',
