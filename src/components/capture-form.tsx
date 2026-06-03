@@ -226,7 +226,7 @@ export default function CaptureForm({ initialUrl, source }: Props) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   onBlur={() => setTouched((p) => ({ ...p, name: true }))}
-                  maxLength={50}
+                  maxLength={40}
                   disabled={isPending}
                 />
                 {touched.name && nameErr && (
@@ -581,8 +581,8 @@ function PasteGuide() {
         <strong>상품 정보 가져오기</strong>를 누르면 됩니다.
       </p>
       <p style={{ color: 'var(--ink-3)', fontSize: 12 }}>
-        지원 쇼핑몰(쿠팡, 네이버쇼핑, 무신사)은 상품명/가격을 자동으로 채웁니다.
-        그 외 사이트는 URL만 저장하고 직접 입력으로 전환됩니다.
+        가능한 경우 상품명/가격을 자동으로 채웁니다. 사이트가 자동 읽기를 막거나
+        지원 밖이면, 링크는 그대로 저장하고 이름·가격만 직접 입력하면 됩니다.
       </p>
     </div>
   )
