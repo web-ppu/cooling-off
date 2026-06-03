@@ -690,10 +690,11 @@ function FactSummarySection({
 }
 
 /**
- * [안 삼] / [삼] 선택 후 placeholder — 시안 DecisionResult splash 정합.
+ * [안 삼] / [삼] 선택 후 결과 화면 — 시안 DecisionResult splash 정합.
  *
+ * 시안과 동일하게 전체화면 중앙 오버레이(.splash)로 노출한다(채팅 하단 인라인 X).
  * m-splash-card: 검정 보더 + accent 우하단 그림자 + 가운데 정렬.
- * saveDecision 의 redirect 가 일어나기 직전 짧게 노출.
+ * saveDecision 의 redirect(1.8초) 가 일어나기 직전까지 노출.
  */
 function FinalDecisionPlaceholder({
   decision,
@@ -702,10 +703,7 @@ function FinalDecisionPlaceholder({
 }) {
   const passed = decision === "안 삼";
   return (
-    <div
-      role="status"
-      style={{ display: "flex", justifyContent: "center", padding: "12px 0" }}
-    >
+    <div className="splash" role="status">
       <div className="m-splash-card">
         <div className="m-splash-tags">
           <span
