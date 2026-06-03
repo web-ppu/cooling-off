@@ -592,13 +592,25 @@ body {
   min-height: 480px;
 }
 @media (max-width: 880px) {
-  /* 시안 정합: 모바일에선 frame 둘레 보더 제거 + 풀폭 */
+  /* 시안 정합: 모바일은 앱셸(flex 컬럼) — 헤더+메타 고정, 스트림이 남은 공간 채움.
+     grid 로 두면 행이 stretch 돼 메타 박스가 늘어나고 중간에 빈 공간이 생긴다. */
+  .chat-root {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+  }
   .pc-chat-frame {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
     height: auto;
-    min-height: calc(100dvh - 64px);
     border: none;
-    overflow: visible;
+    overflow: hidden;
+  }
+  .pc-chat-main {
+    flex: 1;
+    min-height: 0;
   }
 }
 
@@ -692,41 +704,43 @@ body {
 }
 
 .bubble {
-  max-width: 80%;
+  max-width: 82%;
   padding: 10px 14px;
   border-radius: 0;
-  font-size: 13.5px;
+  font-family: var(--font-mono);
+  font-size: 13px;
   line-height: 1.5;
   white-space: pre-wrap;
 }
-/* 시안 정합: AI 버블 — 흰 배경 + 2px ink 보더 + 우하단 검정 그림자 */
+/* 시안 정합: AI 버블 — 흰 배경 + 2px ink 보더 + 우하단 검정 그림자(3px) */
 .bubble.ai {
   align-self: flex-start;
   background: var(--surface);
   color: var(--ink);
   border: 2px solid var(--ink);
-  box-shadow: 5px 5px 0 var(--ink);
-  margin-bottom: 6px;
+  box-shadow: 3px 3px 0 var(--ink);
 }
-/* 시안 정합: User bubble — accent 파란 + 2px ink 보더 + 우하단 검정 그림자 */
+/* 시안 정합: User bubble — accent 파란 + 2px ink 보더 + 우하단 검정 그림자(3px) */
 .bubble.user {
   align-self: flex-end;
   background: var(--accent);
   color: var(--ink);
   border: 2px solid var(--ink);
-  box-shadow: 5px 5px 0 var(--ink);
-  margin-bottom: 6px;
+  box-shadow: 3px 3px 0 var(--ink);
 }
-/* 시안 정합: system 안내 — 옅은 회색 배경 + 보더 박스 (가운데) */
+/* 시안 정합: system 안내 — 옅은 회색 배경 + 보더 박스 (가운데, 작은 mono 대문자) */
 .bubble.system {
   align-self: center;
   font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.04em;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--ink-3);
   background: var(--surface-2);
   border: 2px solid var(--line-default);
-  padding: 8px 16px;
+  box-shadow: none;
+  padding: 5px 10px;
+  max-width: none;
   text-align: center;
 }
 .bubble.loading {
@@ -775,12 +789,14 @@ body {
 .chat-input {
   flex: 1;
   resize: none;
-  border: 2px solid var(--line-default);
+  border: 2px solid var(--ink);
   background: var(--surface-2);
   border-radius: 0;
   padding: 11px 14px;
-  font-size: 15px;
-  font-family: inherit;
+  /* 시안 정합: 입력창 mono · 12px · 약간의 자간 */
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
   outline: none;
   color: var(--ink);
   min-height: 44px;
@@ -796,7 +812,7 @@ body {
   color: var(--ink-4);
   cursor: not-allowed;
 }
-/* 시안 정합: 전송 버튼 — accent 파란 배경 + 2px ink 보더 + ink 글자 */
+/* 시안 정합: 전송 버튼 — accent 파란 배경 + 2px ink 보더 + ink 글자 + 우하단 그림자 */
 .chat-send {
   appearance: none;
   border: 2px solid var(--ink);
@@ -810,15 +826,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 2px 2px 0 var(--ink);
   transition: background 0.1s;
 }
 .chat-send:hover:not(:disabled) {
-  background: var(--accent-soft);
+  background: var(--ink);
+  color: var(--accent);
 }
+/* 시안 정합: 비활성 — 회색으로 바꾸지 않고 accent 유지 + 흐리게 */
 .chat-send:disabled {
-  background: var(--surface-2);
-  border-color: var(--line-muted, var(--ink-4));
-  color: var(--ink-4);
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -833,42 +850,41 @@ body {
   width: 100%;
 }
 
+/* 시안 정합: 흰 배경 + 좌측 회색 안내 + 우측 아웃라인 버튼 */
 .decide-banner {
   flex-shrink: 0;
   border-top: 2px solid var(--line-default);
-  background: var(--warm-soft, #fff5b0);
-  padding: 12px 24px;
+  background: var(--surface);
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
 }
 .decide-banner .label-text {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--ink);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-size: 13px;
+  color: var(--ink-3);
+  font-weight: 500;
 }
 .decide-banner button {
   appearance: none;
-  border: 2px solid var(--ink);
-  background: var(--ink);
-  color: var(--surface);
-  padding: 8px 16px;
+  border: 2px solid var(--line-default);
+  background: transparent;
+  color: var(--ink);
+  padding: 8px 14px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.01em;
   cursor: pointer;
   border-radius: 0;
+  white-space: nowrap;
 }
 .decide-banner button:hover:not(:disabled) {
-  background: var(--ink-2);
+  background: var(--ink);
+  color: var(--surface);
 }
 .decide-banner button:disabled {
-  background: var(--surface-2);
-  border-color: var(--ink-4);
-  color: var(--ink-4);
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -2328,35 +2344,76 @@ body {
   margin-bottom: 12px;
 }
 
+/* 채팅 화면 루트 — 시안(prototype) 정합: Latin/숫자 JetBrains Mono, 한글 Pretendard 폴백.
+   caution(--danger) 도 시안 토큰으로. about-page 와 동일 패턴. */
+.chat-root {
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+  --danger: #d83a2c;
+  font-family: "JetBrains Mono", "Pretendard", -apple-system, BlinkMacSystemFont,
+    system-ui, "Apple SD Gothic Neo", sans-serif;
+}
+
+/* 모바일 채팅 상단 바 — 시안 HeaderBar (좌측 뒤로 + 우측 삭제) */
+.m-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 2px solid var(--line-default);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.m-chat-back {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-3);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.m-chat-back:hover { background: var(--surface-2); color: var(--ink); }
+.m-chat-delete {
+  appearance: none;
+  border: 2px solid var(--line-default);
+  background: transparent;
+  color: var(--ink);
+  padding: 8px 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.m-chat-delete:hover { background: var(--ink); color: var(--surface); }
+
 /* 모바일 채팅 상단 메타 — 시안 픽셀 정합 */
+/* 시안 정합(mobile.css .m-chat-meta) — 헤더 아래 작은 요약 박스, border-bottom 만 */
 .m-chat-meta {
-  padding: 16px 20px 18px;
-  border-top: 2px solid var(--ink);
-  border-bottom: 2px solid var(--ink);
+  padding: 12px 20px 14px;
+  border-bottom: 2px solid var(--line-default);
   background: var(--surface);
   flex-shrink: 0;
 }
 .m-chat-meta-tags {
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-/* m-chat-meta 안의 doc-tag 만 ink(두꺼운 검정) 보더 + 큰 padding (시안 정합) */
-.m-chat-meta .doc-tag {
-  border-color: var(--ink);
-  padding: 6px 14px;
-  font-size: 12px;
-  letter-spacing: 0.08em;
+  gap: 6px;
+  margin-bottom: 8px;
 }
 .m-chat-meta-name {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 .m-chat-meta-price {
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--ink-3);
-  margin-top: 4px;
+  margin-top: 2px;
   font-family: var(--font-mono);
   letter-spacing: 0.04em;
 }
