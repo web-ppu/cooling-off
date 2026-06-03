@@ -65,7 +65,8 @@ function LoginInner() {
             setAuthError('로그인에 실패했습니다. 다시 시도해 주세요.')
             return
           }
-          router.push('/')
+          const nextParam = searchParams.get('next')
+          router.push(nextParam && nextParam.startsWith('/') ? nextParam : '/')
         },
         auto_select: true,
       })
@@ -96,6 +97,10 @@ function LoginInner() {
       window.google?.accounts.id.cancel()
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 캡처 진입(공유/단축어) → 로그인 후 원래 가려던 곳으로 복귀.
+  const nextParam = searchParams.get('next')
+  const next = nextParam && nextParam.startsWith('/') ? nextParam : undefined
 
   return (
     <main
@@ -169,7 +174,7 @@ function LoginInner() {
           )}
 
           {/* CTA — 공용 GoogleLoginButton. 자체 error 처리 + 단일 클릭 OAuth. */}
-          <GoogleLoginButton label={authError ? '다시 시도' : 'Google로 로그인하기'} />
+          <GoogleLoginButton label={authError ? '다시 시도' : 'Google로 로그인하기'} next={next} />
 
           <div style={{ marginTop: 18 }}>
             <Link

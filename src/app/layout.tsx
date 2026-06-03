@@ -11,6 +11,7 @@ export const metadata: Metadata = {
     title: '쿨링오프',
     statusBarStyle: 'default',
   },
+  manifest: '/manifest.webmanifest',
 }
 
 export const viewport: Viewport = {

@@ -34,5 +34,21 @@ export default function manifest(): MetadataRoute.Manifest {
         type: 'image/x-icon',
       },
     ],
+    // PWA 공유 타깃 — Android/Chromium 공유 시트에서 쿨링오프를 고르면
+    // GET 으로 /capture/share-target 에 title/text/url 을 넘긴다. 거기서 /capture 로 리다이렉트.
+    // (Next 의 Manifest 타입에 share_target 이 아직 없어 캐스팅으로 보강한다.)
+    share_target: {
+      action: '/capture/share-target',
+      method: 'GET',
+      enctype: 'application/x-www-form-urlencoded',
+      params: { title: 'title', text: 'text', url: 'url' },
+    },
+  } as MetadataRoute.Manifest & {
+    share_target: {
+      action: string
+      method: 'GET' | 'POST'
+      enctype?: string
+      params: { title?: string; text?: string; url?: string }
+    }
   }
 }
