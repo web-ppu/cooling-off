@@ -2590,6 +2590,64 @@ body {
   letter-spacing: 0.04em;
 }
 
+/* ───────── 기록 화면 — 시안 HistoryScreen/RecordDetailScreen 정합 ─────────
+   전체화면 = 헤더(뒤로 + 가운데 제목 또는 우측 삭제) + 스크롤 본문.
+   Latin/숫자 JetBrains Mono, 한글 Pretendard 폴백 (about/chat 과 동일 스코프). */
+.history-screen {
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+  --danger: #d83a2c;
+  font-family: "JetBrains Mono", "Pretendard", -apple-system, BlinkMacSystemFont,
+    system-ui, "Apple SD Gothic Neo", sans-serif;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+.history-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 2px solid var(--line-default);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.history-head-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  pointer-events: none;
+}
+.history-back {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-3);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.history-back:hover { background: var(--surface-2); color: var(--ink); }
+.history-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.history-pad {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px 20px 40px;
+}
+
 /* ───────── 모바일 기록 페이지 (m-history-*) — 누락분 일괄 추가 ───────── */
 .m-history-header {
   background: var(--surface);
