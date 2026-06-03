@@ -32,14 +32,14 @@ export default function DeleteCoolingButton({ itemId }: { itemId: string }) {
         disabled={isPending}
         style={{
           fontFamily: 'var(--font-mono)',
-          fontSize: 12,
+          fontSize: '13.5px',
           fontWeight: 600,
           letterSpacing: '0.04em',
           textTransform: 'uppercase',
           color: 'var(--ink)',
           background: 'var(--surface)',
           border: '2px solid var(--ink)',
-          padding: '6px 14px',
+          padding: '9px 14px',
           cursor: isPending ? 'not-allowed' : 'pointer',
           opacity: isPending ? 0.4 : 1,
           appearance: 'none',

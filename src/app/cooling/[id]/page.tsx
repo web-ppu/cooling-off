@@ -50,17 +50,17 @@ export default async function CoolingPage({
   if (item.status === 'ready') redirect(`/chat/${id}`)
   if (item.status === 'decided') redirect('/')
 
-  // 데스크탑 ← 홈 / 삭제 박스 공통 스타일 (삭제 버튼 톤과 통일)
+  // 데스크탑 ← 홈 / 삭제 박스 공통 스타일 (시안 btn-ghost btn-sm — 9/14, 13.5px)
   const homeBoxStyle = {
     fontFamily: 'var(--font-mono)',
-    fontSize: 12,
+    fontSize: '13.5px',
     fontWeight: 600,
     letterSpacing: '0.04em',
     textTransform: 'uppercase' as const,
     color: 'var(--ink)',
     background: 'var(--surface)',
     border: '2px solid var(--ink)',
-    padding: '6px 14px',
+    padding: '9px 14px',
     textDecoration: 'none',
     display: 'inline-flex',
     alignItems: 'center',
