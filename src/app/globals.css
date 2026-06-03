@@ -6,7 +6,7 @@
 /* 시안(prototype moods.css) 정합 — 전역 폰트를 JetBrains Mono 로.
    Latin/숫자는 JetBrains Mono, 한글은 Pretendard 로 폴백. */
 body {
-  font-family: "JetBrains Mono", "Pretendard", -apple-system, BlinkMacSystemFont,
+  font-family: "JetBrains Mono", -apple-system, BlinkMacSystemFont,
     system-ui, "Apple SD Gothic Neo", sans-serif;
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.01em;
@@ -1667,7 +1667,7 @@ body {
      한글은 Pretendard 로 폴백. caution(!) 빨강도 시안 토큰(#d83a2c)으로. */
   --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
   --danger: #d83a2c;
-  font-family: "JetBrains Mono", "Pretendard", -apple-system, BlinkMacSystemFont,
+  font-family: "JetBrains Mono", -apple-system, BlinkMacSystemFont,
     system-ui, "Apple SD Gothic Neo", sans-serif;
   min-height: 100vh;
   background: var(--surface);
@@ -2178,7 +2178,7 @@ body {
 .register-screen {
   --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
   --danger: #d83a2c;
-  font-family: "JetBrains Mono", "Pretendard", -apple-system, BlinkMacSystemFont,
+  font-family: "JetBrains Mono", -apple-system, BlinkMacSystemFont,
     system-ui, "Apple SD Gothic Neo", sans-serif;
   height: 100dvh;
   display: flex;
@@ -2522,7 +2522,7 @@ body {
 .chat-root {
   --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
   --danger: #d83a2c;
-  font-family: "JetBrains Mono", "Pretendard", -apple-system, BlinkMacSystemFont,
+  font-family: "JetBrains Mono", -apple-system, BlinkMacSystemFont,
     system-ui, "Apple SD Gothic Neo", sans-serif;
 }
 
@@ -2597,7 +2597,7 @@ body {
 .history-screen {
   --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
   --danger: #d83a2c;
-  font-family: "JetBrains Mono", "Pretendard", -apple-system, BlinkMacSystemFont,
+  font-family: "JetBrains Mono", -apple-system, BlinkMacSystemFont,
     system-ui, "Apple SD Gothic Neo", sans-serif;
   height: 100dvh;
   display: flex;
