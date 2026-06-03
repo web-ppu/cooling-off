@@ -2171,6 +2171,118 @@ body {
 .m-cooling-note .doc-tag { align-self: flex-start; }
 .m-cooling-note p { margin: 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.55; }
 
+/* ───────── 등록 화면 — 시안 RegisterScreen 정합 ─────────
+   전체화면 = 헤더(뒤로 + 등록) + 스크롤 본문(폼) + 하단 풀폭 "냉각 시작" 바.
+   Latin/숫자 JetBrains Mono, 한글 Pretendard 폴백 (about/chat 과 동일 스코프). */
+.register-screen {
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+  --danger: #d83a2c;
+  font-family: "JetBrains Mono", "Pretendard", -apple-system, BlinkMacSystemFont,
+    system-ui, "Apple SD Gothic Neo", sans-serif;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+.register-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 2px solid var(--line-default);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.register-head-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  pointer-events: none;
+}
+.register-back {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-3);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.register-back:hover { background: var(--surface-2); color: var(--ink); }
+.register-form {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.register-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.register-pad {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 12px 20px 24px;
+}
+.register-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 18px;
+}
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field-label { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.field-label .opt { color: var(--ink-4); font-weight: 500; margin-left: 4px; }
+/* 하단 풀폭 "냉각 시작" 바 — 시안 .fixed-bottom + btn-primary btn-block */
+.register-foot {
+  flex-shrink: 0;
+  border-top: 2px solid var(--line-default);
+  background: var(--surface);
+}
+.register-submit {
+  appearance: none;
+  width: 100%;
+  border: none;
+  background: var(--accent);
+  color: var(--ink);
+  padding: 16px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.12s;
+}
+.register-submit:hover:not(:disabled) { background: var(--ink); color: var(--accent); }
+.register-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+/* 냉각 시작 splash 의 "홈으로" 버튼 (btn-ghost) */
+.splash-home-btn {
+  appearance: none;
+  border: 2px solid var(--line-default);
+  background: transparent;
+  color: var(--ink);
+  padding: 12px 18px;
+  min-width: 120px;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.splash-home-btn:hover { background: var(--ink); color: var(--surface); }
+
 /* ───────── 모바일 — 등록 가이드 카드 (m-guide-*) ───────── */
 .m-guide-card {
   display: flex;
