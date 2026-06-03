@@ -80,6 +80,45 @@ test('③ ready 상태 시드 시 홈 READY 섹션에 노출된다', async ({ pa
   await expect(link).toBeVisible()
 })
 
+test('⑥ 캡처: 봇 차단 사이트(쿠팡) URL도 수동입력으로 담긴다', async ({ page }) => {
+  const admin = getAdminClient()
+  // 쿠팡은 서버 사이드 fetch가 403으로 차단된다. 자동채움은 실패하지만
+  // URL은 살아 있고 이름·가격을 직접 입력하면 담겨야 한다 (CRITICAL 회귀 방지).
+  const coupangUrl = 'https://www.coupang.com/vp/products/9541971512'
+
+  await page.goto(`/capture?url=${encodeURIComponent(coupangUrl)}&source=pwa-share`)
+
+  // 자동 파싱이 끝나 보완 폼(이름 입력칸)이 나타날 때까지 대기.
+  const nameInput = page.getByPlaceholder('예: 에어팟 프로3')
+  await expect(nameInput).toBeVisible({ timeout: 20_000 })
+
+  // 차단으로 자동채움 실패 → 직접 입력 안내가 보이고, 입력 전엔 제출 비활성.
+  const submit = page.getByRole('button', { name: /냉각 시작/ })
+  await expect(submit).toBeDisabled()
+
+  // 수동 입력 후 제출이 활성화되고 저장돼야 한다.
+  await nameInput.fill('쿠팡 캡처 테스트 상품')
+  await page.getByPlaceholder('0').fill('29000')
+  await expect(submit).toBeEnabled()
+  await submit.click()
+
+  // captureItem 은 성공 시 홈('/')으로 redirect 한다.
+  await page.waitForURL(/\/$/, { timeout: 15_000 })
+
+  // DB에 status=cooling + 쿠팡 URL 보존으로 저장됐는지 확인.
+  const { data, error } = await admin
+    .from('items')
+    .select('name, price, url, status')
+    .eq('user_id', testUserId)
+    .eq('name', '쿠팡 캡처 테스트 상품')
+    .maybeSingle()
+  expect(error).toBeNull()
+  expect(data).not.toBeNull()
+  expect(data!.price).toBe(29000)
+  expect(data!.status).toBe('cooling')
+  expect(data!.url).toContain('coupang.com/vp/products/9541971512')
+})
+
 test.fixme(
   '④ READY 카드 클릭 시 채팅 화면이 열린다 (현재 /chat/[id] 미구현 — 404)',
   async ({ page }) => {
