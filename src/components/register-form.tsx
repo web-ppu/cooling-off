@@ -2,10 +2,18 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { registerItem } from '@/app/register/actions'
-import { getCoolingDaysLabel, COOLING_TIERS } from '@/lib/cooling'
+import { getCoolingDaysLabel } from '@/lib/cooling'
 import { formatKRW } from '@/lib/format'
 
+/**
+ * 사고 싶은 물건 등록 화면 — 시안 RegisterScreen(모바일) 정합.
+ *
+ * 전체화면: 상단 바(뒤로 + "등록") + "사고 싶은 물건 등록" m-doc-header +
+ * 폼(이름/가격/링크/사고 싶은 이유) + 가격 입력 시 m-guide-card(자동 냉각기) +
+ * 하단 풀폭 "냉각 시작 →" 바. 등록 완료 시 냉각 시작 splash(전체화면) 노출.
+ */
 export default function RegisterForm() {
   const router = useRouter()
   const [name, setName] = useState('')
@@ -16,9 +24,8 @@ export default function RegisterForm() {
   const [serverError, setServerError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   /**
-   * 등록 완료 splash 노출용. true 가 되면 RegisterForm 자리에 m-splash-card 표시,
-   * 1.8초 후 router.push('/').
-   * 시안 CoolingStartSplash / PcCoolingStartSplash 흐름 정합.
+   * 등록 완료 splash 노출용. true 가 되면 냉각 시작 splash 표시, 1.8초 후 홈으로.
+   * 시안 CoolingStartSplash 흐름 정합.
    */
   const [showStartSplash, setShowStartSplash] = useState(false)
 
@@ -45,17 +52,13 @@ export default function RegisterForm() {
   const valid = !nameErr && !priceErr && !reasonErr && price !== ''
 
   const cooling = priceNum >= 1 ? getCoolingDaysLabel(priceNum) : null
-  const activeTierIdx = COOLING_TIERS.findIndex(
-    (t) => priceNum >= t.min && priceNum < t.max
-  )
 
   function blur(field: string) {
     setTouched((prev) => ({ ...prev, [field]: true }))
   }
 
   function handlePriceChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const raw = e.target.value.replace(/[^\d]/g, '')
-    setPrice(raw)
+    setPrice(e.target.value.replace(/[^\d]/g, ''))
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -89,216 +92,205 @@ export default function RegisterForm() {
     })
   }
 
-  // 등록 완료 splash — 모든 폼/사이드바 대체 (시안 PcCoolingStartSplash / CoolingStartSplash).
+  // 등록 완료 — 냉각 시작 splash (전체화면, 시안 CoolingStartSplash 정합).
   if (showStartSplash) {
     return (
-      <div
-        role="status"
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          padding: '40px 0',
-        }}
-      >
-        <div className="m-splash-card">
-          <div className="m-splash-tags">
-            <span className="doc-tag" style={{ background: 'var(--accent)' }}>
-              COOLING
-            </span>
-            <span className="doc-tag">STARTED</span>
+      <div className="register-screen">
+        <div className="splash" role="status">
+          <div className="m-splash-card">
+            <div className="m-splash-tags">
+              <span className="doc-tag" style={{ background: 'var(--accent)' }}>
+                COOLING
+              </span>
+              <span className="doc-tag">STARTED</span>
+            </div>
+            <h2>냉각 시작</h2>
+            <div className="m-splash-time">{cooling ?? '— —'} 후</div>
+            <p>다시 만나요.</p>
           </div>
-          <h2>냉각 시작</h2>
-          <div className="m-splash-time">{cooling ?? '— —'} 후</div>
-          <p>다시 만나요.</p>
+          <button
+            type="button"
+            className="splash-home-btn"
+            onClick={() => router.push('/')}
+          >
+            홈으로
+          </button>
         </div>
       </div>
     )
   }
 
+  const urlInvalid =
+    url.length > 0 && !url.startsWith('http://') && !url.startsWith('https://')
+
   return (
-    <div className="pc-form-grid">
-      {/* 폼 */}
-      <form onSubmit={handleSubmit} noValidate>
-        <div className="doc-form">
-          {/* A: 이름 */}
-          <div className="doc-row">
-            <div className="doc-row-num">A</div>
-            <div className="doc-row-body">
-              <div className="doc-row-label">NAME · 이름</div>
-              <input
-                className="field-input"
-                placeholder="예: 에어팟 프로3"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onBlur={() => blur('name')}
-                maxLength={50}
-                disabled={isPending}
-              />
-              {touched.name && nameErr && (
-                <div className="field-error">{nameErr}</div>
+    <div className="register-screen">
+      {/* 상단 바 — 시안 HeaderBar: 좌측 뒤로 + 가운데 "등록" */}
+      <header className="register-head">
+        <Link href="/" className="register-back" aria-label="뒤로">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.25"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M15 6l-6 6 6 6" />
+          </svg>
+        </Link>
+        <span className="register-head-title">등록</span>
+      </header>
+
+      <form className="register-form" onSubmit={handleSubmit} noValidate>
+        <div className="register-body">
+          <div className="register-pad">
+            <div className="m-doc-header">
+              <h1 className="m-doc-title">
+                사고 싶은 물건
+                <br />
+                <span className="doc-title-em">등록</span>
+              </h1>
+              <div className="m-doc-meta" />
+            </div>
+
+            <div className="register-fields">
+              {/* 이름 */}
+              <div className="field">
+                <label className="field-label">이름</label>
+                <input
+                  className="field-input"
+                  placeholder="예: 에어팟 프로3"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onBlur={() => blur('name')}
+                  maxLength={50}
+                  disabled={isPending}
+                />
+                {touched.name && nameErr && (
+                  <div className="field-error">{nameErr}</div>
+                )}
+              </div>
+
+              {/* 가격 */}
+              <div className="field">
+                <label className="field-label">
+                  가격 <span className="opt">(₩)</span>
+                </label>
+                <input
+                  className="field-input"
+                  style={{ fontVariantNumeric: 'tabular-nums' }}
+                  placeholder="0"
+                  inputMode="numeric"
+                  value={priceDisplay}
+                  onChange={handlePriceChange}
+                  onBlur={() => blur('price')}
+                  disabled={isPending}
+                />
+                {touched.price && priceErr && (
+                  <div className="field-error">{priceErr}</div>
+                )}
+              </div>
+
+              {/* 링크 */}
+              <div className="field">
+                <label className="field-label">
+                  링크 <span className="opt">(선택)</span>
+                </label>
+                <input
+                  className="field-input"
+                  placeholder="https://..."
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  disabled={isPending}
+                />
+                {urlInvalid && (
+                  <div className="field-help">링크 형식을 확인해 주세요</div>
+                )}
+              </div>
+
+              {/* 사고 싶은 이유 */}
+              <div className="field">
+                <label className="field-label">
+                  사고 싶은 이유 <span className="opt">(선택)</span>
+                </label>
+                <textarea
+                  className="field-textarea"
+                  placeholder="왜 사고 싶은지 적어 주세요. AI 채팅의 출발점이 됩니다."
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  rows={4}
+                  disabled={isPending}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span className="field-help">
+                    {reasonErr || '사고 싶은 이유는 비어 있어도 괜찮습니다'}
+                  </span>
+                  <span
+                    className="field-help"
+                    style={{ fontVariantNumeric: 'tabular-nums' }}
+                  >
+                    {reason.length}/200
+                  </span>
+                </div>
+              </div>
+
+              {/* 가격 입력 시 — 자동 냉각기 안내 카드 (시안 m-guide-card) */}
+              {cooling && (
+                <div className="m-guide-card">
+                  <span
+                    className="doc-tag"
+                    style={{ background: 'var(--accent)' }}
+                  >
+                    AUTO
+                  </span>
+                  <div className="m-guide-body">
+                    <div
+                      className="m-guide-row"
+                      style={{ fontVariantNumeric: 'tabular-nums' }}
+                    >
+                      <span>{formatKRW(priceNum)}</span>
+                      <span className="m-guide-arrow">→</span>
+                      <strong>{cooling}</strong>
+                    </div>
+                    <div className="m-guide-sub">
+                      가격에 따라 냉각기가 자동 결정됩니다.
+                    </div>
+                  </div>
+                </div>
               )}
-            </div>
-          </div>
 
-          {/* B: 가격 */}
-          <div className="doc-row">
-            <div className="doc-row-num">B</div>
-            <div className="doc-row-body">
-              <div className="doc-row-label">
-                PRICE · 가격 <span className="opt">(₩)</span>
-              </div>
-              <input
-                className="field-input"
-                style={{ fontVariantNumeric: 'tabular-nums' }}
-                placeholder="0"
-                inputMode="numeric"
-                value={priceDisplay}
-                onChange={handlePriceChange}
-                onBlur={() => blur('price')}
-                disabled={isPending}
-              />
-              {touched.price && priceErr && (
-                <div className="field-error">{priceErr}</div>
+              {/* 서버 오류 */}
+              {serverError && (
+                <div
+                  role="alert"
+                  className="field-error"
+                  style={{
+                    border: '2px solid var(--danger)',
+                    padding: '8px 12px',
+                    marginTop: 0,
+                  }}
+                >
+                  {serverError}
+                </div>
               )}
-            </div>
-          </div>
-
-          {/* C: URL */}
-          <div className="doc-row">
-            <div className="doc-row-num">C</div>
-            <div className="doc-row-body">
-              <div className="doc-row-label">
-                URL · 링크 <span className="opt">(선택)</span>
-              </div>
-              <input
-                className="field-input"
-                placeholder="https://..."
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                disabled={isPending}
-              />
-              {url && !url.startsWith('http://') && !url.startsWith('https://') && (
-                <div className="field-help">링크 형식을 확인해 주세요</div>
-              )}
-            </div>
-          </div>
-
-          {/* D: 사고 싶은 이유 */}
-          <div className="doc-row" style={{ borderBottom: 'none' }}>
-            <div className="doc-row-num accent">D</div>
-            <div className="doc-row-body">
-              <div className="doc-row-label">
-                REASON · 사고 싶은 이유 <span className="opt">(선택)</span>
-              </div>
-              <textarea
-                className="field-textarea"
-                placeholder="왜 사고 싶은지 적어 주세요. AI 채팅의 출발점이 됩니다."
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                rows={4}
-                disabled={isPending}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span className="field-help">
-                  {reasonErr || '비워둬도 괜찮습니다'}
-                </span>
-                <span className="field-help" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                  {reason.length}/200
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* 하단 제출 */}
-          <div className="doc-form-foot">
-            <span
-              className="doc-meta-row doc-form-foot-sign"
-              style={{ borderTop: 'none', padding: 0, margin: 0 }}
-            >
-              SIGN · _________________
-            </span>
-            <div className="doc-form-foot-actions flex gap-2.5">
-              {/* 디자이너 시안 정합: prototype .btn padding 12/18, font 14.5 */}
-              <a
-                href="/"
-                className="inline-flex items-center justify-center border-2 border-[var(--line-default)] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors"
-                style={{
-                  padding: '12px 18px',
-                  fontSize: '14.5px',
-                  fontWeight: 500,
-                }}
-              >
-                취소
-              </a>
-              {/* 디자이너 시안 정합 — accent 파란 배경 + 검정 보더 + 검정 글씨.
-                  disabled 상태에서는 opacity 만 떨어지므로 시안의 옅은 회색 톤과 비슷. */}
-              <button
-                type="submit"
-                disabled={!valid || isPending}
-                className="inline-flex items-center justify-center border-2 transition-colors disabled:opacity-45 disabled:cursor-not-allowed"
-                style={{
-                  background: 'var(--accent)',
-                  color: 'var(--ink)',
-                  borderColor: 'var(--ink)',
-                  padding: '12px 18px',
-                  fontSize: '14.5px',
-                  fontWeight: 600,
-                }}
-              >
-                {isPending ? '등록 중…' : '냉각 시작 →'}
-              </button>
             </div>
           </div>
         </div>
 
-        {/* 서버 오류 */}
-        {serverError && (
-          <div
-            className="mt-3 border-2 border-[var(--danger)] px-4 py-3 text-sm"
-            style={{ color: 'var(--danger)' }}
+        {/* 하단 — 풀폭 "냉각 시작" 바 (시안 fixed-bottom) */}
+        <div className="register-foot">
+          <button
+            type="submit"
+            className="register-submit"
+            disabled={!valid || isPending}
           >
-            {serverError}
-          </div>
-        )}
+            {isPending ? '등록 중…' : '냉각 시작 →'}
+          </button>
+        </div>
       </form>
-
-      {/* 냉각 기간 정보 사이드바 */}
-      <aside className="pc-cooling-info">
-        <div className="cooling-info-head">
-          <span className="doc-tag">SPEC</span>
-          <span
-            className="doc-meta-row"
-            style={{ borderTop: 'none', padding: 0, margin: 0 }}
-          >
-            EST.
-          </span>
-        </div>
-        <div className="cooling-info-big">
-          {cooling ?? '— —'}
-        </div>
-        <div className="cooling-info-sub">
-          {priceNum >= 1
-            ? `${formatKRW(priceNum)} 기준`
-            : '가격을 입력하면 표시됩니다'}
-        </div>
-        <div className="cooling-info-table">
-          <div className="cooling-info-table-head">
-            <span>BAND</span>
-            <span>RANGE</span>
-            <span>WAIT</span>
-          </div>
-          {COOLING_TIERS.map((tier, i) => (
-            <div
-              key={i}
-              className={'cooling-info-row' + (i === activeTierIdx ? ' active' : '')}
-            >
-              <span className="cooling-info-band">0{i + 1}</span>
-              <span>{tier.label}</span>
-              <span style={{ fontVariantNumeric: 'tabular-nums' }}>{tier.days}</span>
-            </div>
-          ))}
-        </div>
-      </aside>
     </div>
   )
 }
