@@ -98,35 +98,10 @@ function LoginInner() {
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-<<<<<<< Updated upstream
-=======
-  const handleLogin = async () => {
-    window.google?.accounts.id.cancel()
-    setAuthError(null)
-    try {
-      const supabase = createClient()
-      const nextParam = searchParams.get('next')
-      const callbackUrl = new URL(`${window.location.origin}/auth/callback`)
-      if (nextParam && nextParam.startsWith('/')) {
-        callbackUrl.searchParams.set('next', nextParam)
-      }
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: callbackUrl.toString(),
-        },
-      })
-      if (error) {
-        console.error('[login]', error)
-        setAuthError('로그인에 실패했습니다. 다시 시도해 주세요.')
-      }
-    } catch (err) {
-      console.error('[login]', err)
-      setAuthError('연결이 불안정합니다. 잠시 후 다시 시도해 주세요.')
-    }
-  }
+  // 캡처 진입(공유/단축어) → 로그인 후 원래 가려던 곳으로 복귀.
+  const nextParam = searchParams.get('next')
+  const next = nextParam && nextParam.startsWith('/') ? nextParam : undefined
 
->>>>>>> Stashed changes
   return (
     <main
       style={{
@@ -199,7 +174,7 @@ function LoginInner() {
           )}
 
           {/* CTA — 공용 GoogleLoginButton. 자체 error 처리 + 단일 클릭 OAuth. */}
-          <GoogleLoginButton label={authError ? '다시 시도' : 'Google로 로그인하기'} />
+          <GoogleLoginButton label={authError ? '다시 시도' : 'Google로 로그인하기'} next={next} />
 
           <div style={{ marginTop: 18 }}>
             <Link

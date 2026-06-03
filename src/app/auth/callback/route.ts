@@ -16,7 +16,9 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const errorParam = searchParams.get('error')
-  const next = searchParams.get('next') ?? '/'
+  // 오픈 리다이렉트 방지: 같은 출처의 내부 경로만 허용한다.
+  // '/foo'는 통과, '//evil.com'·'/\evil.com'(protocol-relative)·외부 URL은 '/'로 강제.
+  const next = safeNext(searchParams.get('next'))
 
   // 사용자가 OAuth를 취소했거나 공급자가 거부한 경우
   if (errorParam) {
@@ -40,4 +42,15 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.redirect(`${origin}${next}`)
+}
+
+/**
+ * next 쿼리를 안전한 내부 경로로만 좁힌다.
+ * - '/'로 시작하지 않으면(절대 URL 등) 거부
+ * - '//' 또는 '/\' 로 시작하면 protocol-relative 외부 리다이렉트이므로 거부
+ */
+function safeNext(raw: string | null): string {
+  if (!raw || !raw.startsWith('/')) return '/'
+  if (raw.startsWith('//') || raw.startsWith('/\\')) return '/'
+  return raw
 }

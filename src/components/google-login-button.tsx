@@ -13,8 +13,11 @@ import { createClient } from '@/lib/supabase/client'
  */
 export default function GoogleLoginButton({
   label = 'Google로 로그인하기',
+  next,
 }: {
   label?: string
+  /** 로그인 후 복귀할 내부 경로 (캡처 공유/단축어 진입용). '/'로 시작하는 값만 허용. */
+  next?: string
 }) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -24,10 +27,14 @@ export default function GoogleLoginButton({
     setIsLoading(true)
     try {
       const supabase = createClient()
+      const callbackUrl = new URL(`${window.location.origin}/auth/callback`)
+      if (next && next.startsWith('/')) {
+        callbackUrl.searchParams.set('next', next)
+      }
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: callbackUrl.toString(),
         },
       })
       if (oauthError) {
