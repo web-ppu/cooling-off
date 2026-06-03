@@ -2254,6 +2254,46 @@ body {
 }
 
 /* ───────── 모바일 — Fact 카드 (요약 화면) ───────── */
+/* 시안 정합(prototype SummaryScreen) — 결정 화면은 전체화면(헤더 + "결정의 시간."
+   doc-header + FACTS 카드 + 안 삼/삼). 채팅 위에 오버레이로 노출. */
+.decision-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+}
+.decision-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 2px solid var(--line-default);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.decision-head-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  pointer-events: none;
+}
+.decision-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.decision-pad {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 12px 20px 32px;
+}
+
 .m-fact-card {
   border: 2px solid var(--ink);
   background: var(--surface);

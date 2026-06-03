@@ -506,40 +506,23 @@ export default function ChatScreen({
 
         {/* 하단 — 상황별 분기 */}
         {isDecided ? (
-          <div className="chat-input-bar">
-            {finalDecision ? (
-              <FinalDecisionPlaceholder decision={finalDecision} />
-            ) : isLoading ? (
-              <SummaryLoading />
-            ) : decideFailure ? (
-              <DecideFailureSection
-                failure={decideFailure}
-                onRetry={() => void handleRetry()}
-                onSkipSummary={handleSkipSummary}
-                onCancel={handleCancelDecide}
-                disabled={isLoading}
-              />
-            ) : (
-              <FactSummarySection
-                summary={factSummary}
-                onDecision={handleFinalDecision}
-              />
-            )}
-            {saveErrorMessage && (
-              <div
-                role="alert"
-                style={{
-                  marginTop: 10,
-                  fontSize: 13,
-                  color: "var(--danger)",
-                  border: "2px solid var(--danger)",
-                  padding: "8px 12px",
-                }}
-              >
-                {saveErrorMessage}
-              </div>
-            )}
-          </div>
+          finalDecision ? (
+            // 결정 직후 결과 splash (전체화면)
+            <FinalDecisionPlaceholder decision={finalDecision} />
+          ) : (
+            // 시안 SummaryScreen — 전체화면 결정 화면
+            <DecisionScreen
+              registration={registration}
+              summary={factSummary}
+              isLoading={isLoading}
+              decideFailure={decideFailure}
+              onDecision={handleFinalDecision}
+              onCancel={handleCancelDecide}
+              onRetry={() => void handleRetry()}
+              onSkipSummary={handleSkipSummary}
+              saveErrorMessage={saveErrorMessage}
+            />
+          )
         ) : isAtTurnLimit ? (
           <div className="chat-input-bar">
             <TurnLimitNotice />
@@ -583,6 +566,110 @@ export default function ChatScreen({
 // ────────────────────────────────────────────────────────────
 // 보조 컴포넌트들
 // ────────────────────────────────────────────────────────────
+
+/**
+ * 결정(요약) 화면 — 시안 SummaryScreen 정합. 전체화면 오버레이.
+ *
+ * 헤더(뒤로 + "Decision") + "결정의 시간." doc-header + 본문(로딩/실패/FACTS 카드 +
+ * [안 삼]/[삼]). [결정하기] 직후 노출되며, 결정을 선택하면 결과 splash 로 넘어간다.
+ */
+function DecisionScreen({
+  registration,
+  summary,
+  isLoading,
+  decideFailure,
+  onDecision,
+  onCancel,
+  onRetry,
+  onSkipSummary,
+  saveErrorMessage,
+}: {
+  registration: Registration;
+  summary: string | null;
+  isLoading: boolean;
+  decideFailure: FailedSendContext | null;
+  onDecision: (decision: "안 삼" | "삼") => void | Promise<void>;
+  onCancel: () => void;
+  onRetry: () => void;
+  onSkipSummary: () => void;
+  saveErrorMessage: string | null;
+}) {
+  return (
+    <div className="decision-screen" role="dialog" aria-label="결정">
+      <header className="decision-head">
+        <button
+          type="button"
+          className="m-chat-back"
+          onClick={onCancel}
+          aria-label="뒤로"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.25"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M15 6l-6 6 6 6" />
+          </svg>
+        </button>
+        <span className="decision-head-title">Decision</span>
+      </header>
+
+      <div className="decision-body">
+        <div className="decision-pad">
+          <div className="m-doc-header">
+            <h1 className="m-doc-title" style={{ fontSize: 32 }}>
+              결정의
+              <br />
+              <span className="doc-title-em">시간.</span>
+            </h1>
+            <div className="m-doc-meta">
+              <span>{registration.productName}</span>
+              <span>{registration.price}</span>
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div style={{ marginTop: 16 }}>
+              <SummaryLoading />
+            </div>
+          ) : decideFailure ? (
+            <div style={{ marginTop: 16 }}>
+              <DecideFailureSection
+                failure={decideFailure}
+                onRetry={onRetry}
+                onSkipSummary={onSkipSummary}
+                onCancel={onCancel}
+                disabled={isLoading}
+              />
+            </div>
+          ) : (
+            <FactSummarySection summary={summary} onDecision={onDecision} />
+          )}
+
+          {saveErrorMessage && (
+            <div
+              role="alert"
+              style={{
+                marginTop: 14,
+                fontSize: 13,
+                color: "var(--danger)",
+                border: "2px solid var(--danger)",
+                padding: "8px 12px",
+              }}
+            >
+              {saveErrorMessage}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /** 팩트 요약 로딩 인디케이터 (issue #51) */
 function SummaryLoading() {
@@ -652,7 +739,7 @@ function FactSummarySection({
             >
               FACTS
             </span>
-            <span className="m-fact-sub">팩트 요약 · {facts.length}건</span>
+            <span className="m-fact-sub">대화에서 나온 사실 {facts.length}건</span>
           </div>
           <ul>
             {facts.map((f, i) => (
