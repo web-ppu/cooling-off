@@ -143,9 +143,10 @@ export default async function CoolingPage({
         <div
           style={{
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-end',
             justifyContent: 'space-between',
-            marginBottom: 24,
+            gap: 20,
+            marginBottom: 28,
           }}
         >
           <Link href="/" style={homeBoxStyle}>

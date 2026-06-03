@@ -27,8 +27,14 @@ export default function NavLinks() {
   return (
     <nav className="ml-6 flex items-center gap-1">
       {LINKS.map(({ href, label }) => {
-        // '/' 는 정확 매치만, 그 외는 prefix 매치 (예: /register/foo 도 등록 활성)
-        const active = href === '/' ? pathname === '/' : pathname?.startsWith(href)
+        // '홈'(/) 은 홈 + 냉각/채팅 화면에서 활성 (시안 PcNav 정합 — 이들은 홈 흐름의 일부).
+        // 그 외는 prefix 매치 (예: /register/foo 도 등록, /history/[id] 도 기록 활성).
+        const active =
+          href === '/'
+            ? pathname === '/' ||
+              pathname?.startsWith('/cooling') ||
+              pathname?.startsWith('/chat')
+            : pathname?.startsWith(href)
         return (
           <Link
             key={href}
