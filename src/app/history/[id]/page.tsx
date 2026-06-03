@@ -118,90 +118,213 @@ export default async function HistoryDetailPage({
       }}
     >
       <AppHeader user={user} />
-      {/* 컨테이너 폭/패딩: 홈·등록 페이지와 통일 (mx-auto max-w-[1120px] px-4 md:px-8) */}
       <div className="mx-auto w-full max-w-[1120px] flex-1 px-4 pb-24 pt-7 md:px-8">
-        {/* 페이지 헤더: ← 기록 + 삭제 */}
-        <header
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 24,
-            flexWrap: 'wrap',
-            gap: 12,
-          }}
-        >
-          <Link
-            href="/history"
+        {/* ─── 데스크탑 (md+) ─── */}
+        <div className="hidden md:block">
+          <header
             style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 12,
-              fontWeight: 600,
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-              color: 'var(--ink)',
-              textDecoration: 'none',
-              border: '2px solid var(--ink)',
-              background: 'var(--surface)',
-              padding: '6px 14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 24,
+              flexWrap: 'wrap',
+              gap: 12,
             }}
           >
-            ← 기록
-          </Link>
-          <DeleteHistoryButton itemId={id} />
-        </header>
+            <Link
+              href="/history"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                color: 'var(--ink)',
+                textDecoration: 'none',
+                border: '2px solid var(--ink)',
+                background: 'var(--surface)',
+                padding: '6px 14px',
+              }}
+            >
+              ← 기록
+            </Link>
+            <DeleteHistoryButton itemId={id} />
+          </header>
 
-        {/* record-card */}
-        <div className="record-card">
-          <div className="record-card-head">
-            <span className="doc-tag">RECORD</span>
-            <span className="record-card-id">REC.{recId}</span>
-            <span className={`record-card-verdict ${verdictClass}`}>
-              <span className="record-card-verdict-mark">{decisionMark}</span>
-              <span className="record-card-verdict-label">{decisionLabel}</span>
-              <span className="record-card-verdict-meta">{decisionMeta}</span>
-            </span>
+          <div className="record-card">
+            <div className="record-card-head">
+              <span className="doc-tag">RECORD</span>
+              <span className="record-card-id">REC.{recId}</span>
+              <span className={`record-card-verdict ${verdictClass}`}>
+                <span className="record-card-verdict-mark">{decisionMark}</span>
+                <span className="record-card-verdict-label">{decisionLabel}</span>
+                <span className="record-card-verdict-meta">{decisionMeta}</span>
+              </span>
+            </div>
+            <div className="record-meta-row">
+              <span className="record-meta-label">ITEM</span>
+              <span className="record-meta-value">{item.name}</span>
+            </div>
+            <div className="record-meta-row">
+              <span className="record-meta-label">PRICE</span>
+              <span className="record-meta-value">{formatKRW(item.price)}</span>
+            </div>
+            <div className="record-meta-row">
+              <span className="record-meta-label">DECIDED</span>
+              <span className="record-meta-value">{decidedDate}</span>
+            </div>
           </div>
-          <div className="record-meta-row">
-            <span className="record-meta-label">ITEM</span>
-            <span className="record-meta-value">{item.name}</span>
-          </div>
-          <div className="record-meta-row">
-            <span className="record-meta-label">PRICE</span>
-            <span className="record-meta-value">{formatKRW(item.price)}</span>
-          </div>
-          <div className="record-meta-row">
-            <span className="record-meta-label">DECIDED</span>
-            <span className="record-meta-value">{decidedDate}</span>
+
+          <div className="record-grid">
+            <section className="record-section">
+              <div className="record-section-head">
+                <span className="doc-tag">FACTS</span>
+                <span className="record-section-sub">{factsSubLabel}</span>
+              </div>
+              {facts.length > 0 ? (
+                <ol className="record-facts-list">
+                  {facts.map((f, i) => (
+                    <li key={i}>
+                      <span className="record-fact-num">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <span className="record-fact-text">{f}</span>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <div className="record-facts-empty">
+                  팩트 요약이 기록되지 않았습니다.
+                </div>
+              )}
+            </section>
+            <LogSection chatMessages={chatMessages} />
           </div>
         </div>
 
-        {/* FACTS + LOG — 항상 2 컬럼 그리드 (디자이너 시안 정합).
-            facts 가 없는 경우에도 FACTS 섹션 표시 + 빈 상태 안내. */}
-        <div className="record-grid">
-          <section className="record-section">
-            <div className="record-section-head">
-              <span className="doc-tag">FACTS</span>
-              <span className="record-section-sub">{factsSubLabel}</span>
+        {/* ─── 모바일 (<md) — prototype RecordDetailScreen 정합 ─── */}
+        <div className="md:hidden">
+          {/* 시안 정합: 페이지 위 작은 < + 삭제 헤더 */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '4px 0 16px',
+              borderBottom: '2px solid var(--line-default)',
+              marginBottom: 24,
+            }}
+          >
+            <Link
+              href="/history"
+              aria-label="기록으로"
+              style={{
+                fontSize: 22,
+                lineHeight: 1,
+                color: 'var(--ink)',
+                textDecoration: 'none',
+                padding: '4px 8px',
+              }}
+            >
+              ‹
+            </Link>
+            <DeleteHistoryButton itemId={id} />
+          </div>
+
+          {/* m-doc-header — 좌상단 tape strip + 큰 타이틀 + meta */}
+          <div className="m-doc-header" style={{ marginBottom: 24 }}>
+            <h1
+              className="m-doc-title"
+              style={{
+                fontSize: 28,
+                fontWeight: 800,
+                lineHeight: 1.2,
+                marginBottom: 14,
+              }}
+            >
+              {item.name}
+            </h1>
+            <div
+              className="m-doc-meta"
+              style={{ marginTop: 0, paddingTop: 14 }}
+            >
+              <span>{formatKRW(item.price)}</span>
+              <span>결정 완료</span>
+            </div>
+          </div>
+
+          {/* m-fact-card — 검정 보더 + accent 우하단 그림자 */}
+          <div className="m-fact-card">
+            <div className="m-fact-head">
+              <span
+                className="doc-tag"
+                style={{ background: 'var(--accent)' }}
+              >
+                FACTS
+              </span>
+              <span className="m-fact-sub">{factsSubLabel}</span>
             </div>
             {facts.length > 0 ? (
-              <ol className="record-facts-list">
+              <ul>
                 {facts.map((f, i) => (
                   <li key={i}>
-                    <span className="record-fact-num">
+                    <span className="m-fact-num">
                       {String(i + 1).padStart(2, '0')}
                     </span>
-                    <span className="record-fact-text">{f}</span>
+                    <span>{f}</span>
                   </li>
                 ))}
-              </ol>
+              </ul>
             ) : (
-              <div className="record-facts-empty">
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 13.5,
+                  color: 'var(--ink-3)',
+                  textAlign: 'center',
+                  padding: '8px 0',
+                }}
+              >
                 팩트 요약이 기록되지 않았습니다.
+              </p>
+            )}
+          </div>
+
+          {/* § 당시 대화 — 작은 헤더 + 채팅 bubble 형태 */}
+          <div className="m-doc-section" style={{ marginTop: 24 }}>
+            <div className="m-doc-section-tag">§ 당시 대화</div>
+            {chatMessages.length === 0 ? (
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 13.5,
+                  color: 'var(--ink-3)',
+                  padding: '8px 0',
+                }}
+              >
+                대화 기록이 없습니다.
+              </p>
+            ) : (
+              <div
+                className="chat-stream"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 10,
+                  padding: '12px 0 24px',
+                }}
+              >
+                {chatMessages.map((msg, i) => (
+                  <div
+                    key={i}
+                    className={`bubble ${msg.role === 'user' ? 'user' : 'ai'}`}
+                  >
+                    {msg.content}
+                  </div>
+                ))}
               </div>
             )}
-          </section>
-          <LogSection chatMessages={chatMessages} />
+          </div>
         </div>
       </div>
     </main>
