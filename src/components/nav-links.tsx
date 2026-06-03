@@ -10,7 +10,6 @@ interface NavLink {
 
 const LINKS: NavLink[] = [
   { href: '/', label: '홈' },
-  { href: '/capture', label: '담기' },
   { href: '/register', label: '등록' },
   { href: '/history', label: '기록' },
   { href: '/about', label: 'About' },

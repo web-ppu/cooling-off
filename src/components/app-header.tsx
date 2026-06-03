@@ -33,12 +33,6 @@ export default async function AppHeader({ user: userProp }: Props) {
           {/* 시안 정합: [기록] [ABOUT] brutalist 박스 (2px ink 보더) */}
           <div className="flex items-center gap-2">
             <Link
-              href="/capture"
-              className="cursor-pointer rounded px-2 py-1 text-sm text-zinc-500 hover:text-zinc-900"
-            >
-              담기
-            </Link>
-            <Link
               href="/history"
               className="cursor-pointer text-sm font-bold text-[var(--ink)]"
               style={{
