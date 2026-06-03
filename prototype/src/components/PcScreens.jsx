@@ -286,11 +286,6 @@ export function PcHomeScreen({
   return (
     <div className="pc-stage wide">
       <div className="doc-header">
-        <div className="doc-header-row">
-          <span className="doc-tag">DASHBOARD</span>
-          <span className="doc-tag">HOME.001</span>
-          <span className="doc-tag accent">{ready.length} READY</span>
-        </div>
         <div className="home-header-main">
           <h1 className="doc-title">
             식히는 중<br />
@@ -303,15 +298,7 @@ export function PcHomeScreen({
             <Icon.Plus /> 사고 싶은 물건 등록
           </button>
         </div>
-        <div className="doc-meta-row">
-          <span>FILE / cooling.live</span>
-          <span>/</span>
-          <span>READY {ready.length}</span>
-          <span>/</span>
-          <span>COOLING {cooling.length}</span>
-          <span>/</span>
-          <span>VALUE {formatKRW(totalValue)}</span>
-        </div>
+        <div className="doc-meta-row" />
       </div>
 
       {empty && (
@@ -534,40 +521,23 @@ export function PcRegisterScreen({ onBack, onSubmit }) {
 
   return (
     <div className="pc-stage">
-      <button
-        className="btn btn-ghost btn-sm"
-        onClick={onBack}
-        style={{ marginBottom: 12 }}
-      >
-        ← 홈
-      </button>
-
       <div className="doc-header">
         <div className="doc-header-row">
-          <span className="doc-tag">FORM</span>
-          <span className="doc-tag">REQ.001</span>
-          <span className="doc-tag accent">NEW</span>
+          <button className="btn btn-ghost btn-sm" onClick={onBack}>← 홈</button>
         </div>
         <h1 className="doc-title">
           사고 싶은 물건
           <br />
           <span className="doc-title-em">등록.</span>
         </h1>
-        <div className="doc-meta-row">
-          <span>FILE / item-register.form</span>
-          <span>/</span>
-          <span>4 FIELDS</span>
-          <span>/</span>
-          <span>EST {cooling || "— —"}</span>
-        </div>
+        <div className="doc-meta-row" />
       </div>
 
       <div className="pc-form-grid">
         <div className="doc-form">
           <div className="doc-row">
-            <div className="doc-row-num">A</div>
+            <div className="doc-row-num">이름</div>
             <div className="doc-row-body">
-              <div className="doc-row-label">NAME · 이름</div>
               <input
                 className="field-input"
                 placeholder="예: 에어팟 프로3"
@@ -583,10 +553,10 @@ export function PcRegisterScreen({ onBack, onSubmit }) {
           </div>
 
           <div className="doc-row">
-            <div className="doc-row-num">B</div>
+            <div className="doc-row-num">가격</div>
             <div className="doc-row-body">
               <div className="doc-row-label">
-                PRICE · 가격 <span className="opt">(₩)</span>
+                <span className="opt">(₩)</span>
               </div>
               <input
                 className="field-input tnum"
@@ -603,10 +573,10 @@ export function PcRegisterScreen({ onBack, onSubmit }) {
           </div>
 
           <div className="doc-row">
-            <div className="doc-row-num">C</div>
+            <div className="doc-row-num">링크</div>
             <div className="doc-row-body">
               <div className="doc-row-label">
-                URL · 링크 <span className="opt">(선택)</span>
+                <span className="opt">(선택)</span>
               </div>
               <input
                 className="field-input"
@@ -618,10 +588,10 @@ export function PcRegisterScreen({ onBack, onSubmit }) {
           </div>
 
           <div className="doc-row">
-            <div className="doc-row-num accent">D</div>
+            <div className="doc-row-num accent">이유</div>
             <div className="doc-row-body">
               <div className="doc-row-label">
-                REASON · 사고 싶은 이유 <span className="opt">(선택)</span>
+                <span className="opt">(선택)</span>
               </div>
               <textarea
                 className="field-textarea"
@@ -641,13 +611,7 @@ export function PcRegisterScreen({ onBack, onSubmit }) {
           </div>
 
           <div className="doc-form-foot">
-            <span
-              className="doc-meta-row"
-              style={{ borderTop: "none", padding: 0, margin: 0 }}
-            >
-              SIGN · _________________
-            </span>
-            <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ display: "flex", gap: 10, marginLeft: "auto" }}>
               <button className="btn btn-ghost" onClick={onBack}>
                 취소
               </button>
@@ -926,23 +890,12 @@ export function PcSummaryScreen({ item, sim, onBack, onDecide }) {
       </button>
 
       <div className="doc-header">
-        <div className="doc-header-row">
-          <span className="doc-tag">VERDICT</span>
-          <span className="doc-tag">DEC.001</span>
-          <span className="doc-tag accent">{sim.facts.length} FACTS</span>
-        </div>
         <h1 className="doc-title">
           {item.name}
           <br />
           <span className="doc-title-em">결정의 시간.</span>
         </h1>
-        <div className="doc-meta-row">
-          <span>FILE / decision.draft</span>
-          <span>/</span>
-          <span className="tnum">{formatKRW(item.price)}</span>
-          <span>/</span>
-          <span>NO JUDGEMENT INJECTED</span>
-        </div>
+        <div className="doc-meta-row" />
       </div>
 
       <div className="summary-grid">
@@ -1020,21 +973,12 @@ export function PcHistoryScreen({ records, onOpenRecord }) {
   return (
     <div className="pc-stage">
       <div className="doc-header">
-        <div className="doc-header-row">
-          <span className="doc-tag">ARCHIVE</span>
-          <span className="doc-tag">LOG.001</span>
-          <span className="doc-tag accent">{records.length} ENTRIES</span>
-        </div>
         <h1 className="doc-title">
           결정 기록
           <br />
           <span className="doc-title-em">아카이브.</span>
         </h1>
-        <div className="doc-meta-row">
-          <span>FILE / decisions.log</span>
-          <span>/</span>
-          <span>SORTED BY DATE DESC</span>
-        </div>
+        <div className="doc-meta-row" />
       </div>
 
       <div className="stat-grid">
@@ -1216,21 +1160,12 @@ export function PcAboutScreen({ onBack }) {
     <div className="pc-stage">
       <div className="about-doc">
         <div className="doc-header">
-          <div className="doc-header-row">
-            <span className="doc-tag">MANUAL</span>
-            <span className="doc-tag">v1.0</span>
-            <span className="doc-tag accent">2026</span>
-          </div>
           <h1 className="doc-title">
             식은 머리로
             <br />
             <span className="doc-title-em">다시 보기.</span>
           </h1>
-          <div className="doc-meta-row">
-            <span>FILE / cooling-off.txt</span>
-            <span>/</span>
-            <span>PRINT 002</span>
-          </div>
+          <div className="doc-meta-row" />
         </div>
 
         <section className="about-sec">

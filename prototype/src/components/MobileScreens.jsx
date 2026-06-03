@@ -142,17 +142,10 @@ export function LoginScreen({ onBack, onLogin }) {
       <div className="screen">
         <div className="screen-pad">
           <div className="m-doc-header" style={{ marginBottom: 20 }}>
-            <div className="m-doc-tags">
-              <span className="doc-tag">AUTH</span>
-              <span className="doc-tag">LOGIN</span>
-            </div>
             <h1 className="m-doc-title" style={{ fontSize: 30 }}>
               로그인하고<br />시작하기
             </h1>
-            <div className="m-doc-meta">
-              <span>STEP 0 / 3</span>
-              <span>SECURED</span>
-            </div>
+            <div className="m-doc-meta" />
           </div>
 
           <p className="hint" style={{ fontSize: 14 }}>등록한 물건과 결정 기록은 로그인한 계정에 저장됩니다.</p>
@@ -186,19 +179,11 @@ export function AboutScreen({ onBack }) {
       <div className="screen">
         <div className="screen-pad">
           <div className="m-doc-header">
-            <div className="m-doc-tags">
-              <span className="doc-tag">MANUAL</span>
-              <span className="doc-tag">v1.0</span>
-              <span className="doc-tag accent">2026</span>
-            </div>
             <h1 className="m-doc-title">
               식은 머리로<br />
               <span className="doc-title-em">다시 보기.</span>
             </h1>
-            <div className="m-doc-meta">
-              <span>FILE / cooling-off.txt</span>
-              <span>PRINT 002</span>
-            </div>
+            <div className="m-doc-meta" />
           </div>
 
           <section className="m-about-sec">
@@ -514,7 +499,7 @@ export function RegisterScreen({ onBack, onSubmit }) {
     <>
       <HeaderBar
         onBack={onBack}
-        center={<span className="app-header-center-title">Register</span>}
+        center={<span className="app-header-center-title">등록</span>}
       />
       <div className="screen">
         <div className="screen-pad">
@@ -523,10 +508,7 @@ export function RegisterScreen({ onBack, onSubmit }) {
               사고 싶은 물건<br />
               <span className="doc-title-em">등록</span>
             </h1>
-            <div className="m-doc-meta">
-              <span>FIELDS / 4</span>
-              <span>STEP 1 / 3</span>
-            </div>
+            <div className="m-doc-meta" />
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
@@ -548,7 +530,7 @@ export function RegisterScreen({ onBack, onSubmit }) {
             </div>
 
             <div className="field">
-              <label className="field-label">URL <span className="opt">(선택)</span></label>
+              <label className="field-label">링크 <span className="opt">(선택)</span></label>
               <input className="field-input" placeholder="https://..." value={url}
                 onChange={(e) => setUrl(e.target.value)} />
             </div>
@@ -809,19 +791,11 @@ export function HistoryScreen({ records, onBack, onOpenRecord }) {
       <div className="screen">
         <div className="screen-pad">
           <div className="m-history-header">
-            <div className="m-doc-tags">
-              <span className="doc-tag">ARCHIVE</span>
-              <span className="doc-tag">LOG.001</span>
-              <span className="doc-tag accent">{records.length} ENTRIES</span>
-            </div>
             <h1 className="m-doc-title">
               결정 기록<br />
               <span className="doc-title-em">아카이브.</span>
             </h1>
-            <div className="m-doc-meta">
-              <span>FILE / decisions.log</span>
-              <span>SORTED BY DATE DESC</span>
-            </div>
+            <div className="m-doc-meta" />
           </div>
 
           <div className="m-history-stats">

@@ -1597,19 +1597,20 @@ input, textarea, button { font-family: inherit; color: inherit; }
 }
 .doc-row {
   display: grid;
-  grid-template-columns: 56px 1fr;
+  grid-template-columns: 72px 1fr;
   border-bottom: 2px solid var(--line-default);
 }
 .doc-row:last-of-type { border-bottom: none; }
 .doc-row-num {
   font-family: var(--font-mono);
-  font-size: 22px;
+  font-size: 13px;
   font-weight: 700;
+  letter-spacing: 0.04em;
   color: var(--ink);
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 22px 0;
+  padding: 22px 6px;
   border-right: 2px solid var(--line-default);
   background: var(--surface);
 }
