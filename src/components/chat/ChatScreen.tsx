@@ -12,6 +12,7 @@ import {
   saveDecision,
   type DecisionLabel,
 } from "@/app/chat/actions";
+import { deleteCoolingItem } from "@/app/cooling/actions";
 
 const MAX_MESSAGE_LENGTH = 500;
 
@@ -102,6 +103,14 @@ export default function ChatScreen({
     textareaRef.current.style.height = "44px";
     textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
   }, [inputValue]);
+
+  // 마지막 발화가 AI이고 입력 대기 상태일 때만 "아래 입력창에 답해 보세요" 안내 노출.
+  const showAnswerPrompt =
+    messages[messages.length - 1]?.role === "assistant" &&
+    !isLoading &&
+    !lastFailedSend &&
+    !isDecided &&
+    !isAtTurnLimit;
 
   const trimmedInput = inputValue.trim();
   const canSend =
@@ -327,13 +336,58 @@ export default function ChatScreen({
     }
   }
 
+  async function handleDeleteItem() {
+    // 모바일 상단 바 삭제 — 시안 정합. stub(/chat) 모드는 itemId 가 없으므로 홈으로만.
+    if (!itemId) {
+      router.push("/");
+      return;
+    }
+    if (!window.confirm("이 항목을 삭제할까요? 되돌릴 수 없습니다.")) return;
+    const result = await deleteCoolingItem(itemId);
+    // 성공 시 server action 이 홈으로 redirect 한다. 실패 시에만 결과가 돌아온다.
+    if (result && !result.success) {
+      setSaveErrorMessage(result.error);
+    }
+  }
+
   const chatFailure = lastFailedSend?.mode === "chat" ? lastFailedSend : null;
   const decideFailure =
     lastFailedSend?.mode === "decide" ? lastFailedSend : null;
 
   return (
-    <div className="pc-chat-frame">
-      {/* ── 데스크탑 사이드바 (md+) — 시안 PcChatScreen 정합 ── */}
+    <div className="chat-root">
+      {/* ── 모바일 상단 바 (md 미만) — 시안 HeaderBar 정합: 좌측 뒤로 + 우측 삭제 ── */}
+      <header className="m-chat-header md:hidden">
+        <button
+          type="button"
+          className="m-chat-back"
+          onClick={() => router.push("/")}
+          aria-label="뒤로"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.25"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M15 6l-6 6 6 6" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          className="m-chat-delete"
+          onClick={() => void handleDeleteItem()}
+        >
+          삭제
+        </button>
+      </header>
+
+      <div className="pc-chat-frame">
+        {/* ── 데스크탑 사이드바 (md+) — 시안 PcChatScreen 정합 ── */}
       <aside className="pc-chat-meta hidden md:flex">
         <div>
           <div className="meta-label">물건</div>
@@ -399,34 +453,22 @@ export default function ChatScreen({
             <div className="bubble system">
               AI가 현재 대화에서 나온 사실만 사용합니다
             </div>
-            {messages.map((m, idx) => {
-              const isLast = idx === messages.length - 1;
-              const promptUser =
-                isLast &&
-                m.role === "assistant" &&
-                !isLoading &&
-                !lastFailedSend &&
-                !isDecided &&
-                !isAtTurnLimit;
-              return (
-                <div key={idx}>
-                  <div
-                    className={`bubble ${m.role === "assistant" ? "ai" : "user"}`}
-                  >
-                    {m.content}
-                  </div>
-                  {/* 시안 ChatScreen — AI 마지막 발화 다음에 system "아래 입력창에 답해 보세요" */}
-                  {promptUser && (
-                    <div
-                      className="bubble system"
-                      style={{ fontSize: 11.5 }}
-                    >
-                      아래 입력창에 답해 보세요
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {/* 시안 정합: 버블을 stream-inner 의 직계 자식으로 둬야 align-self(좌/우)가
+                먹는다. 래퍼 div 로 감싸면 정렬이 깨져 user 버블이 우측 정렬되지 않음. */}
+            {messages.map((m, idx) => (
+              <div
+                key={idx}
+                className={`bubble ${m.role === "assistant" ? "ai" : "user"}`}
+              >
+                {m.content}
+              </div>
+            ))}
+            {/* 시안 ChatScreen — 마지막 AI 발화 다음 system "아래 입력창에 답해 보세요" */}
+            {showAnswerPrompt && (
+              <div className="bubble system" style={{ fontSize: 11.5 }}>
+                아래 입력창에 답해 보세요
+              </div>
+            )}
             {isLoading && (
               <div
                 className="bubble loading"
@@ -451,13 +493,13 @@ export default function ChatScreen({
         {/* 결정 배너: 결정 모드 진입 전, [결정하기] 버튼 노출 신호 켜진 경우만 */}
         {showDecideButton && !isDecided && (
           <div className="decide-banner">
-            <span className="label-text">관점이 정리됐어요</span>
+            <span className="label-text">관점이 충분히 정리됐어요</span>
             <button
               type="button"
               onClick={() => void handleDecide()}
               disabled={isLoading}
             >
-              결정하기
+              결정하기 →
             </button>
           </div>
         )}
@@ -532,7 +574,8 @@ export default function ChatScreen({
             </div>
           </div>
         )}
-      </section>
+        </section>
+      </div>
     </div>
   );
 }
