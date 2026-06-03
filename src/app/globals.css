@@ -85,6 +85,8 @@ body {
   background: var(--accent);
   color: var(--ink);
   border-color: var(--accent);
+  /* 파란 COOLING 박스 — 기본 doc-tag(4/10) 보다 더 타이트하게 */
+  padding: 2px 8px;
 }
 .cooling-card-id {
   font-family: var(--font-mono);
