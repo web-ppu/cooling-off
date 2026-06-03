@@ -3,35 +3,37 @@
 import { useMemo } from 'react'
 
 /**
- * 배경에 흩날리는 눈송이(❄) 30개 — prototype/SnowBackground 패턴.
+ * 배경에 흩날리는 눈송이(❄) — prototype/SnowBackground 패턴.
  *
- * - position: fixed, inset: 0 → 뷰포트 전체 덮음
+ * - `mobile` 없을 때(기본): PC 값 — 30개, fixed, size 8~32 (prototype/PcScreens).
+ * - `mobile` 일 때: 모바일 값 — 22개, absolute, size 7~28, 더 빠르게
+ *   (prototype/MobileScreens 의 SnowBackground 정합).
+ *
  * - pointerEvents: none → 클릭 통과
  * - zIndex: 0 → 상위 contents 는 zIndex: 1 이상으로 띄워야 가려지지 않음
  *
  * snowfall keyframe 은 globals.css 에 정의.
- *
  * 마운트 시 useMemo 로 랜덤 값 고정 → 리렌더에도 위치/속도 유지.
  */
-export default function SnowBackground() {
+export default function SnowBackground({ mobile = false }: { mobile?: boolean }) {
   const flakes = useMemo(
     () =>
-      Array.from({ length: 30 }, (_, i) => ({
+      Array.from({ length: mobile ? 22 : 30 }, (_, i) => ({
         id: i,
-        left: `${Math.random() * 98}%`,
-        duration: 6 + Math.random() * 10,
-        delay: -(Math.random() * 14),
-        size: 8 + Math.random() * 24,
+        left: `${Math.random() * (mobile ? 96 : 98)}%`,
+        duration: (mobile ? 5 : 6) + Math.random() * (mobile ? 8 : 10),
+        delay: -(Math.random() * (mobile ? 12 : 14)),
+        size: (mobile ? 7 : 8) + Math.random() * (mobile ? 21 : 24),
         opacity: 0.15 + Math.random() * 0.55,
       })),
-    []
+    [mobile]
   )
 
   return (
     <div
       aria-hidden
       style={{
-        position: 'fixed',
+        position: mobile ? 'absolute' : 'fixed',
         inset: 0,
         overflow: 'hidden',
         pointerEvents: 'none',
