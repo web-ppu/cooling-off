@@ -160,6 +160,7 @@ body {
 }
 
 /* ── cooling timer ──────────────────────────────────────────── */
+/* 시안 정합(prototype) — 점선 가로 라인(상/하) + 옅은 세로 라인 배경 */
 .cooling-timer-frame {
   padding: 36px 24px 24px;
   border-bottom: 2px solid var(--line-default);
@@ -167,7 +168,26 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 14px;
+  position: relative;
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    repeating-linear-gradient(90deg, transparent 0 23px, var(--surface-2) 23px 24px) padding-box;
 }
+.cooling-timer-frame::before,
+.cooling-timer-frame::after {
+  content: '';
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--ink) 0 6px,
+    transparent 6px 12px
+  );
+}
+.cooling-timer-frame::before { top: 16px; }
+.cooling-timer-frame::after { bottom: 12px; }
 .cooling-timer-label {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -177,15 +197,28 @@ body {
 }
 .cooling-timer {
   font-family: var(--font-mono);
-  font-size: 72px;
+  font-size: 88px;
   font-weight: 300;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.04em;
   color: var(--ink);
   line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  white-space: nowrap;
 }
-@media (max-width: 640px) {
-  .cooling-timer { font-size: 44px; }
+/* 콜론 구분자 — 숫자보다 작게, 회색 */
+.cooling-timer-sep {
+  font-size: 0.38em;
+  font-weight: 300;
+  padding: 0 4px;
+  color: var(--ink-3);
+  align-self: center;
+  letter-spacing: 0;
+}
+@media (max-width: 880px) {
+  .cooling-timer { font-size: 56px; }
 }
 .cooling-timer-axis {
   display: flex;
