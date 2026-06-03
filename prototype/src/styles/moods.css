@@ -82,8 +82,9 @@ body { font-feature-settings: normal; }
 }
 .pc-item-card.ready,
 .item-card.ready {
-  border-color: var(--line-active);
+  border-color: var(--line-default);
   background: var(--surface);
+  box-shadow: 4px 4px 0 var(--accent);
 }
 .pc-item-card:hover,
 .item-card:hover {
