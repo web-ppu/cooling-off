@@ -121,14 +121,8 @@ export default async function Home() {
               <br />
               <span className="doc-title-em">{items.length}건.</span>
             </h1>
-            {/* PC 전용 액션 — 링크로 담기(보조) + 등록(accent 파란, 디자이너 시안 정합) */}
+            {/* PC 전용 액션 — 등록 버튼(accent 파란, 디자이너 시안 정합) */}
             <div className="hidden items-center gap-2 md:inline-flex">
-              <Link
-                href="/capture"
-                className="inline-flex items-center gap-2 border-2 border-[var(--line-default)] bg-white px-4 py-3 text-sm font-semibold text-[var(--ink)] transition-colors hover:bg-[var(--surface-2)]"
-              >
-                링크로 담기
-              </Link>
               <Link
                 href="/register"
                 className="inline-flex items-center gap-2 border-2 px-5 py-3 text-sm font-semibold transition-colors"
