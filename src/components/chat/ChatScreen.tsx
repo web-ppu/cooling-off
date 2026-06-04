@@ -463,11 +463,10 @@ export default function ChatScreen({
                 {m.content}
               </div>
             ))}
-            {/* 시안 ChatScreen — 마지막 AI 발화 다음 system "아래 입력창에 답해 보세요" */}
+            {/* 시안 ChatScreen — 마지막 AI 발화 다음 system "아래 입력창에 답해 보세요"
+                ("AI가 현재 …" 안내와 동일 크기로 — 인라인 폰트 오버라이드 제거) */}
             {showAnswerPrompt && (
-              <div className="bubble system" style={{ fontSize: 11.5 }}>
-                아래 입력창에 답해 보세요
-              </div>
+              <div className="bubble system">아래 입력창에 답해 보세요</div>
             )}
             {isLoading && (
               <div
