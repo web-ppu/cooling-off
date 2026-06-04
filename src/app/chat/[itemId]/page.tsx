@@ -100,8 +100,10 @@ export default async function ChatItemPage({
     gap: 6,
   };
 
+  // min-height 를 100dvh 로 — 모바일에서 ChatScreen(chat-root height:100dvh) 와
+  // 높이를 일치시켜 하단에 100vh-100dvh 만큼의 흰 여백이 생기지 않도록 (#200).
   return (
-    <div style={{ background: "var(--surface)", minHeight: "100vh" }}>
+    <div style={{ background: "var(--surface)", minHeight: "100dvh" }}>
       {/* 데스크탑 글로벌 헤더 (모바일은 ChatScreen 의 ‹/삭제 헤더가 대신) */}
       <div className="hidden md:block">
         <AppHeader user={user} />
