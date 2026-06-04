@@ -40,7 +40,7 @@ END $$;
 --    - pg_net 은 fire-and-forget — 응답은 net._http_response 에 저장됨
 SELECT cron.schedule(
   'dispatch-notifications',
-  '*/5 * * * *',
+  '* * * * *',
   $cron$
   SELECT net.http_get(
     url := (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'cron_app_url')
