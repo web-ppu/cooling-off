@@ -4,27 +4,93 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { isAdmin } from "@/lib/admin";
+import {
+  FIRST_AI_MESSAGE,
+  type ChatMessage,
+} from "@/lib/chat/systemPrompt";
 
 /**
- * 결정 결과 저장 / 대화 누적 Server Actions.
+ * 채팅 화면 Server Actions — 메시지 초기화·대화 누적·결정 저장.
  *
- * 동작 분리 (issue: 대화 turn-by-turn 영구 저장):
- * - 채팅 진행 중에는 매 턴마다 `appendChatTurn` 으로 chat_messages 에 누적 INSERT.
- *   페이지 진입 시(/chat/[itemId]) 기존 chat_messages 를 그대로 복원해 화면을 띄운다.
- *   덕분에 새로고침/재진입해도 대화가 끊기지 않는다.
- * - [안 삼]/[삼] 클릭 시 `saveDecision` 이 호출되어 items 레코드만 결정 상태로 업데이트한다.
- *   chat_messages 는 이미 누적되어 있으므로 더 이상 일괄 INSERT 하지 않는다.
+ * 각 액션의 역할:
+ * - `loadOrInitMessages` : ChatScreen 마운트 시 기존 대화 복원.
+ *   최초 진입이면 FIRST_AI_MESSAGE 를 DB 에 INSERT 후 반환.
+ *   (서버 컴포넌트 블로킹을 없애기 위해 클라이언트에서 호출)
+ * - `appendChatTurn`     : 매 턴 user+assistant 메시지 쌍을 chat_messages 에 누적 INSERT.
+ * - `saveDecision`       : [안 삼]/[삼] 선택 시 items 레코드만 결정 상태로 업데이트.
+ *   chat_messages 는 이미 appendChatTurn 으로 누적되어 있으므로 여기서는 저장하지 않음.
  *
- * 흐름:
- * 1. 인증 확인 (auth.getUser) — 비로그인이면 /login으로 리다이렉트
- * 2. items.UPDATE: decision, decided_at, status='decided', fact_summary
- *    - WHERE id = itemId AND user_id = current AND status = 'ready'
- *    - (RLS도 같은 조건 강제하지만 명시적 검증 포함)
- * 3. revalidatePath('/') 후 홈으로 리다이렉트
- *
- * 호출 측(ChatScreen): itemId가 있는 경우에만 호출. itemId 없으면 stub 모드
- * (현재 /chat 페이지의 Case A 하드코딩 상황) — 저장 자체를 스킵.
+ * 공통 보안 규칙:
+ * - 모든 액션은 auth.getUser() 로 인증을 확인한다.
+ * - itemId 를 받는 액션은 items 테이블에서 본인 소유 여부를 명시적으로 검증한다
+ *   (RLS 와 이중 방어).
  */
+
+/**
+ * 채팅 메시지를 로드하거나, 최초 진입이면 FIRST_AI_MESSAGE 를 INSERT 후 반환한다.
+ *
+ * - 기존 메시지 있음: SELECT 결과를 turn_number 오름차순으로 반환
+ * - 최초 진입(빈 결과): FIRST_AI_MESSAGE 를 turn_number=0 으로 INSERT 후 반환
+ *   INSERT 실패 시 in-memory 값으로 폴백 (silent fail + 서버 로그)
+ *
+ * 보안: 본인 소유 item 인지 확인 후 진행 (appendChatTurn 과 동일 수준).
+ */
+export async function loadOrInitMessages(
+  itemId: string
+): Promise<ChatMessage[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [{ role: "assistant", content: FIRST_AI_MESSAGE }];
+
+  // 본인 소유 확인 (RLS 도 동일 조건이지만 명시적 검증 — appendChatTurn 과 동일 패턴)
+  const { data: item } = await supabase
+    .from("items")
+    .select("user_id")
+    .eq("id", itemId)
+    .is("deleted_at", null)
+    .single();
+  if (!item || item.user_id !== user.id) {
+    console.error("[loadOrInitMessages] 소유권 검증 실패:", itemId);
+    return [{ role: "assistant", content: FIRST_AI_MESSAGE }];
+  }
+
+  const { data } = await supabase
+    .from("chat_messages")
+    .select("role, content, turn_number")
+    .eq("item_id", itemId)
+    .order("turn_number", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  const rows = (data ?? []) as {
+    role: "user" | "assistant";
+    content: string;
+    turn_number: number;
+  }[];
+
+  if (rows.length === 0) {
+    const { error: insertError } = await supabase
+      .from("chat_messages")
+      .insert({
+        item_id: itemId,
+        user_id: user.id,
+        role: "assistant",
+        content: FIRST_AI_MESSAGE,
+        turn_number: 0,
+      });
+    if (insertError) {
+      console.error(
+        "[loadOrInitMessages] FIRST_AI_MESSAGE insert failed:",
+        insertError
+      );
+    }
+    return [{ role: "assistant", content: FIRST_AI_MESSAGE }];
+  }
+
+  return rows.map((m) => ({ role: m.role, content: m.content }));
+}
+
 export type DecisionLabel = "bought" | "passed";
 
 export type SaveDecisionInput = {

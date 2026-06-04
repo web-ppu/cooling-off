@@ -10,6 +10,7 @@ import {
 import {
   appendChatTurn,
   saveDecision,
+  loadOrInitMessages,
   type DecisionLabel,
 } from "@/app/chat/actions";
 import { deleteCoolingItem } from "@/app/cooling/actions";
@@ -71,6 +72,11 @@ export default function ChatScreen({
       ? initialMessages
       : [{ role: "assistant", content: FIRST_AI_MESSAGE }]
   );
+  // itemId 가 있으면 마운트 시 DB 에서 메시지를 로드할 때까지 입력을 막는다.
+  // itemId 없음(stub 모드) 또는 initialMessages 가 이미 전달된 경우는 즉시 false.
+  const [messagesLoading, setMessagesLoading] = useState<boolean>(
+    !!itemId && !(initialMessages && initialMessages.length > 0)
+  );
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showDecideButton, setShowDecideButton] = useState(false);
@@ -92,6 +98,23 @@ export default function ChatScreen({
     [messages]
   );
   const isAtTurnLimit = turnCount >= MAX_TURNS;
+
+  // 마운트 시 DB 에서 메시지를 로드한다 (서버 블로킹 제거 목적).
+  // - 신규 대화: FIRST_AI_MESSAGE INSERT 후 반환 → setState 로 덮어씀 (내용 동일)
+  // - 기존 대화: 전체 히스토리 반환 → setState 로 교체
+  // messagesLoading 이 true 인 동안 입력 비활성화로 턴 카운트 오염을 방지한다.
+  //
+  // itemId 는 Next.js 라우트 파라미터 — 컴포넌트 수명 동안 변하지 않으므로
+  // 의존성 배열에 itemId 만 두면 충분하다 (마운트 1회 실행).
+  useEffect(() => {
+    if (!itemId) return;
+    loadOrInitMessages(itemId)
+      .then((loaded) => setMessages(loaded))
+      .catch((err) =>
+        console.error("[ChatScreen] loadOrInitMessages failed:", err)
+      )
+      .finally(() => setMessagesLoading(false));
+  }, [itemId]);
 
   useEffect(() => {
     scrollAnchorRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -117,7 +140,8 @@ export default function ChatScreen({
     trimmedInput.length > 0 &&
     trimmedInput.length <= MAX_MESSAGE_LENGTH &&
     !isLoading &&
-    !isAtTurnLimit;
+    !isAtTurnLimit &&
+    !messagesLoading;
 
   async function callChatApi(messagesPayload: ChatMessage[]) {
     const response = await fetch("/api/chat", {
@@ -455,16 +479,28 @@ export default function ChatScreen({
             </div>
             {/* 시안 정합: 버블을 stream-inner 의 직계 자식으로 둬야 align-self(좌/우)가
                 먹는다. 래퍼 div 로 감싸면 정렬이 깨져 user 버블이 우측 정렬되지 않음. */}
-            {messages.map((m, idx) => (
+            {messagesLoading ? (
+              /* 메시지 DB 로드 중 — 짧은 로딩 인디케이터 (보통 100~200ms) */
               <div
-                key={idx}
-                className={`bubble ${m.role === "assistant" ? "ai" : "user"}`}
+                className="bubble loading"
+                aria-label="대화 내역을 불러오는 중입니다"
               >
-                {m.content}
+                <span />
+                <span />
+                <span />
               </div>
-            ))}
+            ) : (
+              messages.map((m, idx) => (
+                <div
+                  key={idx}
+                  className={`bubble ${m.role === "assistant" ? "ai" : "user"}`}
+                >
+                  {m.content}
+                </div>
+              ))
+            )}
             {/* 시안 ChatScreen — 마지막 AI 발화 다음 system "아래 입력창에 답해 보세요" */}
-            {showAnswerPrompt && (
+            {!messagesLoading && showAnswerPrompt && (
               <div className="bubble system" style={{ fontSize: 11.5 }}>
                 아래 입력창에 답해 보세요
               </div>
