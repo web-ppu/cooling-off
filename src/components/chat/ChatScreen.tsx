@@ -127,6 +127,31 @@ export default function ChatScreen({
     textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
   }, [inputValue]);
 
+  // iOS 키보드 대응 (#186): VisualViewport 높이를 --chat-vh 로 반영해 입력창이
+  // 키보드 바로 위에 붙도록(공백 제거) + 키보드 열림 시 body.chat-keyboard-open 토글
+  // (입력창 하단 safe-area 패딩 제거용). 미지원 브라우저는 CSS fallback(100dvh) 사용.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const root = document.documentElement;
+    const update = () => {
+      root.style.setProperty("--chat-vh", `${Math.round(vv.height)}px`);
+      document.body.classList.toggle(
+        "chat-keyboard-open",
+        window.innerHeight - vv.height > 100
+      );
+    };
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+      root.style.removeProperty("--chat-vh");
+      document.body.classList.remove("chat-keyboard-open");
+    };
+  }, []);
+
   // 마지막 발화가 AI이고 입력 대기 상태일 때만 "아래 입력창에 답해 보세요" 안내 노출.
   const showAnswerPrompt =
     messages[messages.length - 1]?.role === "assistant" &&

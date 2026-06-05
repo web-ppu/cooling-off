@@ -635,7 +635,9 @@ body {
   .chat-root {
     display: flex;
     flex-direction: column;
-    height: 100dvh;
+    /* iOS 키보드 대응(#186): VisualViewport 높이(--chat-vh)로, 없으면 100dvh.
+       키보드가 열리면 보이는 영역만큼 줄어들어 입력창이 키보드 바로 위에 붙는다. */
+    height: var(--chat-vh, 100dvh);
   }
   .pc-chat-frame {
     display: flex;
@@ -815,6 +817,11 @@ body {
   .chat-input-bar {
     padding: 10px 12px calc(14px + env(safe-area-inset-bottom, 0px));
   }
+  /* 키보드가 열리면 홈 인디케이터 영역(safe-area)이 키보드에 가려지므로 제거해
+     입력창과 키보드 사이 공백을 없앤다 (#186). */
+  body.chat-keyboard-open .chat-input-bar {
+    padding-bottom: 10px;
+  }
 }
 .chat-input-row {
   display: flex;
@@ -839,6 +846,13 @@ body {
   color: var(--ink);
   min-height: 44px;
   line-height: 1.4;
+}
+/* iOS 는 input font-size < 16px 이면 포커스 시 페이지가 자동 확대된다 →
+   모바일은 16px 로 올려 확대 방지 (#186). 데스크탑은 시안값 12px 유지. */
+@media (max-width: 880px) {
+  .chat-input {
+    font-size: 16px;
+  }
 }
 .chat-input:focus {
   border-color: var(--line-active);
