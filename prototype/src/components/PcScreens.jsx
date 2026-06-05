@@ -217,55 +217,34 @@ function PcItemCard({ item, ms, kind, onClick, onDelete }) {
   const progress = ready ? 1 : Math.max(0, Math.min(1, 1 - ms / totalMs));
   return (
     <button className={`pc-item-card ${kind}`} onClick={onClick}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div
-            className="name"
-            style={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {item.name}
-          </div>
-          {ready && <span className="ready-chip">결정</span>}
+      <div className="m-item-row">
+        <div className="m-item-tags">
+          <span className={"doc-tag" + (ready ? " accent" : "")}>{ready ? "READY" : "COOL"}</span>
         </div>
-        {ready ? (
-          <div className="meta" style={{ marginTop: 6, color: "var(--ink-3)" }}>
-            클릭하여 시작 →
+        <div className="m-item-row-end">
+          <span className="tnum m-item-price">{formatKRW(item.price)}</span>
+          <span
+            role="button"
+            className="m-item-delete"
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            aria-label="삭제"
+          >
+            삭제
+          </span>
+        </div>
+      </div>
+      <div className="m-item-name">{item.name}</div>
+      {ready ? (
+        <div className="m-item-cta">결정 시작 →</div>
+      ) : (
+        <>
+          <div className="m-item-time tnum">{formatRemainingShort(ms)}</div>
+          <div className="cooling-progress" aria-hidden="true">
+            <span style={{ width: `${progress * 100}%` }}></span>
           </div>
-        ) : (
-          <>
-            <div className="meta tnum" style={{ marginTop: 6 }}>
-              {formatRemainingShort(ms)} · {formatReadyAt(readyAt)}
-            </div>
-            <div
-              className="cooling-progress"
-              aria-hidden="true"
-              style={{ marginTop: 8 }}
-            >
-              <span style={{ width: `${progress * 100}%` }}></span>
-            </div>
-          </>
-        )}
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <span className="tnum" style={{ fontSize: 13, color: "var(--ink-3)" }}>
-          {formatKRW(item.price)}
-        </span>
-        <span
-          role="button"
-          className="btn-icon item-card-trash"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          aria-label="삭제"
-        >
-          <Icon.Trash />
-        </span>
-      </div>
+          <div className="m-item-readyat tnum">{formatReadyAt(readyAt)}</div>
+        </>
+      )}
     </button>
   );
 }

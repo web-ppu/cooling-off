@@ -10,6 +10,7 @@ import {
 import {
   appendChatTurn,
   saveDecision,
+  loadOrInitMessages,
   type DecisionLabel,
 } from "@/app/chat/actions";
 import { deleteCoolingItem } from "@/app/cooling/actions";
@@ -109,6 +110,11 @@ export default function ChatScreen({
       ? initialMessages
       : [{ role: "assistant", content: FIRST_AI_MESSAGE }]
   );
+  // itemId 가 있으면 마운트 시 DB 에서 메시지를 로드할 때까지 입력을 막는다.
+  // itemId 없음(stub 모드) 또는 initialMessages 가 이미 전달된 경우는 즉시 false.
+  const [messagesLoading, setMessagesLoading] = useState<boolean>(
+    !!itemId && !(initialMessages && initialMessages.length > 0)
+  );
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showDecideButton, setShowDecideButton] = useState(false);
@@ -131,6 +137,23 @@ export default function ChatScreen({
   );
   const isAtTurnLimit = turnCount >= MAX_TURNS;
 
+  // 마운트 시 DB 에서 메시지를 로드한다 (서버 블로킹 제거 목적).
+  // - 신규 대화: FIRST_AI_MESSAGE INSERT 후 반환 → setState 로 덮어씀 (내용 동일)
+  // - 기존 대화: 전체 히스토리 반환 → setState 로 교체
+  // messagesLoading 이 true 인 동안 입력 비활성화로 턴 카운트 오염을 방지한다.
+  //
+  // itemId 는 Next.js 라우트 파라미터 — 컴포넌트 수명 동안 변하지 않으므로
+  // 의존성 배열에 itemId 만 두면 충분하다 (마운트 1회 실행).
+  useEffect(() => {
+    if (!itemId) return;
+    loadOrInitMessages(itemId)
+      .then((loaded) => setMessages(loaded))
+      .catch((err) =>
+        console.error("[ChatScreen] loadOrInitMessages failed:", err)
+      )
+      .finally(() => setMessagesLoading(false));
+  }, [itemId]);
+
   useEffect(() => {
     scrollAnchorRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading, lastFailedSend]);
@@ -141,6 +164,40 @@ export default function ChatScreen({
     textareaRef.current.style.height = "44px";
     textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
   }, [inputValue]);
+
+  // iOS 키보드 대응 (#186): VisualViewport 의 높이(--chat-vh)와 상단 오프셋(--chat-top)을
+  // 반영한다. 모바일에서 .chat-root 가 position:fixed 로 이 두 값에 고정되므로,
+  // 키보드가 열려도 입력창이 항상 키보드 바로 위에 붙고(흰 공백 제거), iOS 가 포커스 시
+  // 페이지를 스크롤해도 보이는 영역(visual viewport)을 그대로 따라간다.
+  // 미지원 브라우저는 CSS fallback(top:0 / height:100dvh) 사용.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const root = document.documentElement;
+    const update = () => {
+      root.style.setProperty("--chat-vh", `${Math.round(vv.height)}px`);
+      root.style.setProperty("--chat-top", `${Math.round(vv.offsetTop)}px`);
+      // 키보드 열림 판정: 레이아웃 뷰포트(html clientHeight — 키보드가 열려도
+      // 줄지 않음)와 visualViewport 높이를 비교한다. window.innerHeight 는 iOS
+      // Safari/PWA standalone 에서 visualViewport 와 함께 줄어 판정이 빗나가므로
+      // 쓰지 않는다(이때 입력바 하단 safe-area 패딩이 안 지워져 여백이 남았음).
+      const layoutHeight = root.clientHeight;
+      document.body.classList.toggle(
+        "chat-keyboard-open",
+        layoutHeight - vv.height > 120
+      );
+    };
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+      root.style.removeProperty("--chat-vh");
+      root.style.removeProperty("--chat-top");
+      document.body.classList.remove("chat-keyboard-open");
+    };
+  }, []);
 
   // 마지막 발화가 AI이고 입력 대기 상태일 때만 "아래 입력창에 답해 보세요" 안내 노출.
   const showAnswerPrompt =
@@ -155,7 +212,8 @@ export default function ChatScreen({
     trimmedInput.length > 0 &&
     trimmedInput.length <= MAX_MESSAGE_LENGTH &&
     !isLoading &&
-    !isAtTurnLimit;
+    !isAtTurnLimit &&
+    !messagesLoading;
 
   async function callChatApi(messagesPayload: ChatMessage[]) {
     const response = await fetch("/api/chat", {
@@ -493,16 +551,28 @@ export default function ChatScreen({
             </div>
             {/* 시안 정합: 버블을 stream-inner 의 직계 자식으로 둬야 align-self(좌/우)가
                 먹는다. 래퍼 div 로 감싸면 정렬이 깨져 user 버블이 우측 정렬되지 않음. */}
-            {messages.map((m, idx) => (
+            {messagesLoading ? (
+              /* 메시지 DB 로드 중 — 짧은 로딩 인디케이터 (보통 100~200ms) */
               <div
-                key={idx}
-                className={`bubble ${m.role === "assistant" ? "ai" : "user"}`}
+                className="bubble loading"
+                aria-label="대화 내역을 불러오는 중입니다"
               >
-                {m.content}
+                <span />
+                <span />
+                <span />
               </div>
-            ))}
+            ) : (
+              messages.map((m, idx) => (
+                <div
+                  key={idx}
+                  className={`bubble ${m.role === "assistant" ? "ai" : "user"}`}
+                >
+                  {m.content}
+                </div>
+              ))
+            )}
             {/* 시안 ChatScreen — 마지막 AI 발화 다음 system "아래 입력창에 답해 보세요" */}
-            {showAnswerPrompt && (
+            {!messagesLoading && showAnswerPrompt && (
               <div className="bubble system" style={{ fontSize: 11.5 }}>
                 아래 입력창에 답해 보세요
               </div>
@@ -632,8 +702,20 @@ function DecisionScreen({
   onSkipSummary: () => void;
   saveErrorMessage: string | null;
 }) {
+  // 데스크탑 summary-grid 용 팩트 목록 파싱 (FactSummarySection 과 동일 규칙)
+  const trimmed = summary?.trim() ?? "";
+  const hasFacts = trimmed.length > 0 && trimmed !== "요약할 사실 없음.";
+  const facts = hasFacts
+    ? trimmed
+        .split("\n")
+        .map((s) => s.replace(/^[-·•]\s*/, "").trim())
+        .filter((s) => s.length > 0)
+    : [];
+
   return (
     <div className="decision-screen" role="dialog" aria-label="결정">
+      {/* ── 모바일 (md 미만) — 전체화면 결정 ── */}
+      <div className="decision-mobile md:hidden">
       <header className="decision-head">
         <button
           type="button"
@@ -698,6 +780,121 @@ function DecisionScreen({
                 color: "var(--danger)",
                 border: "2px solid var(--danger)",
                 padding: "8px 12px",
+              }}
+            >
+              {saveErrorMessage}
+            </div>
+          )}
+        </div>
+      </div>
+      </div>
+
+      {/* ── 데스크탑 (md+) — 시안 PcSummaryScreen (2컬럼) ── */}
+      <div className="decision-desktop hidden md:block">
+        <div className="decision-desktop-pad">
+          <button type="button" className="decision-back-btn" onClick={onCancel}>
+            ← 채팅으로
+          </button>
+          <div className="doc-header">
+            <h1 className="doc-title">
+              {registration.productName}
+              <br />
+              <span className="doc-title-em">결정의 시간.</span>
+            </h1>
+            <div className="doc-meta-row" />
+          </div>
+
+          {isLoading ? (
+            <div
+              style={{ display: "flex", justifyContent: "center", padding: "40px 0" }}
+            >
+              <SummaryLoading />
+            </div>
+          ) : decideFailure ? (
+            <div style={{ maxWidth: 520 }}>
+              <DecideFailureSection
+                failure={decideFailure}
+                onRetry={onRetry}
+                onSkipSummary={onSkipSummary}
+                onCancel={onCancel}
+                disabled={isLoading}
+              />
+            </div>
+          ) : (
+            <div className="summary-grid">
+              <div className="summary-facts">
+                <div className="summary-facts-head">
+                  <span className="doc-tag">FACTS</span>
+                  <span className="summary-facts-sub">대화에서 나온 사실</span>
+                </div>
+                {facts.length > 0 ? (
+                  <ol className="summary-facts-list">
+                    {facts.map((f, i) => (
+                      <li key={i}>
+                        <span className="summary-fact-num">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span className="summary-fact-text">{f}</span>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <div
+                    style={{ padding: 24, color: "var(--ink-3)", fontSize: 14 }}
+                  >
+                    팩트 요약이 기록되지 않았습니다.
+                  </div>
+                )}
+                <div className="summary-facts-foot">
+                  <span>※ 판단은 넣지 않았습니다. 결정은 직접 하세요.</span>
+                </div>
+              </div>
+
+              <aside className="summary-decide">
+                <div className="summary-decide-head">
+                  <span className="doc-tag">SIGN</span>
+                  <span className="summary-decide-sub">
+                    아래 두 버튼에서 직접 선택하세요.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="summary-decide-btn pass"
+                  onClick={() => void onDecision("안 삼")}
+                >
+                  <span className="summary-decide-mark">A</span>
+                  <span className="summary-decide-label">안 삼</span>
+                  <span className="summary-decide-meta">PASS</span>
+                </button>
+                <div className="summary-decide-divider">
+                  <span>OR</span>
+                </div>
+                <button
+                  type="button"
+                  className="summary-decide-btn buy"
+                  onClick={() => void onDecision("삼")}
+                >
+                  <span className="summary-decide-mark">B</span>
+                  <span className="summary-decide-label">삼</span>
+                  <span className="summary-decide-meta">BUY</span>
+                </button>
+                <div className="summary-decide-foot">
+                  <span>EQUAL WEIGHT · 동일 비중</span>
+                </div>
+              </aside>
+            </div>
+          )}
+
+          {saveErrorMessage && (
+            <div
+              role="alert"
+              style={{
+                marginTop: 14,
+                fontSize: 13,
+                color: "var(--danger)",
+                border: "2px solid var(--danger)",
+                padding: "8px 12px",
+                maxWidth: 520,
               }}
             >
               {saveErrorMessage}

@@ -3,11 +3,14 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { transitionExpiredItems } from "@/lib/items";
 import { isAdmin } from "@/lib/admin";
+import AppHeader from "@/components/app-header";
+import DeleteCoolingButton from "@/components/delete-cooling-button";
 import ChatScreen from "@/components/chat/ChatScreen";
 import {
   FIRST_AI_MESSAGE,
   type ChatMessage,
 } from "@/lib/chat/systemPrompt";
+import { type Registration } from "@/lib/chat/systemPrompt";
 
 export const dynamic = "force-dynamic";
 
@@ -39,14 +42,18 @@ export default async function ChatItemPage({
   const { itemId } = await params;
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Round 1 (병렬): 인증 + 만료 전환 동시 실행
+  // transitionExpiredItems 를 auth 와 병렬로 실행해 items.select 시점에는
+  // 반드시 최신 status 를 읽도록 보장한다.
+  // (직접 URL 진입·푸시 알림 링크 등 홈을 거치지 않는 경우에도 정확한 상태 필요)
+  const [{ data: { user } }] = await Promise.all([
+    supabase.auth.getUser(),
+    transitionExpiredItems(supabase),
+  ]);
+
   if (!user) redirect("/login");
 
-  // 만료된 cooling 항목을 ready 로 자동 전환 (다른 라우트와 동일 패턴)
-  await transitionExpiredItems(supabase);
-
+  // Round 2: 전환 완료 후 항목 조회 — 정확한 status 를 읽기 위해 Round 1 이후 실행
   const { data: item } = await supabase
     .from("items")
     .select("id, user_id, name, price, reason, status, cooling_ends_at, created_at")
@@ -70,42 +77,56 @@ export default async function ChatItemPage({
   // 비어 있는 경우(최초 진입) 에는 FIRST_AI_MESSAGE 를 turn_number=0 으로 INSERT
   // 해서 첫 인사도 영구 보관한다. 이후 매 턴은 appendChatTurn 이 누적한다.
   const initialMessages = await loadOrInitChatMessages(supabase, itemId, user.id);
+  const registration: Registration = {
+    productName: item.name,
+    price: formatKRW(item.price),
+    coolingPeriod: deriveCoolingPeriodLabel(item.created_at, item.cooling_ends_at),
+    purchaseReason: item.reason ?? "",
+  };
 
+  // 데스크탑 ← 홈 박스 스타일 (시안 btn-ghost btn-sm — 9/14, 13.5px)
+  const homeBoxStyle = {
+    fontFamily: "var(--font-mono)",
+    fontSize: "13.5px",
+    fontWeight: 600,
+    letterSpacing: "0.04em",
+    textTransform: "uppercase" as const,
+    color: "var(--ink)",
+    border: "2px solid var(--ink)",
+    background: "var(--surface)",
+    padding: "9px 14px",
+    textDecoration: "none",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+  };
+
+  // min-height 를 100dvh 로 — 모바일에서 ChatScreen(chat-root height:100dvh) 와
+  // 높이를 일치시켜 하단에 100vh-100dvh 만큼의 흰 여백이 생기지 않도록 (#200).
   return (
-    <div
-      className="px-0 py-0 md:px-4 md:py-6"
-      style={{
-        background: "var(--surface-2)",
-        minHeight: "100vh",
-      }}
-    >
-      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-        {/* 데스크탑 전용 ← 홈 박스 (md+). 모바일에선 시안 정합으로 hidden. */}
-        <header
+    <div style={{ background: "var(--surface)", minHeight: "100dvh" }}>
+      {/* 데스크탑 글로벌 헤더 (모바일은 ChatScreen 의 ‹/삭제 헤더가 대신) */}
+      <div className="hidden md:block">
+        <AppHeader user={user} />
+      </div>
+
+      {/* 모바일: ChatScreen 이 전체화면. 데스크탑: 1120 컨테이너 + ← 홈/삭제 + 프레임 */}
+      <div className="mx-auto w-full md:max-w-[1120px] md:px-8 md:pb-8 md:pt-6">
+        {/* 데스크탑 ← 홈 / 삭제 (모바일은 ChatScreen 헤더가 처리) */}
+        <div
           className="hidden md:flex"
           style={{
             alignItems: "center",
+            justifyContent: "space-between",
+            gap: 20,
             marginBottom: 16,
           }}
         >
-          <Link
-            href="/"
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 12,
-              fontWeight: 600,
-              letterSpacing: "0.04em",
-              textTransform: "uppercase",
-              color: "var(--ink)",
-              border: "2px solid var(--ink)",
-              background: "var(--surface)",
-              padding: "6px 12px",
-              textDecoration: "none",
-            }}
-          >
+          <Link href="/" style={homeBoxStyle}>
             ← 홈
           </Link>
-        </header>
+          <DeleteCoolingButton itemId={itemId} />
+        </div>
         <ChatScreen
           rawItem={{
             name: item.name,
@@ -115,7 +136,6 @@ export default async function ChatItemPage({
             reason: item.reason,
           }}
           itemId={itemId}
-          initialMessages={initialMessages}
         />
       </div>
     </div>
@@ -170,3 +190,24 @@ async function loadOrInitChatMessages(
   return rows.map((m) => ({ role: m.role, content: m.content }));
 }
 
+/**
+ * 등록 시점부터 cooling_ends_at 까지의 차이를 "{N}일" 라벨로 변환.
+ *
+ * DB 에 cooling_period_days 가 별도 컬럼으로 저장돼 있지 않으므로
+ * created_at 과 cooling_ends_at 의 차이로 역산한다. 시스템 프롬프트의
+ * 표시용 라벨이므로 정밀도는 일 단위로 충분.
+ *
+ * 24시간 미만이면 "{H}시간" 으로 fallback.
+ */
+function deriveCoolingPeriodLabel(
+  createdAtIso: string,
+  coolingEndsAtIso: string
+): string {
+  const start = new Date(createdAtIso).getTime();
+  const end = new Date(coolingEndsAtIso).getTime();
+  const diffMs = Math.max(0, end - start);
+  const days = Math.round(diffMs / (24 * 60 * 60 * 1000));
+  if (days >= 1) return `${days}일`;
+  const hours = Math.max(1, Math.round(diffMs / (60 * 60 * 1000)));
+  return `${hours}시간`;
+}
