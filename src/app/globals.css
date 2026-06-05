@@ -824,9 +824,10 @@ body {
     padding: 10px 12px calc(14px + env(safe-area-inset-bottom, 0px));
   }
   /* 키보드가 열리면 홈 인디케이터 영역(safe-area)이 키보드에 가려지므로 제거해
-     입력창과 키보드 사이 공백을 없앤다 (#186). */
+     입력창이 키보드에 딱 붙도록 한다 (#186). safe-area 패딩이 남으면 그만큼
+     입력창과 키보드 사이에 흰 여백이 생긴다. */
   body.chat-keyboard-open .chat-input-bar {
-    padding-bottom: 10px;
+    padding: 8px 12px;
   }
   /* 키보드 열림 시 페이지(body) 스크롤을 잠근다 — iOS 가 포커스 시 페이지를 밀어
      올려 fixed chat-root 뒤의 잉여 높이가 입력창과 키보드 사이로 드러나는 것을

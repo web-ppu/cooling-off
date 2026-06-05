@@ -139,9 +139,14 @@ export default function ChatScreen({
     const update = () => {
       root.style.setProperty("--chat-vh", `${Math.round(vv.height)}px`);
       root.style.setProperty("--chat-top", `${Math.round(vv.offsetTop)}px`);
+      // 키보드 열림 판정: 레이아웃 뷰포트(html clientHeight — 키보드가 열려도
+      // 줄지 않음)와 visualViewport 높이를 비교한다. window.innerHeight 는 iOS
+      // Safari/PWA standalone 에서 visualViewport 와 함께 줄어 판정이 빗나가므로
+      // 쓰지 않는다(이때 입력바 하단 safe-area 패딩이 안 지워져 여백이 남았음).
+      const layoutHeight = root.clientHeight;
       document.body.classList.toggle(
         "chat-keyboard-open",
-        window.innerHeight - vv.height > 100
+        layoutHeight - vv.height > 120
       );
     };
     update();
