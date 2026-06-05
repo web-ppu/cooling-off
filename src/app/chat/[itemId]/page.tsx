@@ -77,12 +77,6 @@ export default async function ChatItemPage({
     purchaseReason: item.reason ?? "",
   };
 
-  // 기존 대화 복원 — 새로고침/재진입 시에도 같은 대화가 이어지도록 한다.
-  // turn_number 오름차순으로 정렬해 둔 chat_messages 가 그대로 메시지 순서가 된다.
-  // 비어 있는 경우(최초 진입) 에는 FIRST_AI_MESSAGE 를 turn_number=0 으로 INSERT
-  // 해서 첫 인사도 영구 보관한다. 이후 매 턴은 appendChatTurn 이 누적한다.
-  const initialMessages = await loadOrInitChatMessages(supabase, itemId, user.id);
-
   // 데스크탑 ← 홈 박스 스타일 (시안 btn-ghost btn-sm — 9/14, 13.5px)
   const homeBoxStyle = {
     fontFamily: "var(--font-mono)",
