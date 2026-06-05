@@ -4,6 +4,8 @@ import Link from "next/link";
 import { transitionExpiredItems } from "@/lib/items";
 import { formatKRW } from "@/lib/format";
 import { isAdmin } from "@/lib/admin";
+import AppHeader from "@/components/app-header";
+import DeleteCoolingButton from "@/components/delete-cooling-button";
 import ChatScreen from "@/components/chat/ChatScreen";
 import { type Registration } from "@/lib/chat/systemPrompt";
 
@@ -75,41 +77,55 @@ export default async function ChatItemPage({
     purchaseReason: item.reason ?? "",
   };
 
+  // 기존 대화 복원 — 새로고침/재진입 시에도 같은 대화가 이어지도록 한다.
+  // turn_number 오름차순으로 정렬해 둔 chat_messages 가 그대로 메시지 순서가 된다.
+  // 비어 있는 경우(최초 진입) 에는 FIRST_AI_MESSAGE 를 turn_number=0 으로 INSERT
+  // 해서 첫 인사도 영구 보관한다. 이후 매 턴은 appendChatTurn 이 누적한다.
+  const initialMessages = await loadOrInitChatMessages(supabase, itemId, user.id);
+
+  // 데스크탑 ← 홈 박스 스타일 (시안 btn-ghost btn-sm — 9/14, 13.5px)
+  const homeBoxStyle = {
+    fontFamily: "var(--font-mono)",
+    fontSize: "13.5px",
+    fontWeight: 600,
+    letterSpacing: "0.04em",
+    textTransform: "uppercase" as const,
+    color: "var(--ink)",
+    border: "2px solid var(--ink)",
+    background: "var(--surface)",
+    padding: "9px 14px",
+    textDecoration: "none",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+  };
+
+  // min-height 를 100dvh 로 — 모바일에서 ChatScreen(chat-root height:100dvh) 와
+  // 높이를 일치시켜 하단에 100vh-100dvh 만큼의 흰 여백이 생기지 않도록 (#200).
   return (
-    <div
-      className="px-0 py-0 md:px-4 md:py-6"
-      style={{
-        background: "var(--surface-2)",
-        minHeight: "100vh",
-      }}
-    >
-      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-        {/* 데스크탑 전용 ← 홈 박스 (md+). 모바일에선 시안 정합으로 hidden. */}
-        <header
+    <div style={{ background: "var(--surface)", minHeight: "100dvh" }}>
+      {/* 데스크탑 글로벌 헤더 (모바일은 ChatScreen 의 ‹/삭제 헤더가 대신) */}
+      <div className="hidden md:block">
+        <AppHeader user={user} />
+      </div>
+
+      {/* 모바일: ChatScreen 이 전체화면. 데스크탑: 1120 컨테이너 + ← 홈/삭제 + 프레임 */}
+      <div className="mx-auto w-full md:max-w-[1120px] md:px-8 md:pb-8 md:pt-6">
+        {/* 데스크탑 ← 홈 / 삭제 (모바일은 ChatScreen 헤더가 처리) */}
+        <div
           className="hidden md:flex"
           style={{
             alignItems: "center",
+            justifyContent: "space-between",
+            gap: 20,
             marginBottom: 16,
           }}
         >
-          <Link
-            href="/"
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: 12,
-              fontWeight: 600,
-              letterSpacing: "0.04em",
-              textTransform: "uppercase",
-              color: "var(--ink)",
-              border: "2px solid var(--ink)",
-              background: "var(--surface)",
-              padding: "6px 12px",
-              textDecoration: "none",
-            }}
-          >
+          <Link href="/" style={homeBoxStyle}>
             ← 홈
           </Link>
-        </header>
+          <DeleteCoolingButton itemId={itemId} />
+        </div>
         <ChatScreen
           registration={registration}
           itemId={itemId}

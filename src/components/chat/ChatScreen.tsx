@@ -630,8 +630,20 @@ function DecisionScreen({
   onSkipSummary: () => void;
   saveErrorMessage: string | null;
 }) {
+  // 데스크탑 summary-grid 용 팩트 목록 파싱 (FactSummarySection 과 동일 규칙)
+  const trimmed = summary?.trim() ?? "";
+  const hasFacts = trimmed.length > 0 && trimmed !== "요약할 사실 없음.";
+  const facts = hasFacts
+    ? trimmed
+        .split("\n")
+        .map((s) => s.replace(/^[-·•]\s*/, "").trim())
+        .filter((s) => s.length > 0)
+    : [];
+
   return (
     <div className="decision-screen" role="dialog" aria-label="결정">
+      {/* ── 모바일 (md 미만) — 전체화면 결정 ── */}
+      <div className="decision-mobile md:hidden">
       <header className="decision-head">
         <button
           type="button"
@@ -696,6 +708,121 @@ function DecisionScreen({
                 color: "var(--danger)",
                 border: "2px solid var(--danger)",
                 padding: "8px 12px",
+              }}
+            >
+              {saveErrorMessage}
+            </div>
+          )}
+        </div>
+      </div>
+      </div>
+
+      {/* ── 데스크탑 (md+) — 시안 PcSummaryScreen (2컬럼) ── */}
+      <div className="decision-desktop hidden md:block">
+        <div className="decision-desktop-pad">
+          <button type="button" className="decision-back-btn" onClick={onCancel}>
+            ← 채팅으로
+          </button>
+          <div className="doc-header">
+            <h1 className="doc-title">
+              {registration.productName}
+              <br />
+              <span className="doc-title-em">결정의 시간.</span>
+            </h1>
+            <div className="doc-meta-row" />
+          </div>
+
+          {isLoading ? (
+            <div
+              style={{ display: "flex", justifyContent: "center", padding: "40px 0" }}
+            >
+              <SummaryLoading />
+            </div>
+          ) : decideFailure ? (
+            <div style={{ maxWidth: 520 }}>
+              <DecideFailureSection
+                failure={decideFailure}
+                onRetry={onRetry}
+                onSkipSummary={onSkipSummary}
+                onCancel={onCancel}
+                disabled={isLoading}
+              />
+            </div>
+          ) : (
+            <div className="summary-grid">
+              <div className="summary-facts">
+                <div className="summary-facts-head">
+                  <span className="doc-tag">FACTS</span>
+                  <span className="summary-facts-sub">대화에서 나온 사실</span>
+                </div>
+                {facts.length > 0 ? (
+                  <ol className="summary-facts-list">
+                    {facts.map((f, i) => (
+                      <li key={i}>
+                        <span className="summary-fact-num">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span className="summary-fact-text">{f}</span>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <div
+                    style={{ padding: 24, color: "var(--ink-3)", fontSize: 14 }}
+                  >
+                    팩트 요약이 기록되지 않았습니다.
+                  </div>
+                )}
+                <div className="summary-facts-foot">
+                  <span>※ 판단은 넣지 않았습니다. 결정은 직접 하세요.</span>
+                </div>
+              </div>
+
+              <aside className="summary-decide">
+                <div className="summary-decide-head">
+                  <span className="doc-tag">SIGN</span>
+                  <span className="summary-decide-sub">
+                    아래 두 버튼에서 직접 선택하세요.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="summary-decide-btn pass"
+                  onClick={() => void onDecision("안 삼")}
+                >
+                  <span className="summary-decide-mark">A</span>
+                  <span className="summary-decide-label">안 삼</span>
+                  <span className="summary-decide-meta">PASS</span>
+                </button>
+                <div className="summary-decide-divider">
+                  <span>OR</span>
+                </div>
+                <button
+                  type="button"
+                  className="summary-decide-btn buy"
+                  onClick={() => void onDecision("삼")}
+                >
+                  <span className="summary-decide-mark">B</span>
+                  <span className="summary-decide-label">삼</span>
+                  <span className="summary-decide-meta">BUY</span>
+                </button>
+                <div className="summary-decide-foot">
+                  <span>EQUAL WEIGHT · 동일 비중</span>
+                </div>
+              </aside>
+            </div>
+          )}
+
+          {saveErrorMessage && (
+            <div
+              role="alert"
+              style={{
+                marginTop: 14,
+                fontSize: 13,
+                color: "var(--danger)",
+                border: "2px solid var(--danger)",
+                padding: "8px 12px",
+                maxWidth: 520,
               }}
             >
               {saveErrorMessage}
