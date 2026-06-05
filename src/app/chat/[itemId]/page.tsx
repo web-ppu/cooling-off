@@ -6,11 +6,6 @@ import { isAdmin } from "@/lib/admin";
 import AppHeader from "@/components/app-header";
 import DeleteCoolingButton from "@/components/delete-cooling-button";
 import ChatScreen from "@/components/chat/ChatScreen";
-import {
-  FIRST_AI_MESSAGE,
-  type ChatMessage,
-} from "@/lib/chat/systemPrompt";
-import { type Registration } from "@/lib/chat/systemPrompt";
 
 export const dynamic = "force-dynamic";
 
@@ -72,18 +67,6 @@ export default async function ChatItemPage({
     redirect(`/cooling/${itemId}`);
   }
 
-  // 기존 대화 복원 — 새로고침/재진입 시에도 같은 대화가 이어지도록 한다.
-  // turn_number 오름차순으로 정렬해 둔 chat_messages 가 그대로 메시지 순서가 된다.
-  // 비어 있는 경우(최초 진입) 에는 FIRST_AI_MESSAGE 를 turn_number=0 으로 INSERT
-  // 해서 첫 인사도 영구 보관한다. 이후 매 턴은 appendChatTurn 이 누적한다.
-  const initialMessages = await loadOrInitChatMessages(supabase, itemId, user.id);
-  const registration: Registration = {
-    productName: item.name,
-    price: formatKRW(item.price),
-    coolingPeriod: deriveCoolingPeriodLabel(item.created_at, item.cooling_ends_at),
-    purchaseReason: item.reason ?? "",
-  };
-
   // 데스크탑 ← 홈 박스 스타일 (시안 btn-ghost btn-sm — 9/14, 13.5px)
   const homeBoxStyle = {
     fontFamily: "var(--font-mono)",
@@ -142,72 +125,3 @@ export default async function ChatItemPage({
   );
 }
 
-type ChatMessageRow = {
-  role: "user" | "assistant";
-  content: string;
-  turn_number: number;
-};
-
-async function loadOrInitChatMessages(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  itemId: string,
-  userId: string
-): Promise<ChatMessage[]> {
-  const { data } = await supabase
-    .from("chat_messages")
-    .select("role, content, turn_number")
-    .eq("item_id", itemId)
-    .order("turn_number", { ascending: true })
-    .order("created_at", { ascending: true });
-
-  const rows = (data ?? []) as ChatMessageRow[];
-
-  if (rows.length === 0) {
-    // 최초 진입 — 첫 AI 인사를 DB 에 박아 둔다.
-    // 동시 진입 시 중복 INSERT 가능성은 있지만 (UNIQUE 제약 없음), MVP 에서는 허용.
-    // 같은 내용이 두 줄 보일 뿐 흐름은 깨지지 않는다.
-    //
-    // INSERT 실패 시 사용자 화면은 in-memory FIRST_AI_MESSAGE 로 정상 표시한다.
-    // 다만 DB 에 첫 인사가 없으면 추후 history detail 에서 turn_number=0 행이
-    // 누락된 채 보이고, 다음 진입 시 다시 INSERT 시도된다. silent fail 방지 차원에서
-    // 서버 로그를 남긴다.
-    const { error: insertError } = await supabase.from("chat_messages").insert({
-      item_id: itemId,
-      user_id: userId,
-      role: "assistant",
-      content: FIRST_AI_MESSAGE,
-      turn_number: 0,
-    });
-    if (insertError) {
-      console.error(
-        "[chat/[itemId]] FIRST_AI_MESSAGE insert failed:",
-        insertError
-      );
-    }
-    return [{ role: "assistant", content: FIRST_AI_MESSAGE }];
-  }
-
-  return rows.map((m) => ({ role: m.role, content: m.content }));
-}
-
-/**
- * 등록 시점부터 cooling_ends_at 까지의 차이를 "{N}일" 라벨로 변환.
- *
- * DB 에 cooling_period_days 가 별도 컬럼으로 저장돼 있지 않으므로
- * created_at 과 cooling_ends_at 의 차이로 역산한다. 시스템 프롬프트의
- * 표시용 라벨이므로 정밀도는 일 단위로 충분.
- *
- * 24시간 미만이면 "{H}시간" 으로 fallback.
- */
-function deriveCoolingPeriodLabel(
-  createdAtIso: string,
-  coolingEndsAtIso: string
-): string {
-  const start = new Date(createdAtIso).getTime();
-  const end = new Date(coolingEndsAtIso).getTime();
-  const diffMs = Math.max(0, end - start);
-  const days = Math.round(diffMs / (24 * 60 * 60 * 1000));
-  if (days >= 1) return `${days}일`;
-  const hours = Math.max(1, Math.round(diffMs / (60 * 60 * 1000)));
-  return `${hours}시간`;
-}
