@@ -3,10 +3,10 @@
  * PRD 4절 가격별 냉각기 기준
  */
 export function getCoolingDays(price: number): number {
-  if (price <= 50000) return 1
-  if (price <= 100000) return 2
-  if (price <= 300000) return 7
-  if (price <= 1000000) return 14
+  if (price < 50000) return 1
+  if (price < 100000) return 2
+  if (price < 300000) return 7
+  if (price < 1000000) return 14
   return 30
 }
 

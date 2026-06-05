@@ -2,12 +2,10 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { transitionExpiredItems } from "@/lib/items";
-import { formatKRW } from "@/lib/format";
 import { isAdmin } from "@/lib/admin";
 import AppHeader from "@/components/app-header";
 import DeleteCoolingButton from "@/components/delete-cooling-button";
 import ChatScreen from "@/components/chat/ChatScreen";
-import { type Registration } from "@/lib/chat/systemPrompt";
 
 export const dynamic = "force-dynamic";
 
@@ -26,11 +24,10 @@ export const dynamic = "force-dynamic";
  *   단 admin (ADMIN_EMAILS 화이트리스트) 은 그대로 진입 허용 (테스트/QA).
  * - status='ready' → ChatScreen 렌더.
  *
- * Registration 매핑:
- * - productName ← items.name
- * - price       ← formatKRW(items.price)
- * - coolingPeriod ← cooling_ends_at 과 created_at 차이 (일 단위)
- * - purchaseReason ← items.reason ?? ""
+ * rawItem 전달:
+ * - name, price(원시 숫자), created_at, cooling_ends_at, reason 을 ChatScreen 에 전달.
+ * - formatKRW / deriveCoolingPeriodLabel 는 클라이언트(ChatScreen) 에서 처리.
+ *   서버 render 블로킹 없이 UI 가 먼저 뜨고 포맷은 클라이언트 단에서 완성.
  */
 export default async function ChatItemPage({
   params,
@@ -69,13 +66,6 @@ export default async function ChatItemPage({
   if (item.status === "cooling" && !isAdmin(user.email)) {
     redirect(`/cooling/${itemId}`);
   }
-
-  const registration: Registration = {
-    productName: item.name,
-    price: formatKRW(item.price),
-    coolingPeriod: deriveCoolingPeriodLabel(item.created_at, item.cooling_ends_at),
-    purchaseReason: item.reason ?? "",
-  };
 
   // 데스크탑 ← 홈 박스 스타일 (시안 btn-ghost btn-sm — 9/14, 13.5px)
   const homeBoxStyle = {
@@ -121,7 +111,13 @@ export default async function ChatItemPage({
           <DeleteCoolingButton itemId={itemId} />
         </div>
         <ChatScreen
-          registration={registration}
+          rawItem={{
+            name: item.name,
+            price: item.price,
+            createdAt: item.created_at,
+            coolingEndsAt: item.cooling_ends_at,
+            reason: item.reason,
+          }}
           itemId={itemId}
         />
       </div>
@@ -129,24 +125,3 @@ export default async function ChatItemPage({
   );
 }
 
-/**
- * 등록 시점부터 cooling_ends_at 까지의 차이를 "{N}일" 라벨로 변환.
- *
- * DB 에 cooling_period_days 가 별도 컬럼으로 저장돼 있지 않으므로
- * created_at 과 cooling_ends_at 의 차이로 역산한다. 시스템 프롬프트의
- * 표시용 라벨이므로 정밀도는 일 단위로 충분.
- *
- * 24시간 미만이면 "{H}시간" 으로 fallback.
- */
-function deriveCoolingPeriodLabel(
-  createdAtIso: string,
-  coolingEndsAtIso: string
-): string {
-  const start = new Date(createdAtIso).getTime();
-  const end = new Date(coolingEndsAtIso).getTime();
-  const diffMs = Math.max(0, end - start);
-  const days = Math.round(diffMs / (24 * 60 * 60 * 1000));
-  if (days >= 1) return `${days}일`;
-  const hours = Math.max(1, Math.round(diffMs / (60 * 60 * 1000)));
-  return `${hours}시간`;
-}

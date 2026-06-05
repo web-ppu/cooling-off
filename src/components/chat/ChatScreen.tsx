@@ -14,6 +14,7 @@ import {
   type DecisionLabel,
 } from "@/app/chat/actions";
 import { deleteCoolingItem } from "@/app/cooling/actions";
+import { formatKRW } from "@/lib/format";
 
 const MAX_MESSAGE_LENGTH = 500;
 
@@ -36,8 +37,29 @@ type FailedSendContext = {
   message: string;
 };
 
+/**
+ * /chat/[itemId] 페이지가 DB 에서 읽어 그대로 전달하는 원시 item 데이터.
+ * 포맷(formatKRW, deriveCoolingPeriodLabel)은 클라이언트에서 처리한다.
+ */
+type RawItem = {
+  name: string;
+  price: number;
+  createdAt: string;
+  coolingEndsAt: string;
+  reason: string | null;
+};
+
 type Props = {
-  registration: Registration;
+  /**
+   * stub 모드(/chat) 에서 이미 포맷된 Registration 을 직접 전달할 때 사용.
+   * rawItem 과 둘 중 하나는 반드시 있어야 한다.
+   */
+  registration?: Registration;
+  /**
+   * /chat/[itemId] 모드에서 서버가 전달하는 원시 item 데이터.
+   * ChatScreen 이 클라이언트에서 formatKRW / deriveCoolingPeriodLabel 로 변환한다.
+   */
+  rawItem?: RawItem;
   itemId?: string;
   /**
    * 페이지(server component) 가 DB 에서 미리 로드한 기존 대화.
@@ -63,10 +85,26 @@ type Props = {
  * issue #48~#52, #65, #66, #67 의 모든 로직 유지.
  */
 export default function ChatScreen({
-  registration,
+  registration: registrationProp,
+  rawItem,
   itemId,
   initialMessages,
 }: Props) {
+  const registration = useMemo<Registration>(() => {
+    if (rawItem) {
+      return {
+        productName: rawItem.name,
+        price: formatKRW(rawItem.price),
+        coolingPeriod: deriveCoolingPeriodLabel(rawItem.createdAt, rawItem.coolingEndsAt),
+        purchaseReason: rawItem.reason ?? "",
+      };
+    }
+    if (!registrationProp) {
+      console.error("[ChatScreen] registration 또는 rawItem 중 하나는 필수입니다.");
+      return { productName: "", price: "", coolingPeriod: "", purchaseReason: "" };
+    }
+    return registrationProp;
+  }, [rawItem, registrationProp]);
   const [messages, setMessages] = useState<ChatMessage[]>(
     initialMessages && initialMessages.length > 0
       ? initialMessages
@@ -1132,6 +1170,26 @@ function DecideFailureSection({
       </button>
     </div>
   );
+}
+
+/**
+ * 등록 시점(createdAt)과 냉각 만료 시점(coolingEndsAt)의 차이를 라벨로 변환.
+ *
+ * page.tsx 의 서버 전용 helper 에서 클라이언트로 이동 (refactor/chat-client-format).
+ * 시스템 프롬프트 표시용이므로 일 단위 정밀도로 충분.
+ * 24시간 미만이면 "{H}시간" 으로 fallback.
+ */
+function deriveCoolingPeriodLabel(
+  createdAtIso: string,
+  coolingEndsAtIso: string
+): string {
+  const start = new Date(createdAtIso).getTime();
+  const end = new Date(coolingEndsAtIso).getTime();
+  const diffMs = Math.max(0, end - start);
+  const days = Math.round(diffMs / (24 * 60 * 60 * 1000));
+  if (days >= 1) return `${days}일`;
+  const hours = Math.max(1, Math.round(diffMs / (60 * 60 * 1000)));
+  return `${hours}시간`;
 }
 
 /** 메시지 배열에서 사용자 메시지 개수를 센다 (= 현재까지 진행된 턴 수). */
