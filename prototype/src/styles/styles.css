@@ -152,16 +152,15 @@ input, textarea, button { font-family: inherit; color: inherit; }
   .pc-home-grid { grid-template-columns: 1fr; gap: 24px; }
 }
 
-/* PC item card horizontal */
+/* PC item card — vertical layout matching mobile */
 .pc-item-card {
   background: var(--surface);
   border: 2px solid var(--line-default);
   border-radius: 0;
-  padding: 18px 20px;
+  padding: 14px 16px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  flex-direction: column;
+  gap: 6px;
   cursor: pointer;
   transition: border-color .15s, transform .15s, box-shadow .15s;
   text-align: left;
@@ -172,8 +171,7 @@ input, textarea, button { font-family: inherit; color: inherit; }
   position: relative;
 }
 .pc-item-card:hover { border-color: var(--line-active); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,.07); }
-.pc-item-card .name { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
-.pc-item-card .meta { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
+.pc-item-card.ready { border-color: var(--ink); border-width: 2px; box-shadow: 4px 4px 0 var(--accent); }
 
 /* PC chat layout */
 .pc-chat-frame {
@@ -400,6 +398,16 @@ input, textarea, button { font-family: inherit; color: inherit; }
   background: var(--ink-3);
   transition: width .4s ease;
 }
+
+/* PC item card progress bar — matches mobile m-item-card override */
+.pc-item-card .cooling-progress {
+  margin-top: 6px;
+  height: 6px;
+  background: var(--surface-2);
+  border: 2px solid var(--line-default);
+  overflow: visible;
+}
+.pc-item-card .cooling-progress span { background: var(--ink); }
 
 /* Item card row + trash hover-only */
 .item-card-row { display: flex; gap: 8px; align-items: flex-start; width: 100%; }
