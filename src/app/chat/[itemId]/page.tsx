@@ -7,11 +7,7 @@ import { isAdmin } from "@/lib/admin";
 import AppHeader from "@/components/app-header";
 import DeleteCoolingButton from "@/components/delete-cooling-button";
 import ChatScreen from "@/components/chat/ChatScreen";
-import {
-  FIRST_AI_MESSAGE,
-  type ChatMessage,
-  type Registration,
-} from "@/lib/chat/systemPrompt";
+import { type Registration } from "@/lib/chat/systemPrompt";
 
 export const dynamic = "force-dynamic";
 
@@ -44,14 +40,18 @@ export default async function ChatItemPage({
   const { itemId } = await params;
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Round 1 (병렬): 인증 + 만료 전환 동시 실행
+  // transitionExpiredItems 를 auth 와 병렬로 실행해 items.select 시점에는
+  // 반드시 최신 status 를 읽도록 보장한다.
+  // (직접 URL 진입·푸시 알림 링크 등 홈을 거치지 않는 경우에도 정확한 상태 필요)
+  const [{ data: { user } }] = await Promise.all([
+    supabase.auth.getUser(),
+    transitionExpiredItems(supabase),
+  ]);
+
   if (!user) redirect("/login");
 
-  // 만료된 cooling 항목을 ready 로 자동 전환 (다른 라우트와 동일 패턴)
-  await transitionExpiredItems(supabase);
-
+  // Round 2: 전환 완료 후 항목 조회 — 정확한 status 를 읽기 위해 Round 1 이후 실행
   const { data: item } = await supabase
     .from("items")
     .select("id, user_id, name, price, reason, status, cooling_ends_at, created_at")
@@ -129,59 +129,10 @@ export default async function ChatItemPage({
         <ChatScreen
           registration={registration}
           itemId={itemId}
-          initialMessages={initialMessages}
         />
       </div>
     </div>
   );
-}
-
-type ChatMessageRow = {
-  role: "user" | "assistant";
-  content: string;
-  turn_number: number;
-};
-
-async function loadOrInitChatMessages(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  itemId: string,
-  userId: string
-): Promise<ChatMessage[]> {
-  const { data } = await supabase
-    .from("chat_messages")
-    .select("role, content, turn_number")
-    .eq("item_id", itemId)
-    .order("turn_number", { ascending: true })
-    .order("created_at", { ascending: true });
-
-  const rows = (data ?? []) as ChatMessageRow[];
-
-  if (rows.length === 0) {
-    // 최초 진입 — 첫 AI 인사를 DB 에 박아 둔다.
-    // 동시 진입 시 중복 INSERT 가능성은 있지만 (UNIQUE 제약 없음), MVP 에서는 허용.
-    // 같은 내용이 두 줄 보일 뿐 흐름은 깨지지 않는다.
-    //
-    // INSERT 실패 시 사용자 화면은 in-memory FIRST_AI_MESSAGE 로 정상 표시한다.
-    // 다만 DB 에 첫 인사가 없으면 추후 history detail 에서 turn_number=0 행이
-    // 누락된 채 보이고, 다음 진입 시 다시 INSERT 시도된다. silent fail 방지 차원에서
-    // 서버 로그를 남긴다.
-    const { error: insertError } = await supabase.from("chat_messages").insert({
-      item_id: itemId,
-      user_id: userId,
-      role: "assistant",
-      content: FIRST_AI_MESSAGE,
-      turn_number: 0,
-    });
-    if (insertError) {
-      console.error(
-        "[chat/[itemId]] FIRST_AI_MESSAGE insert failed:",
-        insertError
-      );
-    }
-    return [{ role: "assistant", content: FIRST_AI_MESSAGE }];
-  }
-
-  return rows.map((m) => ({ role: m.role, content: m.content }));
 }
 
 /**
