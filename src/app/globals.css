@@ -635,8 +635,14 @@ body {
   .chat-root {
     display: flex;
     flex-direction: column;
-    /* iOS 키보드 대응(#186): VisualViewport 높이(--chat-vh)로, 없으면 100dvh.
-       키보드가 열리면 보이는 영역만큼 줄어들어 입력창이 키보드 바로 위에 붙는다. */
+    /* iOS 키보드 대응(#186): VisualViewport 에 고정한다. 키보드가 열리면 보이는 영역
+       (--chat-vh)만큼 줄고, 상단 오프셋(--chat-top)을 따라가 입력창이 항상 키보드 바로
+       위에 붙는다. fixed 로 흐름에서 빼야 바깥 컨테이너의 잉여 높이가 입력창 아래 흰
+       공백으로 드러나지 않는다. JS 미지원 시 top:0 / height:100dvh 로 동작. */
+    position: fixed;
+    top: var(--chat-top, 0px);
+    left: 0;
+    right: 0;
     height: var(--chat-vh, 100dvh);
   }
   .pc-chat-frame {

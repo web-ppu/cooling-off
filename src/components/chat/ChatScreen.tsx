@@ -127,15 +127,18 @@ export default function ChatScreen({
     textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
   }, [inputValue]);
 
-  // iOS 키보드 대응 (#186): VisualViewport 높이를 --chat-vh 로 반영해 입력창이
-  // 키보드 바로 위에 붙도록(공백 제거) + 키보드 열림 시 body.chat-keyboard-open 토글
-  // (입력창 하단 safe-area 패딩 제거용). 미지원 브라우저는 CSS fallback(100dvh) 사용.
+  // iOS 키보드 대응 (#186): VisualViewport 의 높이(--chat-vh)와 상단 오프셋(--chat-top)을
+  // 반영한다. 모바일에서 .chat-root 가 position:fixed 로 이 두 값에 고정되므로,
+  // 키보드가 열려도 입력창이 항상 키보드 바로 위에 붙고(흰 공백 제거), iOS 가 포커스 시
+  // 페이지를 스크롤해도 보이는 영역(visual viewport)을 그대로 따라간다.
+  // 미지원 브라우저는 CSS fallback(top:0 / height:100dvh) 사용.
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
     const root = document.documentElement;
     const update = () => {
       root.style.setProperty("--chat-vh", `${Math.round(vv.height)}px`);
+      root.style.setProperty("--chat-top", `${Math.round(vv.offsetTop)}px`);
       document.body.classList.toggle(
         "chat-keyboard-open",
         window.innerHeight - vv.height > 100
@@ -148,6 +151,7 @@ export default function ChatScreen({
       vv.removeEventListener("resize", update);
       vv.removeEventListener("scroll", update);
       root.style.removeProperty("--chat-vh");
+      root.style.removeProperty("--chat-top");
       document.body.classList.remove("chat-keyboard-open");
     };
   }, []);
