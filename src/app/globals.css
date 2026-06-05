@@ -828,6 +828,15 @@ body {
   body.chat-keyboard-open .chat-input-bar {
     padding-bottom: 10px;
   }
+  /* 키보드 열림 시 페이지(body) 스크롤을 잠근다 — iOS 가 포커스 시 페이지를 밀어
+     올려 fixed chat-root 뒤의 잉여 높이가 입력창과 키보드 사이로 드러나는 것을
+     원천 차단한다 (#186). chat-root 가 fixed 로 화면 전체를 덮으므로 안전. */
+  body.chat-keyboard-open {
+    overflow: hidden;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+  }
 }
 .chat-input-row {
   display: flex;
