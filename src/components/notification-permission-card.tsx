@@ -34,6 +34,8 @@ export default function NotificationPermissionCard({ coolingEndsAt }: Props) {
   const [isPending, startTransition] = useTransition()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null)
+  /** 버튼 클릭 후 서버 액션 성공 시 즉시 카드를 숨기기 위한 로컬 상태. */
+  const [dismissed, setDismissed] = useState(false)
 
   useEffect(() => {
     if (!supported) return
@@ -55,6 +57,7 @@ export default function NotificationPermissionCard({ coolingEndsAt }: Props) {
   if (!supported) return null
   if (isSubscribed === null) return null
   if (isSubscribed) return null
+  if (dismissed) return null
 
   const formattedDate = formatKstShortDateTime(coolingEndsAt)
 
@@ -73,8 +76,9 @@ export default function NotificationPermissionCard({ coolingEndsAt }: Props) {
         //    SW 등록을 먼저 await 하면 유저 제스처 토큰이 소멸해 Chrome 이 팝업을 띄우지 않음
         const permission = await Notification.requestPermission()
         if (permission !== 'granted') {
-          // 거부 시 상태 저장 + 카드 사라짐
+          // 거부 시 상태 저장 + 카드 닫기
           await updateProposalState('denied')
+          setDismissed(true)
           return
         }
 
@@ -105,6 +109,8 @@ export default function NotificationPermissionCard({ coolingEndsAt }: Props) {
         })
         if (!result.success) {
           setErrorMessage(result.error)
+        } else {
+          setDismissed(true)
         }
       } catch (err) {
         console.error('[NotificationPermissionCard] enable failed:', err)
@@ -117,7 +123,12 @@ export default function NotificationPermissionCard({ coolingEndsAt }: Props) {
     setErrorMessage(null)
     startTransition(async () => {
       try {
-        await updateProposalState('denied')
+        const result = await updateProposalState('denied')
+        if (!result.success) {
+          setErrorMessage(result.error)
+        } else {
+          setDismissed(true)
+        }
       } catch (err) {
         console.error('[NotificationPermissionCard] decline failed:', err)
         setErrorMessage('잠시 후 다시 시도해 주세요.')
@@ -129,7 +140,12 @@ export default function NotificationPermissionCard({ coolingEndsAt }: Props) {
     setErrorMessage(null)
     startTransition(async () => {
       try {
-        await updateProposalState('dismissed')
+        const result = await updateProposalState('dismissed')
+        if (!result.success) {
+          setErrorMessage(result.error)
+        } else {
+          setDismissed(true)
+        }
       } catch (err) {
         console.error('[NotificationPermissionCard] dismiss failed:', err)
         setErrorMessage('잠시 후 다시 시도해 주세요.')
