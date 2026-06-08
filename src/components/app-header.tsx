@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import LogoutButton from './logout-button'
+import LogoutIconButton from './logout-icon-button'
 import NavLinks from './nav-links'
 import SnowflakeLogo from './snowflake-logo'
 import type { User } from '@supabase/supabase-js'
@@ -56,7 +57,8 @@ export default async function AppHeader({ user: userProp }: Props) {
             >
               About
             </Link>
-            {/* 모바일에서는 로그아웃 hidden — 시안 정합. 로그아웃은 데스크탑/About 페이지에서 가능. */}
+            {/* 모바일 로그아웃 (#191) — 한글 텍스트 대신 아이콘 박스로 헤더 우측 끝에 배치 */}
+            <LogoutIconButton />
           </div>
         </div>
 
