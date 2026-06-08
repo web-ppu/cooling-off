@@ -28,9 +28,9 @@ export function getCoolingEndsAt(price: number): Date {
 }
 
 export const COOLING_TIERS = [
-  { label: '5만원 이하', days: '1일', min: 0, max: 50000 },
-  { label: '5만~10만원', days: '2일', min: 50000, max: 100000 },
-  { label: '10만~30만원', days: '7일', min: 100000, max: 300000 },
-  { label: '30만~100만원', days: '14일', min: 300000, max: 1000000 },
-  { label: '100만원 초과', days: '30일', min: 1000000, max: Infinity },
+  { label: '5만 원 미만', days: '1일', min: 0, max: 50000 },
+  { label: '5만~10만 원', days: '2일', min: 50000, max: 100000 },
+  { label: '10만~30만 원', days: '7일', min: 100000, max: 300000 },
+  { label: '30만~100만 원', days: '14일', min: 300000, max: 1000000 },
+  { label: '100만 원 이상', days: '30일', min: 1000000, max: Infinity },
 ] as const
