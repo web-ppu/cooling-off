@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import AppHeader from '@/components/app-header'
 import SnowBackground from '@/components/snow-background'
 import GoogleLoginButton from '@/components/google-login-button'
-import CoolingMeta from '@/components/cooling-meta'
+import MobileCoolingMeta from '@/components/mobile-cooling-meta'
+import HomeCardDelete from '@/components/home-card-delete'
 import MobileHome from '@/components/mobile-home'
 import NotificationCardRouter from '@/components/notification-card-router'
 import Link from 'next/link'
@@ -235,6 +236,7 @@ export default async function Home() {
   )
 }
 
+// 시안 PcItemCard 정합 — 세로 레이아웃: 태그+가격+삭제 / 이름 / CTA(또는 메타)
 function ReadyCard({
   item,
 }: {
@@ -242,21 +244,21 @@ function ReadyCard({
 }) {
   return (
     <Link href={`/chat/${item.id}`} className="pc-item-card ready">
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <div className="pc-item-card-name">{item.name}</div>
-          <span className="ready-chip">결정</span>
+      <div className="m-item-row">
+        <div className="m-item-tags">
+          <span className="doc-tag" style={{ background: 'var(--accent)' }}>
+            READY
+          </span>
         </div>
-        <div className="pc-item-card-meta">클릭하여 시작 →</div>
+        <div className="m-item-row-end">
+          <span className="m-item-price tabular-nums">
+            {formatKRW(item.price)}
+          </span>
+          <HomeCardDelete itemId={item.id} />
+        </div>
       </div>
-      <div className="flex shrink-0 items-center">
-        <span
-          className="tabular-nums"
-          style={{ fontSize: 13, color: 'var(--ink-3)' }}
-        >
-          {formatKRW(item.price)}
-        </span>
-      </div>
+      <div className="m-item-name">{item.name}</div>
+      <div className="m-item-cta">결정 시작 →</div>
     </Link>
   )
 }
@@ -264,17 +266,26 @@ function ReadyCard({
 function CoolingCard({
   item,
 }: {
-  item: Pick<Item, 'id' | 'name' | 'cooling_ends_at' | 'created_at'>
+  item: Pick<Item, 'id' | 'name' | 'price' | 'cooling_ends_at' | 'created_at'>
 }) {
   return (
     <Link href={`/cooling/${item.id}`} className="pc-item-card">
-      <div className="min-w-0 flex-1">
-        <div className="pc-item-card-name">{item.name}</div>
-        <CoolingMeta
-          coolingEndsAt={item.cooling_ends_at}
-          createdAt={item.created_at}
-        />
+      <div className="m-item-row">
+        <div className="m-item-tags">
+          <span className="doc-tag">COOL</span>
+        </div>
+        <div className="m-item-row-end">
+          <span className="m-item-price tabular-nums">
+            {formatKRW(item.price)}
+          </span>
+          <HomeCardDelete itemId={item.id} />
+        </div>
       </div>
+      <div className="m-item-name">{item.name}</div>
+      <MobileCoolingMeta
+        coolingEndsAt={item.cooling_ends_at}
+        createdAt={item.created_at}
+      />
     </Link>
   )
 }
