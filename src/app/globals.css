@@ -906,6 +906,16 @@ body {
   width: 100%;
 }
 
+/* #203: 무의미 입력 차단 시 재입력 유도 안내 */
+.chat-input-warning {
+  font-size: 12px;
+  color: var(--accent);
+  line-height: 1.4;
+  max-width: 720px;
+  margin: 6px auto 0;
+  width: 100%;
+}
+
 /* 시안 정합: 흰 배경 + 좌측 회색 안내 + 우측 아웃라인 버튼 */
 .decide-banner {
   flex-shrink: 0;
