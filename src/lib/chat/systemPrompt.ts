@@ -191,10 +191,20 @@ AI 가 직접 계산해서 결과를 제시한다. 사용자에게 "비용이 �
  * 시스템 프롬프트의 등록 정보 변수를 실제 값으로 치환한다.
  */
 export function buildSystemPrompt(registration: Registration): string {
-  return SYSTEM_PROMPT_TEMPLATE.replace("{{productName}}", registration.productName)
-    .replace("{{price}}", registration.price)
-    .replace("{{coolingPeriod}}", registration.coolingPeriod)
-    .replace("{{purchaseReason}}", registration.purchaseReason);
+  // 변수는 템플릿에 두 번 이상 등장할 수 있으므로(예: {{purchaseReason}}) replaceAll 로
+  // 모든 occurrence 를 치환한다. 문자열 인자 replace 는 첫 번째만 치환해 placeholder 가
+  // 채팅에 그대로 노출됐다(#201). 또한 함수 치환자를 써서 사용자 입력의 `$` 가 치환 패턴
+  // ($&, $1 등)으로 해석되지 않게 한다.
+  const replacements: Record<string, string> = {
+    "{{productName}}": registration.productName,
+    "{{price}}": registration.price,
+    "{{coolingPeriod}}": registration.coolingPeriod,
+    "{{purchaseReason}}": registration.purchaseReason,
+  };
+  return Object.entries(replacements).reduce(
+    (prompt, [token, value]) => prompt.replaceAll(token, () => value),
+    SYSTEM_PROMPT_TEMPLATE,
+  );
 }
 
 /**
