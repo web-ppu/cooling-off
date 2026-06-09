@@ -46,11 +46,6 @@ export default async function Home() {
 
   const readyItems = items.filter((i) => i.status === 'ready')
   const coolingItems = items.filter((i) => i.status === 'cooling')
-  // 활성 item 총액 — doc-meta-row 의 VALUE 표시용 (디자이너 시안)
-  const totalActiveValue = [...readyItems, ...coolingItems].reduce(
-    (sum, i) => sum + i.price,
-    0
-  )
 
   // ── 알림 권한 제안 카드 노출 평가 ────────────────────────────
   // 정책 (docs/pm/notification-policy.md §3-1, §3-5, §3-7):
@@ -104,17 +99,8 @@ export default async function Home() {
 
       {/* 데스크탑 전용 컨테이너 — 기존 doc-header + 2컬럼 grid */}
       <div className="mx-auto hidden w-full max-w-[1120px] flex-1 px-4 pb-24 pt-7 md:block md:px-8">
-        {/* 에디토리얼 헤더 */}
+        {/* 에디토리얼 헤더 — 장식 태그 제거(#199), 시안 PcHomeScreen 정합 */}
         <div className="doc-header">
-          <div className="doc-header-row">
-            <span className="doc-tag">DASHBOARD</span>
-            <span className="doc-tag">HOME.001</span>
-            {readyItems.length > 0 && (
-              <span className="doc-tag doc-tag-accent">
-                {readyItems.length} READY
-              </span>
-            )}
-          </div>
           <div className="flex flex-wrap items-end justify-between gap-5">
             <h1 className="doc-title">
               식히는 중
@@ -139,19 +125,8 @@ export default async function Home() {
               </Link>
             </div>
           </div>
-          <div className="doc-meta-row">
-            <span>FILE / cooling.live</span>
-            <span>/</span>
-            <span>READY {readyItems.length}</span>
-            <span>/</span>
-            <span>COOLING {coolingItems.length}</span>
-            {totalActiveValue > 0 && (
-              <>
-                <span>/</span>
-                <span>VALUE {formatKRW(totalActiveValue)}</span>
-              </>
-            )}
-          </div>
+          {/* 점선 구분선만 — FILE/READY/COOLING/VALUE 메타 텍스트 제거(#199) */}
+          <div className="doc-meta-row" />
         </div>
 
         {/* 알림 권한 제안 카드 — 플랫폼 분기는 NotificationCardRouter 가 담당 */}
