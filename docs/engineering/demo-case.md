@@ -2,7 +2,7 @@
 
 발표 시연·외부 사용자 체험·디자인 검증 등에 활용할 수 있는 **대표 대화 흐름**. 팀원이 같은 흐름으로 재현할 수 있도록 사용자 메시지 fixture + AI 응답 + 분류를 함께 기록한다.
 
-본 케이스는 production (`USE_MOCK_AI=false`, Gemini 3.1 Flash-Lite) 에서 **자동 시뮬레이션 (curl + jq)** 으로 검증한 결과를 그대로 사용한다 — production AI 동작과 동일 보장.
+본 케이스는 production (실시간 Gemini 3.1 Flash-Lite) 에서 **자동 시뮬레이션 (curl + jq)** 으로 검증한 결과를 그대로 사용한다 — production AI 동작과 동일 보장.
 
 ---
 
