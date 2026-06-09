@@ -1952,13 +1952,6 @@ body {
   text-transform: uppercase;
 }
 
-/* 로그아웃 줄 — 문서 끝, 시안 영역 밖 (모바일 로그아웃 진입점 유지) */
-.about-logout-row {
-  margin-top: 24px;
-  display: flex;
-  justify-content: center;
-}
-
 /* ───────── 모바일 홈 (prototype/mobile.css → m-* 패턴) ───────── */
 /* 사용 위치: src/app/page.tsx 의 md:hidden 분기 (모바일 전용). */
 

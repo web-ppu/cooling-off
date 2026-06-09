@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import LogoutButton from '@/components/logout-button'
 
 /**
  * /about — 서비스 소개 페이지 (brutalist 디자인).
@@ -182,11 +181,6 @@ export default function AboutPage() {
 
         <div className="m-about-footer">
           <span>— END OF DOCUMENT —</span>
-        </div>
-
-        {/* 로그아웃 — 모바일 nav 에서 로그아웃을 제거했기 때문에 About 하단에 유지 */}
-        <div className="about-logout-row">
-          <LogoutButton />
         </div>
       </div>
     </main>
