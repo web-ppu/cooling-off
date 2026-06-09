@@ -551,7 +551,7 @@ export default function ChatScreen({
               margin: 0,
             }}
           >
-            AI는 현재 대화에서 나온 사실만 사용합니다. 판단은 직접 하세요.
+            AI는 현재 대화에서 나온 사실만 사용합니다. AI와 대화하며 구매를 고민해보세요.
           </p>
         </div>
       </aside>
