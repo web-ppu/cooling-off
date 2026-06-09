@@ -19,6 +19,27 @@ import { formatKRW } from "@/lib/format";
 const MAX_MESSAGE_LENGTH = 500;
 
 /**
+ * 명백한 무의미 입력(gibberish) 클라이언트 1차 필터 — issue #203.
+ *
+ * best practice(다층 가드레일): 값싼 룰 기반 필터로 명백한 케이스를 API 호출 전에
+ * 거르고, 나머지 모호한 케이스는 시스템 프롬프트의 [무의미·해독 불가 입력 처리] 가 맡는다.
+ *
+ * false-positive(정상 단답 차단) 가 가장 큰 리스크이므로 의도적으로 **매우 보수적**으로 둔다.
+ * "왜 사고 싶어?" 에 대한 정상 답일 수 없는, 단일 문자 4회 이상 반복만 차단한다.
+ *   예) "aaaa", "ㅋㅋㅋㅋ", "....", "ㅁㅁㅁㅁ"
+ * "fdffdd" 같은 무작위 문자열이나 자음 난타("ㅁㄴㅇㄹ")는 여기서 막지 않고 프롬프트에 위임한다.
+ * "응"/"몰라"/"ㅁㄹ"/"ㄴㄴ" 등 짧지만 의미 있는 답은 절대 막지 않는다.
+ */
+function isObviousGibberish(text: string): boolean {
+  const compact = text.replace(/\s/g, "");
+  if (compact.length < 4) return false;
+  const uniqueChars = new Set(compact);
+  return uniqueChars.size === 1;
+}
+
+const GIBBERISH_WARNING = "무슨 말인지 잘 모르겠어. 왜 사고 싶은지 다시 적어줄래?";
+
+/**
  * 최대 턴 수. 1턴 = 사용자 메시지 1회 + AI 응답 1회 (docs/design/screen-spec.md §2-5).
  */
 const MAX_TURNS = 10;
@@ -116,6 +137,7 @@ export default function ChatScreen({
     !!itemId && !(initialMessages && initialMessages.length > 0)
   );
   const [inputValue, setInputValue] = useState("");
+  const [inputWarning, setInputWarning] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showDecideButton, setShowDecideButton] = useState(false);
   const [isDecided, setIsDecided] = useState(false);
@@ -261,6 +283,12 @@ export default function ChatScreen({
 
   async function handleSend() {
     if (!canSend) return;
+    // #203: 명백한 무의미 입력은 API 호출 없이 재입력을 유도한다.
+    if (isObviousGibberish(trimmedInput)) {
+      setInputWarning(GIBBERISH_WARNING);
+      return;
+    }
+    setInputWarning(null);
     setLastFailedSend(null);
     const userMessage: ChatMessage = { role: "user", content: trimmedInput };
     const next: ChatMessage[] = [...messages, userMessage];
@@ -642,9 +670,10 @@ export default function ChatScreen({
                 ref={textareaRef}
                 className="chat-input"
                 value={inputValue}
-                onChange={(e) =>
-                  setInputValue(e.target.value.slice(0, MAX_MESSAGE_LENGTH))
-                }
+                onChange={(e) => {
+                  setInputValue(e.target.value.slice(0, MAX_MESSAGE_LENGTH));
+                  if (inputWarning) setInputWarning(null);
+                }}
                 onKeyDown={handleKeyDown}
                 placeholder="메시지를 입력하세요"
                 rows={1}
@@ -660,6 +689,11 @@ export default function ChatScreen({
                 →
               </button>
             </div>
+            {inputWarning && (
+              <div className="chat-input-warning" role="alert">
+                {inputWarning}
+              </div>
+            )}
             <div className="chat-meter" aria-live="polite">
               {trimmedInput.length}/{MAX_MESSAGE_LENGTH}
             </div>
