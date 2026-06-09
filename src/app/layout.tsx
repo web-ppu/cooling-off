@@ -2,16 +2,26 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: '쿨링오프',
+  title: {
+    default: '쿨링오프',
+    template: '%s | 쿨링오프',
+  },
   description: '충동구매와 결제 사이에 시간과 AI 채팅을 둡니다.',
-  // iOS Safari "홈 화면에 추가" 후 standalone 모드로 실행되도록 메타 명시.
-  // notification-policy.md §3-7 iOS PWA 재진입 조건의 전제.
+  applicationName: '쿨링오프',
+  // iOS Safari "홈 화면에 추가" 후 standalone 모드로 실행.
   appleWebApp: {
     capable: true,
     title: '쿨링오프',
     statusBarStyle: 'default',
   },
   manifest: '/manifest.webmanifest',
+  openGraph: {
+    title: '쿨링오프',
+    description: '충동구매와 결제 사이에 시간과 AI 채팅을 둡니다.',
+    siteName: '쿨링오프',
+    locale: 'ko_KR',
+    type: 'website',
+  },
 }
 
 export const viewport: Viewport = {

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <style>
+    path, rect, polygon, circle { fill: #78a8ff; }
+    @media (prefers-color-scheme: dark) {
+      path, rect, polygon, circle { fill: #78a8ff; }
+    }
+  </style>
+  <!-- 3 main axes -->
+  <rect x="11.2" y="1.5" width="1.6" height="21" rx="0.8" />
+  <rect x="11.2" y="1.5" width="1.6" height="21" rx="0.8" transform="rotate(60 12 12)" />
+  <rect x="11.2" y="1.5" width="1.6" height="21" rx="0.8" transform="rotate(120 12 12)" />
+  <!-- 6 tips with branches, one per arm -->
+  <g transform="rotate(0 12 12)">
+    <polygon points="12,0.5 13.2,1.5 12,2.5 10.8,1.5" />
+    <g transform="translate(12 4.5)">
+      <rect x="-0.7" y="-4" width="1.4" height="4" rx="0.7" transform="rotate(-60)" />
+      <rect x="-0.7" y="-4" width="1.4" height="4" rx="0.7" transform="rotate(60)" />
+    </g>
+  </g>
+  <g transform="rotate(60 12 12)">
+    <polygon points="12,0.5 13.2,1.5 12,2.5 10.8,1.5" />
+    <g transform="translate(12 4.5)">
+      <rect x="-0.7" y="-4" width="1.4" height="4" rx="0.7" transform="rotate(-60)" />
+      <rect x="-0.7" y="-4" width="1.4" height="4" rx="0.7" transform="rotate(60)" />
+    </g>
+  </g>
+  <g transform="rotate(120 12 12)">
+    <polygon points="12,0.5 13.2,1.5 12,2.5 10.8,1.5" />
+    <g transform="translate(12 4.5)">
+      <rect x="-0.7" y="-4" width="1.4" height="4" rx="0.7" transform="rotate(-60)" />
+      <rect x="-0.7" y="-4" width="1.4" height="4" rx="0.7" transform="rotate(60)" />
+    </g>
+  </g>
+  <g transform="rotate(180 12 12)">
+    <polygon points="12,0.5 13.2,1.5 12,2.5 10.8,1.5" />
+    <g transform="translate(12 4.5)">
+      <rect x="-0.7" y="-4" width="1.4" height="4" rx="0.7" transform="rotate(-60)" />
+      <rect x="-0.7" y="-4" width="1.4" height="4" rx="0.7" transform="rotate(60)" />
+    </g>
+  </g>
+  <g transform="rotate(240 12 12)">
+    <polygon points="12,0.5 13.2,1.5 12,2.5 10.8,1.5" />
+    <g transform="translate(12 4.5)">
+      <rect x="-0.7" y="-4" width="1.4" height="4" rx="0.7" transform="rotate(-60)" />
+      <rect x="-0.7" y="-4" width="1.4" height="4" rx="0.7" transform="rotate(60)" />
+    </g>
+  </g>
+  <g transform="rotate(300 12 12)">
+    <polygon points="12,0.5 13.2,1.5 12,2.5 10.8,1.5" />
+    <g transform="translate(12 4.5)">
+      <rect x="-0.7" y="-4" width="1.4" height="4" rx="0.7" transform="rotate(-60)" />
+      <rect x="-0.7" y="-4" width="1.4" height="4" rx="0.7" transform="rotate(60)" />
+    </g>
+  </g>
+  <!-- center -->
+  <circle cx="12" cy="12" r="2.3" />
+</svg>
