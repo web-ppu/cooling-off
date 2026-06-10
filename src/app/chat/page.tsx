@@ -61,7 +61,7 @@ export default function ChatPage() {
                 textDecoration: "none",
               }}
             >
-              ← 홈
+              ← 뒤로가기
             </Link>
           </header>
           <ChatScreen registration={registration} />

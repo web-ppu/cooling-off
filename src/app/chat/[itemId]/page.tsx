@@ -106,7 +106,7 @@ export default async function ChatItemPage({
           }}
         >
           <Link href="/" style={homeBoxStyle}>
-            ← 홈
+            ← 뒤로가기
           </Link>
           <DeleteCoolingButton itemId={itemId} />
         </div>
