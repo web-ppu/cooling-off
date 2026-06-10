@@ -119,12 +119,11 @@ export default function RegisterForm() {
     <div className="pc-form-grid">
       {/* 폼 */}
       <form onSubmit={handleSubmit} noValidate>
-        <div className="doc-form">
-          {/* A: 이름 */}
+        <div className="doc-form doc-form--labeled">
+          {/* 이름 */}
           <div className="doc-row">
-            <div className="doc-row-num">A</div>
+            <div className="doc-row-num">이름</div>
             <div className="doc-row-body">
-              <div className="doc-row-label">NAME · 이름</div>
               <input
                 className="field-input"
                 placeholder="예: 에어팟 프로3"
@@ -140,12 +139,12 @@ export default function RegisterForm() {
             </div>
           </div>
 
-          {/* B: 가격 */}
+          {/* 가격 */}
           <div className="doc-row">
-            <div className="doc-row-num">B</div>
+            <div className="doc-row-num">가격</div>
             <div className="doc-row-body">
               <div className="doc-row-label">
-                PRICE · 가격 <span className="opt">(₩)</span>
+                <span className="opt">(₩)</span>
               </div>
               <input
                 className="field-input"
@@ -163,12 +162,12 @@ export default function RegisterForm() {
             </div>
           </div>
 
-          {/* C: URL */}
+          {/* 링크 */}
           <div className="doc-row">
-            <div className="doc-row-num">C</div>
+            <div className="doc-row-num">링크</div>
             <div className="doc-row-body">
               <div className="doc-row-label">
-                URL · 링크 <span className="opt">(선택)</span>
+                <span className="opt">(선택)</span>
               </div>
               <input
                 className="field-input"
@@ -183,12 +182,12 @@ export default function RegisterForm() {
             </div>
           </div>
 
-          {/* D: 사고 싶은 이유 */}
+          {/* 이유 */}
           <div className="doc-row" style={{ borderBottom: 'none' }}>
-            <div className="doc-row-num accent">D</div>
+            <div className="doc-row-num accent">이유</div>
             <div className="doc-row-body">
               <div className="doc-row-label">
-                REASON · 사고 싶은 이유 <span className="opt">(선택)</span>
+                <span className="opt">(선택)</span>
               </div>
               <textarea
                 className="field-textarea"
@@ -209,15 +208,12 @@ export default function RegisterForm() {
             </div>
           </div>
 
-          {/* 하단 제출 */}
+          {/* 하단 제출 — 시안 정합: SIGN 장식 제거, 액션 우측 정렬 (#199) */}
           <div className="doc-form-foot">
-            <span
-              className="doc-meta-row doc-form-foot-sign"
-              style={{ borderTop: 'none', padding: 0, margin: 0 }}
+            <div
+              className="doc-form-foot-actions flex gap-2.5"
+              style={{ marginLeft: 'auto' }}
             >
-              SIGN · _________________
-            </span>
-            <div className="doc-form-foot-actions flex gap-2.5">
               {/* 디자이너 시안 정합: prototype .btn padding 12/18, font 14.5 */}
               <a
                 href="/"
