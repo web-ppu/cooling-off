@@ -18,7 +18,7 @@ export default async function RegisterPage() {
     <main className="flex min-h-screen flex-col">
       <AppHeader user={user} />
 
-      <div className="mx-auto w-full max-w-[1120px] flex-1 px-4 pb-24 pt-7 md:px-8">
+      <div className="mx-auto w-full max-w-[880px] flex-1 px-4 pb-24 pt-7 md:px-8">
         {/* 에디토리얼 헤더 — 데스크탑: ← 홈 안쪽+장식 제거(시안). 모바일: 기존 태그/메타 유지 (#199) */}
         <div className="doc-header">
           <div className="doc-header-row">
