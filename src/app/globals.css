@@ -461,16 +461,19 @@ body {
 .doc-row-body { padding: 18px 24px 22px; }
 /* 등록 폼(#199) — 좌측 셀에 한글 라벨(이름/가격/링크/이유). 시안 PcRegisterScreen 정합:
    72px 셀 + 13px 라벨 + 상단(flex-start) 정렬 + 흰 배경. 캡처 폼(단일 문자 U/A/B/C)에
-   영향 주지 않도록 .doc-form--labeled 로 스코프. */
-.doc-form--labeled .doc-row { grid-template-columns: 72px 1fr; }
-.doc-form--labeled .doc-row-num {
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  align-items: flex-start;
-  padding: 22px 6px;
-  background: var(--surface);
+   영향 주지 않도록 .doc-form--labeled 로 스코프.
+   ★ 데스크탑(md+) 전용 — 모바일 등록 폼은 기존(A/B/C/D) 디자인 유지. */
+@media (min-width: 768px) {
+  .doc-form--labeled .doc-row { grid-template-columns: 72px 1fr; }
+  .doc-form--labeled .doc-row-num {
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    align-items: flex-start;
+    padding: 22px 6px;
+    background: var(--surface);
+  }
+  .doc-form--labeled .doc-row-num.accent { background: var(--accent); }
 }
-.doc-form--labeled .doc-row-num.accent { background: var(--accent); }
 @media (max-width: 480px) {
   .doc-row { grid-template-columns: 44px 1fr; }
   .doc-row-num { font-size: 18px; }
